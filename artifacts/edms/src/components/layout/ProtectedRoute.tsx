@@ -1,17 +1,14 @@
-import { Navigate } from "react-router";
-import { useAuth } from "../../lib/auth";
-import type { UserRole } from "../../lib/auth";
 import type { ReactNode } from "react";
+import { Navigate } from "react-router";
+import type { UserRole } from "../../lib/auth";
+import { useAuth } from "../../lib/auth";
 
 interface ProtectedRouteProps {
   children: ReactNode;
   allowedRoles: UserRole[];
 }
 
-export function ProtectedRoute({
-  children,
-  allowedRoles,
-}: ProtectedRouteProps) {
+export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading, hasPermission } = useAuth();
 
   if (isLoading) {

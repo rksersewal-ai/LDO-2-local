@@ -1,6 +1,6 @@
-import type { WorkRecord, WorkRecordStatus, WorkCategory } from "../lib/types";
-import { MOCK_WORK_LEDGER } from "../lib/mockExtended";
 import { WORK_TYPE_DEFINITIONS } from "../lib/constants";
+import { MOCK_WORK_LEDGER } from "../lib/mockExtended";
+import type { WorkCategory, WorkRecord, WorkRecordStatus } from "../lib/types";
 
 function mapMockWork(w: (typeof MOCK_WORK_LEDGER)[0]): WorkRecord {
   const typeToCategory: Record<string, WorkCategory> = {
@@ -18,8 +18,7 @@ function mapMockWork(w: (typeof MOCK_WORK_LEDGER)[0]): WorkRecord {
     "Pending Verification": "SUBMITTED",
   };
 
-  const workCategory =
-    typeToCategory[(w as Record<string, unknown>).type as string] ?? "GENERAL";
+  const workCategory = typeToCategory[(w as Record<string, unknown>).type as string] ?? "GENERAL";
 
   return {
     id: w.id,
@@ -27,16 +26,14 @@ function mapMockWork(w: (typeof MOCK_WORK_LEDGER)[0]): WorkRecord {
     userName: ((w as Record<string, unknown>).assignee as string) ?? "Unknown",
     date: w.date,
     workCategory,
-    workType:
-      ((w as Record<string, unknown>).type as string) ?? "Miscellaneous Work",
+    workType: ((w as Record<string, unknown>).type as string) ?? "Miscellaneous Work",
     description: ((w as Record<string, unknown>).title as string) ?? "",
     plNumber:
       ((w as Record<string, unknown>).linkedPL as string) !== "N/A"
         ? ((w as Record<string, unknown>).linkedPL as string)
         : undefined,
     documentRef: (w as Record<string, unknown>).linkedDoc as string,
-    status:
-      statusMap[(w as Record<string, unknown>).status as string] ?? "OPEN",
+    status: statusMap[(w as Record<string, unknown>).status as string] ?? "OPEN",
     isLocked: (w as Record<string, unknown>).status === "Complete",
     targetDays: 7,
     createdAt: w.date,
@@ -80,8 +77,7 @@ const EXTRA_WORK_RECORDS: WorkRecord[] = [
     workCategory: "INSPECTION",
     workType: "Routine Inspection",
     plNumber: "38111000",
-    description:
-      "Q1 brake system routine inspection — WAP7 serial batch 30601–30620",
+    description: "Q1 brake system routine inspection — WAP7 serial batch 30601–30620",
     eOfficeNumber: "CLW/INSP/2026/0088",
     concernedOfficer: "SSE/Inspection",
     sectionType: "Inspection",
@@ -156,10 +152,7 @@ const EXTRA_WORK_RECORDS: WorkRecord[] = [
   },
 ];
 
-let _store: WorkRecord[] = [
-  ...MOCK_WORK_LEDGER.map(mapMockWork),
-  ...EXTRA_WORK_RECORDS,
-];
+let _store: WorkRecord[] = [...MOCK_WORK_LEDGER.map(mapMockWork), ...EXTRA_WORK_RECORDS];
 
 function generateId(): string {
   const seq = Math.floor(Math.random() * 9000) + 1000;
@@ -167,18 +160,14 @@ function generateId(): string {
 }
 
 export function getTargetDays(workType: string): number {
-  return (
-    WORK_TYPE_DEFINITIONS.find((w) => w.label === workType)?.disposalDays ?? 7
-  );
+  return WORK_TYPE_DEFINITIONS.find((w) => w.label === workType)?.disposalDays ?? 7;
 }
 
 export function calculateDaysTaken(startDate: string, endDate: string): number {
   if (!startDate || !endDate) return 0;
   const start = new Date(startDate);
   const end = new Date(endDate);
-  return Math.ceil(
-    Math.abs(end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
-  );
+  return Math.ceil(Math.abs(end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
 }
 
 export function getKPIStatus(record: WorkRecord): {
@@ -226,10 +215,7 @@ export function getKPIStatus(record: WorkRecord): {
   };
 }
 
-export function checkDuplicates(
-  record: Partial<WorkRecord>,
-  existing: WorkRecord[],
-): WorkRecord[] {
+export function checkDuplicates(record: Partial<WorkRecord>, existing: WorkRecord[]): WorkRecord[] {
   if (!record.eOfficeNumber || !record.workType) return [];
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -266,8 +252,7 @@ export const WorkLedgerService = {
   update(id: string, patch: Partial<WorkRecord>): Promise<WorkRecord | null> {
     const idx = _store.findIndex((w) => w.id === id);
     if (idx < 0) return Promise.resolve(null);
-    if (_store[idx].isLocked && !patch.isLocked)
-      return Promise.resolve(_store[idx]);
+    if (_store[idx].isLocked && !patch.isLocked) return Promise.resolve(_store[idx]);
     _store[idx] = { ..._store[idx], ...patch };
     return Promise.resolve(_store[idx]);
   },
@@ -348,24 +333,18 @@ export const WorkLedgerService = {
         typeGroups[w.workType].push(w.daysTaken);
       }
     }
-    const avgDaysByType = Object.entries(typeGroups).map(
-      ([workType, days]) => ({
-        workType,
-        avgDays: Math.round(days.reduce((a, b) => a + b, 0) / days.length),
-        targetDays: getTargetDays(workType),
-      }),
-    );
+    const avgDaysByType = Object.entries(typeGroups).map(([workType, days]) => ({
+      workType,
+      avgDays: Math.round(days.reduce((a, b) => a + b, 0) / days.length),
+      targetDays: getTargetDays(workType),
+    }));
 
-    const completed = _store.filter(
-      (w) => w.status === "VERIFIED" || w.status === "CLOSED",
-    );
+    const completed = _store.filter((w) => w.status === "VERIFIED" || w.status === "CLOSED");
     const onTime = completed.filter(
       (w) => (w.daysTaken ?? 0) <= (w.targetDays ?? getTargetDays(w.workType)),
     );
     const onTimeRate =
-      completed.length > 0
-        ? Math.round((onTime.length / completed.length) * 100)
-        : 0;
+      completed.length > 0 ? Math.round((onTime.length / completed.length) * 100) : 0;
 
     const today = new Date().toISOString().split("T")[0];
     const overdueCount = _store.filter((w) => {

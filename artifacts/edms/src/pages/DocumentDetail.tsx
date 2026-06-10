@@ -1,16 +1,17 @@
-import { useState, useEffect, useCallback } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router";
-import { GlassCard, Badge, Button } from "../components/ui/Shared";
-import { PLNumberSelect } from "../components/ui/PLNumberSelect";
+import { useCallback, useEffect, useState } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 import {
   DocumentPreviewButton,
   getDocumentContextAttributes,
 } from "../components/documents/DocumentPreviewActions";
-import { MOCK_DOCUMENTS } from "../lib/mock";
-import { MOCK_OCR_JOBS } from "../lib/mockExtended";
-import { PL_DATABASE } from "../lib/bomData";
+import { PLNumberSelect } from "../components/ui/PLNumberSelect";
+import { Badge, Button, GlassCard } from "../components/ui/Shared";
 import { useDocTabs } from "../contexts/DocTabsContext";
 import { usePLItems } from "../hooks/usePLItems";
+import { PL_DATABASE } from "../lib/bomData";
+import { MOCK_DOCUMENTS } from "../lib/mock";
+import { ApprovalService } from "../services/ApprovalService";
+import { type OcrJobRecord, OcrJobService } from "../services/OcrJobService";
 
 type DocRecord = {
   id: string;
@@ -33,46 +34,42 @@ type DocRecord = {
 };
 
 import {
-  FileText,
+  AlertCircle,
+  AlertTriangle,
   ArrowLeft,
+  BookOpen,
+  Calendar,
+  Check,
+  CheckCheck,
+  ChevronLeft,
+  ChevronRight,
+  Copy,
   Download,
   Edit3,
-  History,
-  FileSearch,
-  Tag,
-  Calendar,
-  AlertCircle,
-  Clock,
-  Shield,
-  ChevronRight,
-  ChevronLeft,
   ExternalLink,
+  FileCode,
+  FileImage,
+  FileSearch,
+  FileText,
+  GitCompare,
   Hash,
+  History,
+  Info,
   Layers,
-  ScanText,
-  Copy,
-  CheckCheck,
+  Loader2,
+  Maximize2,
+  Paperclip,
+  Plus,
   RefreshCw,
+  RotateCw,
+  ScanText,
+  Send,
+  Shield,
+  Tag,
+  Users,
+  X,
   ZoomIn,
   ZoomOut,
-  RotateCw,
-  Maximize2,
-  X,
-  Plus,
-  Paperclip,
-  GitCompare,
-  FileImage,
-  ChevronDown,
-  ChevronUp,
-  Link as LinkIcon,
-  Info,
-  BookOpen,
-  Users,
-  FileCode,
-  AlertTriangle,
-  Send,
-  Check,
-  Loader2,
 } from "lucide-react";
 
 const PANEL_LS_KEY = "edms_doc_panel_state";
@@ -80,8 +77,7 @@ const PANEL_LS_KEY = "edms_doc_panel_state";
 function loadPanelState() {
   try {
     const raw = localStorage.getItem(PANEL_LS_KEY);
-    if (raw)
-      return JSON.parse(raw) as { leftOpen: boolean; rightOpen: boolean };
+    if (raw) return JSON.parse(raw) as { leftOpen: boolean; rightOpen: boolean };
   } catch {
     /* ignore */
   }
@@ -94,8 +90,7 @@ function savePanelState(state: { leftOpen: boolean; rightOpen: boolean }) {
 
 const statusVariant = (s: string) => {
   if (["Approved", "APPROVED", "ACTIVE"].includes(s)) return "success" as const;
-  if (["In Review", "UNDER_REVIEW", "Draft", "DRAFT"].includes(s))
-    return "warning" as const;
+  if (["In Review", "UNDER_REVIEW", "Draft", "DRAFT"].includes(s)) return "warning" as const;
   if (["Obsolete", "OBSOLETE"].includes(s)) return "danger" as const;
   return "default" as const;
 };
@@ -158,10 +153,7 @@ function renderOcrWithLinks(
     if (qi < 0) return [chunk];
     return [
       chunk.slice(0, qi),
-      <mark
-        key={`h-${key++}`}
-        className="bg-teal-500/25 text-teal-200 rounded-sm px-0.5"
-      >
+      <mark key={`h-${key++}`} className="bg-teal-500/25 text-teal-200 rounded-sm px-0.5">
         {chunk.slice(qi, qi + query.length)}
       </mark>,
       chunk.slice(qi + query.length),
@@ -187,6 +179,7 @@ function renderOcrWithLinks(
     if (path) {
       parts.push(
         <button
+          type="button"
           key={key++}
           onClick={() => onNavigate(path!)}
           className={`font-mono text-xs ${refColor} transition-colors cursor-pointer`}
@@ -197,18 +190,14 @@ function renderOcrWithLinks(
       );
     } else {
       parts.push(
-        <span
-          key={key++}
-          className="font-mono text-xs text-amber-300 bg-amber-900/20 px-1 rounded"
-        >
+        <span key={key++} className="font-mono text-xs text-amber-300 bg-amber-900/20 px-1 rounded">
           {matched}
         </span>,
       );
     }
     lastIndex = match.index + matched.length;
   }
-  if (lastIndex < text.length)
-    parts.push(...highlightQuery(text.slice(lastIndex)));
+  if (lastIndex < text.length) parts.push(...highlightQuery(text.slice(lastIndex)));
   return parts;
 }
 
@@ -248,12 +237,8 @@ function DocumentViewer({
         {doc ? (
           <>
             <div>
-              <p className="text-foreground/90 font-semibold text-sm">
-                {doc.name}
-              </p>
-              <p className="text-muted-foreground text-xs mt-1 font-mono">
-                {doc.id}
-              </p>
+              <p className="text-foreground/90 font-semibold text-sm">{doc.name}</p>
+              <p className="text-muted-foreground text-xs mt-1 font-mono">{doc.id}</p>
             </div>
             <div className="flex items-center gap-4 text-xs text-muted-foreground">
               <span>
@@ -264,13 +249,12 @@ function DocumentViewer({
               </span>
             </div>
             <div className="px-4 py-2 bg-secondary/60 border border-border/40 rounded-xl text-xs text-muted-foreground leading-relaxed">
-              Viewer placeholder — in production, renders the actual PDF/image
-              with annotations and OCR overlay.
+              Viewer placeholder — in production, renders the actual PDF/image with annotations and
+              OCR overlay.
             </div>
             {doc.ocrStatus === "Completed" && doc.ocrConfidence && (
               <div className="flex items-center gap-2 px-3 py-1.5 bg-teal-900/20 border border-teal-500/20 rounded-lg text-xs text-primary/90">
-                <ScanText className="w-3.5 h-3.5" /> OCR {doc.ocrConfidence}%
-                confidence
+                <ScanText className="w-3.5 h-3.5" /> OCR {doc.ocrConfidence}% confidence
               </div>
             )}
           </>
@@ -295,6 +279,7 @@ function PageNavPanel({
     <div className="space-y-1.5 custom-scrollbar overflow-y-auto flex-1">
       {Array.from({ length: pageCount }, (_, i) => i + 1).map((p) => (
         <button
+          type="button"
           key={p}
           onClick={() => onPageChange(p)}
           className={`w-full text-left px-3 py-2.5 rounded-xl text-xs transition-all ${
@@ -336,7 +321,7 @@ function OcrPanel({ text, query, onQueryChange, onNavigate }: OcrPanelProps) {
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
           placeholder="Search OCR text..."
-          className="w-full pl-8 pr-3 py-1.5 text-xs bg-card border border-border rounded-lg text-foreground placeholder-slate-600 focus:outline-none focus:border-teal-500/50"
+          className="w-full pl-8 pr-3 text-xs bg-background/80 border border-border/50 rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary/40 h-9"
         />
       </div>
       {refs.length > 0 && (
@@ -347,10 +332,9 @@ function OcrPanel({ text, query, onQueryChange, onNavigate }: OcrPanelProps) {
           <div className="space-y-1">
             {refs.map((r, i) => (
               <button
+                type="button"
                 key={i}
-                onClick={() =>
-                  r.prefix ? onNavigate(r.prefix + r.text) : undefined
-                }
+                onClick={() => (r.prefix ? onNavigate(r.prefix + r.text) : undefined)}
                 className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left text-xs transition-all border ${
                   r.prefix
                     ? "bg-teal-900/20 border-teal-500/20 text-primary/90 hover:bg-teal-900/30 cursor-pointer"
@@ -359,9 +343,7 @@ function OcrPanel({ text, query, onQueryChange, onNavigate }: OcrPanelProps) {
               >
                 <Hash className="w-3 h-3 shrink-0" />
                 <span className="font-mono flex-1 truncate">{r.text}</span>
-                {r.prefix && (
-                  <ChevronRight className="w-3 h-3 shrink-0 text-primary" />
-                )}
+                {r.prefix && <ChevronRight className="w-3 h-3 shrink-0 text-primary" />}
               </button>
             ))}
           </div>
@@ -370,10 +352,9 @@ function OcrPanel({ text, query, onQueryChange, onNavigate }: OcrPanelProps) {
       {text ? (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <p className="text-[10px] text-muted-foreground">
-              {text.split(" ").length} words
-            </p>
+            <p className="text-[10px] text-muted-foreground">{text.split(" ").length} words</p>
             <button
+              type="button"
               onClick={() =>
                 navigator.clipboard.writeText(text).then(() => {
                   setCopied(true);
@@ -406,7 +387,7 @@ function OcrPanel({ text, query, onQueryChange, onNavigate }: OcrPanelProps) {
 
 interface RightPanelProps {
   doc: DocRecord | null;
-  ocrJob: (typeof MOCK_OCR_JOBS)[0] | null;
+  ocrJob: OcrJobRecord | null;
   ocrStatusOverride?: string;
   onNavigate: (path: string) => void;
   activeSection: string;
@@ -429,17 +410,13 @@ function RightPanel({
   };
 
   const plRecord =
-    doc?.linkedPL && doc.linkedPL !== "N/A"
-      ? PL_DATABASE[doc.linkedPL.replace("PL-", "")]
-      : null;
+    doc?.linkedPL && doc.linkedPL !== "N/A" ? PL_DATABASE[doc.linkedPL.replace("PL-", "")] : null;
 
   const relatedDocs = MOCK_DOCUMENTS.filter(
     (d) =>
       d.id !== doc?.id &&
       ((doc?.linkedPL && d.linkedPL === doc.linkedPL) ||
-        (doc?.tags &&
-          d.tags &&
-          d.tags.some((t: string) => doc.tags?.includes(t)))),
+        (doc?.tags && d.tags?.some((t: string) => doc.tags?.includes(t)))),
   ).slice(0, 4);
 
   const revHistory = [
@@ -486,6 +463,7 @@ function RightPanel({
           const Icon = s.icon;
           return (
             <button
+              type="button"
               key={s.id}
               onClick={() => onSectionChange(s.id)}
               className={`flex flex-col items-center gap-0.5 py-1.5 rounded-lg text-[10px] font-medium transition-all ${
@@ -535,14 +513,12 @@ function RightPanel({
               ))}
             </div>
             {ocrJob && (
-              <div className="bg-card border-border rounded-xl p-3">
+              <div className="bg-card/40 border border-border/50 rounded-xl p-3">
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
                   OCR Status
                 </p>
                 <div className="flex items-center gap-2 mb-2">
-                  <Badge variant={ocrVariant(effectiveOcrStatus ?? "")}>
-                    {effectiveOcrStatus}
-                  </Badge>
+                  <Badge variant={ocrVariant(effectiveOcrStatus ?? "")}>{effectiveOcrStatus}</Badge>
                   {ocrJob.confidence && !ocrStatusOverride && (
                     <span className="text-xs text-muted-foreground">
                       {ocrJob.confidence}% confidence
@@ -590,65 +566,55 @@ function RightPanel({
           </div>
         )}
 
-        {activeSection === "pl" && (
-          <>
-            {plRecord ? (
-              <div className="space-y-3">
-                <div className="bg-card border-border rounded-xl p-3 space-y-2.5">
-                  {plRecord.safetyVital && (
-                    <div className="flex items-center gap-2 px-2.5 py-1.5 bg-rose-900/20 border border-rose-500/20 rounded-lg">
-                      <Shield className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-                      <span className="text-xs text-rose-300 font-medium">
-                        Safety Vital
-                      </span>
-                    </div>
-                  )}
-                  <div>
-                    <p className="text-[10px] text-muted-foreground">
-                      PL Number
-                    </p>
-                    <p className="font-mono text-sm font-semibold text-primary flex items-center gap-1">
-                      <Hash className="w-3 h-3" />
-                      {plRecord.plNumber}
-                    </p>
+        {activeSection === "pl" &&
+          (plRecord ? (
+            <div className="space-y-3">
+              <div className="bg-card/40 border border-border/50 rounded-xl p-3 space-y-2">
+                {plRecord.safetyVital && (
+                  <div className="flex items-center gap-2 px-2.5 py-1.5 bg-rose-500/10 border border-rose-500/20 rounded-lg">
+                    <Shield className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                    <span className="text-xs text-rose-300 font-medium">Safety Vital</span>
                   </div>
-                  {(
-                    [
-                      { label: "Name", value: plRecord.name },
-                      { label: "Owner", value: plRecord.owner },
-                      { label: "Dept", value: plRecord.department },
-                      { label: "Lifecycle", value: plRecord.lifecycleState },
-                      { label: "Revision", value: plRecord.revision },
-                    ] as { label: string; value: string }[]
-                  ).map((f) => (
-                    <div key={f.label}>
-                      <p className="text-[10px] text-muted-foreground">
-                        {f.label}
-                      </p>
-                      <p className="text-xs text-foreground">{f.value}</p>
-                    </div>
-                  ))}
-                </div>
-                <button
-                  onClick={() => navigate(`/pl/${plRecord.plNumber}`)}
-                  className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-teal-500/10 border border-teal-500/20 text-primary/90 text-xs hover:bg-teal-500/15 transition-colors"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" /> View Full PL Record
-                </button>
-              </div>
-            ) : (
-              <div className="text-center py-8 text-slate-600">
-                <Layers className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                <p className="text-xs">No PL record linked</p>
-                {doc?.linkedPL && doc.linkedPL !== "N/A" && (
-                  <p className="text-[10px] text-slate-600 mt-1 font-mono">
-                    {doc.linkedPL}
-                  </p>
                 )}
+                <div>
+                  <p className="text-[10px] text-muted-foreground">PL Number</p>
+                  <p className="font-mono text-sm font-semibold text-primary flex items-center gap-1">
+                    <Hash className="w-3 h-3" />
+                    {plRecord.plNumber}
+                  </p>
+                </div>
+                {(
+                  [
+                    { label: "Name", value: plRecord.name },
+                    { label: "Owner", value: plRecord.owner },
+                    { label: "Dept", value: plRecord.department },
+                    { label: "Lifecycle", value: plRecord.lifecycleState },
+                    { label: "Revision", value: plRecord.revision },
+                  ] as { label: string; value: string }[]
+                ).map((f) => (
+                  <div key={f.label}>
+                    <p className="text-[10px] text-muted-foreground">{f.label}</p>
+                    <p className="text-xs text-foreground">{f.value}</p>
+                  </div>
+                ))}
               </div>
-            )}
-          </>
-        )}
+              <button
+                type="button"
+                onClick={() => navigate(`/pl/${plRecord.plNumber}`)}
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-teal-500/10 border border-teal-500/20 text-primary/90 text-xs hover:bg-teal-500/15 transition-colors"
+              >
+                <ExternalLink className="w-3.5 h-3.5" /> View Full PL Record
+              </button>
+            </div>
+          ) : (
+            <div className="text-center py-8 text-slate-600">
+              <Layers className="w-8 h-8 mx-auto mb-2 opacity-30" />
+              <p className="text-xs">No PL record linked</p>
+              {doc?.linkedPL && doc.linkedPL !== "N/A" && (
+                <p className="text-[10px] text-slate-600 mt-1 font-mono">{doc.linkedPL}</p>
+              )}
+            </div>
+          ))}
 
         {activeSection === "used" && (
           <div className="space-y-2">
@@ -659,22 +625,18 @@ function RightPanel({
               plRecord.whereUsed.map((w, i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-2 p-2.5 rounded-xl bg-card/40 border border-border"
+                  className="flex items-center gap-2 p-2.5 rounded-xl bg-card/20 border border-border/50"
                 >
                   <div className="w-7 h-7 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
                     <Layers className="w-3.5 h-3.5 text-blue-400" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-foreground font-medium truncate">
-                      {w.parentName}
-                    </p>
+                    <p className="text-xs text-foreground font-medium truncate">{w.parentName}</p>
                     <p className="text-[10px] text-muted-foreground font-mono">
                       {w.parentPL} · Find #{w.findNumber}
                     </p>
                   </div>
-                  <span className="text-[10px] text-muted-foreground">
-                    ×{w.quantity}
-                  </span>
+                  <span className="text-[10px] text-muted-foreground">×{w.quantity}</span>
                 </div>
               ))
             ) : (
@@ -702,16 +664,12 @@ function RightPanel({
                       onNavigate(`/documents/${rd.id}`);
                     }
                   }}
-                  className="w-full flex items-center gap-2 p-2.5 rounded-xl bg-card/40 border border-border hover:border-teal-500/20 hover:bg-card transition-all text-left cursor-pointer"
+                  className="w-full flex items-center gap-2 p-2.5 rounded-xl bg-card/20 border border-border/50 hover:border-teal-500/20 hover:bg-card transition-all text-left cursor-pointer"
                 >
                   <FileText className="w-4 h-4 text-primary shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-foreground truncate">
-                      {rd.name}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground font-mono">
-                      {rd.id}
-                    </p>
+                    <p className="text-xs text-foreground truncate">{rd.name}</p>
+                    <p className="text-[10px] text-muted-foreground font-mono">{rd.id}</p>
                   </div>
                   <DocumentPreviewButton
                     documentId={rd.id}
@@ -719,10 +677,7 @@ function RightPanel({
                     iconOnly
                     className="h-7 min-h-0 px-2 text-foreground/90 hover:text-teal-200"
                   />
-                  <Badge
-                    variant={statusVariant(rd.status)}
-                    className="text-[9px] px-1.5 shrink-0"
-                  >
+                  <Badge variant={statusVariant(rd.status)} className="text-[9px] px-1.5 shrink-0">
                     {rd.status}
                   </Badge>
                 </div>
@@ -742,9 +697,7 @@ function RightPanel({
               <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-widest">
                 Revision History
               </span>
-              <span className="text-[10px] text-slate-600">
-                {revHistory.length} revisions
-              </span>
+              <span className="text-[10px] text-slate-600">{revHistory.length} revisions</span>
             </div>
             {revHistory.map((r, i) => (
               <div key={i} className="flex gap-3 group">
@@ -769,9 +722,7 @@ function RightPanel({
                       </span>
                     )}
                   </div>
-                  <p className="text-[10px] text-muted-foreground mb-1">
-                    {r.note}
-                  </p>
+                  <p className="text-[10px] text-muted-foreground mb-1">{r.note}</p>
                   <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mb-1.5">
                     <Calendar className="w-3 h-3" />
                     {r.date}
@@ -781,21 +732,19 @@ function RightPanel({
                   {i > 0 && (
                     <div className="flex items-center gap-1.5">
                       <button
+                        type="button"
                         className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/60 border border-border/40 text-[10px] text-muted-foreground hover:text-primary/90 hover:border-teal-500/30 transition-colors"
                         onClick={() =>
-                          showToast(
-                            `Comparing Rev ${revHistory[0].rev} with Rev ${r.rev}…`,
-                          )
+                          showToast(`Comparing Rev ${revHistory[0].rev} with Rev ${r.rev}…`)
                         }
                       >
                         Compare with Current
                       </button>
                       <button
+                        type="button"
                         className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/25 text-[10px] text-amber-400 hover:bg-amber-500/20 transition-colors"
                         onClick={() =>
-                          showToast(
-                            `Rollback to Rev ${r.rev} initiated — pending approval.`,
-                          )
+                          showToast(`Rollback to Rev ${r.rev} initiated — pending approval.`)
                         }
                       >
                         Rollback
@@ -839,21 +788,17 @@ function EditMetadataSlideOver({
   return (
     <>
       {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       {/* Slide-over */}
-      <div className="fixed right-0 top-0 bottom-0 z-50 w-96 bg-card/98 backdrop-blur-xl border-l border-white/8 shadow-2xl flex flex-col slide-in-right">
+      <div className="fixed right-0 top-0 bottom-0 z-50 w-96 bg-card/90 backdrop-blur-xl border-l border-border/50 shadow-2xl flex flex-col slide-in-right">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/8 shrink-0">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border/50 shrink-0">
           <div>
-            <p className="text-xs text-muted-foreground font-mono mb-0.5">
-              {doc.id}
-            </p>
-            <h2 className="text-sm font-semibold text-white">Edit Metadata</h2>
+            <p className="text-xs text-muted-foreground font-mono mb-0.5">{doc.id}</p>
+            <h2 className="text-sm font-semibold text-foreground">Edit Metadata</h2>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all"
           >
@@ -864,28 +809,20 @@ function EditMetadataSlideOver({
         {/* Form */}
         <div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-5">
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-              Revision
-            </label>
+            <span className="block text-xs font-medium text-muted-foreground mb-1.5">Revision</span>
             <input
               value={form.revision}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, revision: e.target.value }))
-              }
+              onChange={(e) => setForm((f) => ({ ...f, revision: e.target.value }))}
               className="w-full px-3 py-2 bg-secondary/60 border border-border/60 focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/30 rounded-xl text-sm text-foreground font-mono outline-none transition-all"
               placeholder="e.g. C.2"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-              Status
-            </label>
+            <span className="block text-xs font-medium text-muted-foreground mb-1.5">Status</span>
             <select
               value={form.status}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, status: e.target.value }))
-              }
+              onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
               className="w-full px-3 py-2 bg-secondary/60 border border-border/60 focus:border-teal-500/50 rounded-xl text-sm text-foreground outline-none transition-all cursor-pointer"
             >
               {["Draft", "In Review", "Approved", "Obsolete"].map((s) => (
@@ -897,13 +834,11 @@ function EditMetadataSlideOver({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1.5">
+            <span className="block text-xs font-medium text-muted-foreground mb-1.5">
               Linked PL Number
-            </label>
+            </span>
             <PLNumberSelect
-              value={
-                form.linkedPL === "N/A" ? "" : form.linkedPL.replace(/^PL-/, "")
-              }
+              value={form.linkedPL === "N/A" ? "" : form.linkedPL.replace(/^PL-/, "")}
               onChange={(linkedPL) =>
                 setForm((f) => ({
                   ...f,
@@ -956,12 +891,8 @@ function EditMetadataSlideOver({
               { label: "File Type", value: doc.type },
             ].map((f) => (
               <div key={f.label} className="flex items-center justify-between">
-                <span className="text-[11px] text-muted-foreground">
-                  {f.label}
-                </span>
-                <span className="text-[11px] text-muted-foreground font-mono">
-                  {f.value}
-                </span>
+                <span className="text-[11px] text-muted-foreground">{f.label}</span>
+                <span className="text-[11px] text-muted-foreground font-mono">{f.value}</span>
               </div>
             ))}
           </div>
@@ -970,12 +901,14 @@ function EditMetadataSlideOver({
         {/* Footer */}
         <div className="flex gap-3 px-5 py-4 border-t border-white/8 shrink-0">
           <button
+            type="button"
             onClick={onClose}
             className="flex-1 px-4 py-2 rounded-xl bg-secondary/60 hover:bg-slate-700/60 text-foreground/90 text-sm border border-border transition-colors"
           >
             Cancel
           </button>
           <button
+            type="button"
             onClick={() => onSave(form)}
             className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white text-sm font-medium shadow-md shadow-teal-900/30 border border-teal-400/20 transition-all"
           >
@@ -998,24 +931,20 @@ function ApprovalDialog({
 }) {
   return (
     <>
-      <div
-        className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[420px] bg-card/98 backdrop-blur-xl border border-border rounded-2xl shadow-2xl p-6">
         <div className="flex items-start gap-3 mb-4">
           <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/25 flex items-center justify-center shrink-0">
             <Send className="w-4 h-4 text-amber-400" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-white mb-0.5">
-              Route for Approval
-            </h3>
+            <h3 className="text-sm font-semibold text-white mb-0.5">Route for Approval</h3>
             <p className="text-xs text-muted-foreground">
               This will submit the document for the standard approval workflow.
             </p>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="ml-auto text-muted-foreground hover:text-foreground/90 transition-colors"
           >
@@ -1029,18 +958,14 @@ function ApprovalDialog({
             <span className="text-[11px] text-primary font-mono">{doc.id}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-muted-foreground">
-              Current status
-            </span>
+            <span className="text-[11px] text-muted-foreground">Current status</span>
             <Badge variant={statusVariant(doc.status)} className="text-[10px]">
               {doc.status}
             </Badge>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-[11px] text-muted-foreground">Revision</span>
-            <span className="text-[11px] text-foreground/90 font-mono">
-              {doc.revision}
-            </span>
+            <span className="text-[11px] text-foreground/90 font-mono">{doc.revision}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-[11px] text-muted-foreground">Approver</span>
@@ -1051,19 +976,20 @@ function ApprovalDialog({
         <div className="flex items-center gap-2 px-3 py-2 bg-amber-500/8 border border-amber-500/20 rounded-xl mb-4">
           <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
           <p className="text-xs text-amber-300">
-            The document status will change to <strong>In Review</strong> once
-            submitted.
+            The document status will change to <strong>In Review</strong> once submitted.
           </p>
         </div>
 
         <div className="flex gap-3">
           <button
+            type="button"
             onClick={onClose}
             className="flex-1 px-4 py-2 rounded-xl bg-secondary/60 hover:bg-slate-700/60 text-foreground/90 text-sm border border-border transition-colors"
           >
             Cancel
           </button>
           <button
+            type="button"
             onClick={onConfirm}
             className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-sm font-medium border border-amber-500/30 transition-colors"
           >
@@ -1081,6 +1007,7 @@ function Toast({ msg, onDismiss }: { msg: string; onDismiss: () => void }) {
       <CheckCheck className="w-4 h-4 text-primary shrink-0" />
       <span>{msg}</span>
       <button
+        type="button"
         onClick={onDismiss}
         className="ml-2 text-muted-foreground hover:text-foreground/90 transition-colors"
       >
@@ -1122,13 +1049,10 @@ export default function DocumentDetail() {
     });
 
   // Doc metadata overrides (for Edit Metadata)
-  const [docOverrides, setDocOverrides] = useState<
-    Map<string, Partial<DocRecord>>
-  >(new Map());
+  const [docOverrides, setDocOverrides] = useState<Map<string, Partial<DocRecord>>>(new Map());
   // OCR status overrides (for Rerun OCR)
-  const [ocrOverrides, setOcrOverrides] = useState<Map<string, string>>(
-    new Map(),
-  );
+  const [ocrOverrides, setOcrOverrides] = useState<Map<string, string>>(new Map());
+  const [ocrJob, setOcrJob] = useState<OcrJobRecord | null>(null);
 
   // Modals
   const [showEditMeta, setShowEditMeta] = useState(false);
@@ -1164,21 +1088,36 @@ export default function DocumentDetail() {
 
   // Active doc always determined by URL param — no local activeTabId
   const activeTabId = id ?? "";
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!activeTabId) {
+      setOcrJob(null);
+      return;
+    }
+
+    void OcrJobService.getLatestForDocument(activeTabId).then((job) => {
+      if (!cancelled) {
+        setOcrJob(job);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTabId]);
+
   const baseDoc =
-    (MOCK_DOCUMENTS.find((d) => d.id === activeTabId) as
-      | DocRecord
-      | undefined) ?? null;
+    (MOCK_DOCUMENTS.find((d) => d.id === activeTabId) as DocRecord | undefined) ?? null;
   const docOverride = docOverrides.get(activeTabId) ?? {};
-  const activeDoc: DocRecord | null = baseDoc
-    ? { ...baseDoc, ...docOverride }
-    : null;
-  const ocrJob = MOCK_OCR_JOBS.find((j) => j.document === activeTabId) ?? null;
+  const activeDoc: DocRecord | null = baseDoc ? { ...baseDoc, ...docOverride } : null;
   const ocrText = activeDoc?.ocrText ?? "";
   const pageCount = (baseDoc as DocRecord | null)?.pages ?? 1;
   const ocrStatusOverride = ocrOverrides.get(activeTabId);
+  const effectiveOcrStatus = ocrStatusOverride ?? ocrJob?.status ?? activeDoc?.ocrStatus ?? "";
+  const ocrProcessing = effectiveOcrStatus === "Processing" || effectiveOcrStatus === "PROCESSING";
 
-  const handleDownload = () =>
-    showToast(`Downloading "${activeDoc?.name ?? activeTabId}"…`);
+  const handleDownload = () => showToast(`Downloading "${activeDoc?.name ?? activeTabId}"…`);
 
   const handleSaveMetadata = (data: EditMetaFormData) => {
     const tags = data.tags
@@ -1200,30 +1139,67 @@ export default function DocumentDetail() {
     showToast("Metadata saved successfully.");
   };
 
-  const handleRouteForApproval = () => {
-    setDocOverrides((prev) => {
-      const next = new Map(prev);
-      next.set(activeTabId, { ...docOverride, status: "In Review" });
-      return next;
-    });
-    setShowApproval(false);
-    showToast('Document submitted for approval. Status set to "In Review".');
+  const handleRouteForApproval = async () => {
+    if (!activeDoc) {
+      return;
+    }
+
+    try {
+      const additions = await ApprovalService.queueDocumentApprovals([
+        {
+          id: activeDoc.id,
+          name: activeDoc.name,
+          author: activeDoc.author,
+          linkedPL: activeDoc.linkedPL,
+          ocrStatus: activeDoc.ocrStatus,
+        },
+      ]);
+      const approvals = await ApprovalService.getAll();
+      const targetApprovalId =
+        additions[0]?.id ?? approvals.find((approval) => approval.linkedDoc === activeDoc.id)?.id;
+
+      setDocOverrides((prev) => {
+        const next = new Map(prev);
+        next.set(activeTabId, { ...docOverride, status: "In Review" });
+        return next;
+      });
+      setShowApproval(false);
+      navigate(targetApprovalId ? `/approvals?id=${targetApprovalId}` : "/approvals");
+    } catch (error) {
+      console.error("[DocumentDetail] Failed to queue approval", error);
+      showToast("Could not route this document for approval.");
+    }
   };
 
-  const handleRerunOcr = () => {
+  const handleRerunOcr = async () => {
+    if (!activeDoc) {
+      return;
+    }
+
     setOcrOverrides((prev) => {
       const next = new Map(prev);
       next.set(activeTabId, "Processing");
       return next;
     });
-    showToast("OCR re-run triggered. Status set to Processing.");
-    setTimeout(() => {
+
+    try {
+      const nextJob = await OcrJobService.queueRetry(activeTabId);
+      setOcrJob(nextJob);
       setOcrOverrides((prev) => {
         const next = new Map(prev);
         next.delete(activeTabId);
         return next;
       });
-    }, 8000);
+      showToast("OCR re-run queued and sent to the monitor.");
+    } catch (error) {
+      console.error("[DocumentDetail] Failed to re-queue OCR", error);
+      setOcrOverrides((prev) => {
+        const next = new Map(prev);
+        next.delete(activeTabId);
+        return next;
+      });
+      showToast("Could not queue an OCR re-run for this document.");
+    }
   };
 
   const handleNavigate = (path: string) => {
@@ -1271,27 +1247,36 @@ export default function DocumentDetail() {
         />
       )}
 
-      {/* Action bar (tab strip moved to AppLayout) */}
-      <div className="flex items-center gap-1 px-1 pb-2 shrink-0 overflow-x-auto border-b border-border">
-        <button
-          onClick={() => navigate("/documents")}
-          className="shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 text-muted-foreground hover:text-primary transition-colors text-xs rounded-lg hover:bg-secondary/40 mr-2"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" /> Hub
-        </button>
-        <button
-          onClick={() => {
-            const next = MOCK_DOCUMENTS.find(
-              (d) => !openTabs.find((t) => t.id === d.id),
-            );
-            if (next) openLinkedDoc((next as { id: string }).id);
-          }}
-          className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 text-slate-600 hover:text-primary transition-colors text-xs rounded-lg hover:bg-secondary/40 border border-dashed border-border/40 hover:border-teal-500/30 mr-2"
-        >
-          <Plus className="w-3.5 h-3.5" /> Open Another
-        </button>
-        <div className="ml-auto flex items-center gap-1 shrink-0">
+      {/* Action bar — grouped with separators */}
+      <div className="flex items-center px-1 pb-2 shrink-0 overflow-x-auto border-b border-border">
+        {/* Group 1: Navigation */}
+        <div className="flex items-center gap-1 shrink-0">
           <button
+            type="button"
+            onClick={() => navigate("/documents")}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 text-muted-foreground hover:text-primary transition-colors text-xs rounded-lg hover:bg-secondary/40"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> Hub
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              const next = MOCK_DOCUMENTS.find((d) => !openTabs.find((t) => t.id === d.id));
+              if (next) openLinkedDoc((next as { id: string }).id);
+            }}
+            className="flex items-center gap-1 px-2.5 py-1.5 text-slate-600 hover:text-primary transition-colors text-xs rounded-lg hover:bg-secondary/40 border border-dashed border-border/40 hover:border-teal-500/30"
+          >
+            <Plus className="w-3.5 h-3.5" /> Open Another
+          </button>
+        </div>
+
+        {/* Separator */}
+        <div className="mx-2.5 h-5 w-px bg-border/60 shrink-0" />
+
+        {/* Group 2: View / Download */}
+        <div className="flex items-center gap-1 shrink-0">
+          <button
+            type="button"
             onClick={handleDownload}
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-secondary/50 hover:bg-slate-700/60 text-foreground/90 text-xs border border-border/40 hover:border-teal-500/30 transition-all"
           >
@@ -1306,7 +1291,15 @@ export default function DocumentDetail() {
             label="Preview"
             stopPropagation={false}
           />
+        </div>
+
+        {/* Separator */}
+        <div className="mx-2.5 h-5 w-px bg-border/60 shrink-0" />
+
+        {/* Group 3: Edit / Approval */}
+        <div className="flex items-center gap-1 shrink-0">
           <button
+            type="button"
             onClick={() => setShowEditMeta(true)}
             disabled={!activeDoc}
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-secondary/50 hover:bg-slate-700/60 text-foreground/90 text-xs border border-border/40 hover:border-indigo-500/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
@@ -1314,25 +1307,36 @@ export default function DocumentDetail() {
             <Edit3 className="w-3.5 h-3.5 text-indigo-400" /> Edit Metadata
           </button>
           <button
+            type="button"
             onClick={() => setShowApproval(true)}
             disabled={!activeDoc}
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-secondary/50 hover:bg-slate-700/60 text-foreground/90 text-xs border border-border/40 hover:border-amber-500/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Send className="w-3.5 h-3.5 text-amber-400" /> Route for Approval
           </button>
+        </div>
+
+        {/* Separator */}
+        <div className="mx-2.5 h-5 w-px bg-border/60 shrink-0" />
+
+        {/* Group 4: OCR + Fullscreen (push to right) */}
+        <div className="flex items-center gap-1 ml-auto shrink-0">
           <button
+            type="button"
             onClick={handleRerunOcr}
-            disabled={!activeDoc || !!ocrStatusOverride}
+            disabled={!activeDoc || ocrProcessing}
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-secondary/50 hover:bg-slate-700/60 text-foreground/90 text-xs border border-border/40 hover:border-blue-500/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            {ocrStatusOverride ? (
+            {ocrProcessing ? (
               <Loader2 className="w-3.5 h-3.5 text-blue-400 animate-spin" />
             ) : (
               <RefreshCw className="w-3.5 h-3.5 text-blue-400" />
             )}
-            {ocrStatusOverride ? "Running…" : "Rerun OCR"}
+            {ocrProcessing ? "Running…" : "Rerun OCR"}
           </button>
+          <div className="w-px h-5 bg-border/60 mx-1" />
           <button
+            type="button"
             onClick={() => setIsFullscreen((f) => !f)}
             className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-secondary/60 transition-all"
             title="Toggle fullscreen"
@@ -1352,18 +1356,21 @@ export default function DocumentDetail() {
             <>
               <div className="flex items-center gap-1 mb-2 shrink-0">
                 <button
+                  type="button"
                   onClick={() => setLeftSection("pages")}
                   className={`flex-1 py-1 rounded-lg text-[10px] font-medium transition-all ${leftSection === "pages" ? "bg-teal-500/20 text-primary/90 border border-teal-500/25" : "text-muted-foreground hover:text-foreground/90"}`}
                 >
                   Pages
                 </button>
                 <button
+                  type="button"
                   onClick={() => setLeftSection("ocr")}
                   className={`flex-1 py-1 rounded-lg text-[10px] font-medium transition-all ${leftSection === "ocr" ? "bg-teal-500/20 text-primary/90 border border-teal-500/25" : "text-muted-foreground hover:text-foreground/90"}`}
                 >
                   OCR
                 </button>
                 <button
+                  type="button"
                   onClick={toggleLeft}
                   className="p-1 text-slate-600 hover:text-foreground/90 transition-colors"
                   title="Collapse left panel"
@@ -1388,6 +1395,7 @@ export default function DocumentDetail() {
             </>
           ) : (
             <button
+              type="button"
               onClick={toggleLeft}
               className="flex-1 flex items-center justify-center text-slate-600 hover:text-primary transition-colors"
               title="Expand left panel"
@@ -1403,6 +1411,7 @@ export default function DocumentDetail() {
           <div className="flex items-center justify-between px-3 py-2 border-b border-border shrink-0 gap-2">
             <div className="flex items-center gap-1">
               <button
+                type="button"
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage <= 1}
                 className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-secondary/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
@@ -1413,9 +1422,8 @@ export default function DocumentDetail() {
                 {currentPage} / {pageCount}
               </span>
               <button
-                onClick={() =>
-                  setCurrentPage((p) => Math.min(pageCount, p + 1))
-                }
+                type="button"
+                onClick={() => setCurrentPage((p) => Math.min(pageCount, p + 1))}
                 disabled={currentPage >= pageCount}
                 className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-secondary/60 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
               >
@@ -1425,10 +1433,7 @@ export default function DocumentDetail() {
             <div className="flex items-center gap-1">
               {activeDoc && (
                 <div className="flex items-center gap-2 mr-2">
-                  <Badge
-                    variant={statusVariant(activeDoc.status)}
-                    className="text-[10px]"
-                  >
+                  <Badge variant={statusVariant(activeDoc.status)} className="text-[10px]">
                     {activeDoc.status}
                   </Badge>
                   <span className="text-[10px] text-muted-foreground font-mono">
@@ -1437,6 +1442,7 @@ export default function DocumentDetail() {
                 </div>
               )}
               <button
+                type="button"
                 onClick={() => setZoom((z) => Math.max(0.5, z - 0.25))}
                 className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-secondary/60 transition-all"
                 title="Zoom Out"
@@ -1447,6 +1453,7 @@ export default function DocumentDetail() {
                 {Math.round(zoom * 100)}%
               </span>
               <button
+                type="button"
                 onClick={() => setZoom((z) => Math.min(3, z + 0.25))}
                 className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-secondary/60 transition-all"
                 title="Zoom In"
@@ -1454,12 +1461,14 @@ export default function DocumentDetail() {
                 <ZoomIn className="w-4 h-4" />
               </button>
               <button
+                type="button"
                 onClick={() => setZoom(1)}
                 className="px-2 py-1 rounded-lg text-muted-foreground hover:text-foreground/90 text-[10px] hover:bg-secondary/60 transition-all border border-border/40"
               >
                 Fit
               </button>
               <button
+                type="button"
                 onClick={() => setRotation((r) => (r + 90) % 360)}
                 className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-secondary/60 transition-all"
                 title="Rotate"
@@ -1483,31 +1492,44 @@ export default function DocumentDetail() {
           {/* Bottom toolbar */}
           <div className="flex items-center gap-2 px-3 py-2.5 border-t border-border shrink-0">
             <button
+              type="button"
               onClick={handleDownload}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/50 hover:bg-slate-700/60 text-foreground/90 text-xs border border-border/40 hover:border-teal-500/20 transition-all"
             >
               <Download className="w-3.5 h-3.5 text-primary" /> Download
             </button>
             <button
+              type="button"
               onClick={handleRerunOcr}
-              disabled={!!ocrStatusOverride}
+              disabled={ocrProcessing}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/50 hover:bg-slate-700/60 text-foreground/90 text-xs border border-border/40 hover:border-amber-500/20 transition-all disabled:opacity-40"
             >
-              <RefreshCw className="w-3.5 h-3.5 text-amber-400" /> Re-OCR
+              {ocrProcessing ? (
+                <Loader2 className="w-3.5 h-3.5 text-amber-400 animate-spin" />
+              ) : (
+                <RefreshCw className="w-3.5 h-3.5 text-amber-400" />
+              )}{" "}
+              {ocrProcessing ? "Running…" : "Re-OCR"}
             </button>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/50 hover:bg-slate-700/60 text-foreground/90 text-xs border border-border/40 hover:border-blue-500/20 transition-all">
+            <button
+              type="button"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/50 hover:bg-slate-700/60 text-foreground/90 text-xs border border-border/40 hover:border-blue-500/20 transition-all"
+            >
               <GitCompare className="w-3.5 h-3.5 text-blue-400" /> Compare
             </button>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/50 hover:bg-slate-700/60 text-foreground/90 text-xs border border-border/40 hover:border-indigo-500/20 transition-all">
+            <button
+              type="button"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/50 hover:bg-slate-700/60 text-foreground/90 text-xs border border-border/40 hover:border-indigo-500/20 transition-all"
+            >
               <Paperclip className="w-3.5 h-3.5 text-indigo-400" /> Attach
             </button>
             <button
+              type="button"
               onClick={() => setShowEditMeta(true)}
               disabled={!activeDoc}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/50 hover:bg-slate-700/60 text-foreground/90 text-xs border border-border/40 transition-all ml-auto disabled:opacity-40"
             >
-              <Edit3 className="w-3.5 h-3.5 text-muted-foreground" /> Edit
-              Metadata
+              <Edit3 className="w-3.5 h-3.5 text-muted-foreground" /> Edit Metadata
             </button>
           </div>
         </div>
@@ -1523,6 +1545,7 @@ export default function DocumentDetail() {
                   Info
                 </span>
                 <button
+                  type="button"
                   onClick={toggleRight}
                   className="p-0.5 text-slate-600 hover:text-foreground/90 transition-colors"
                   title="Collapse right panel"
@@ -1541,6 +1564,7 @@ export default function DocumentDetail() {
             </>
           ) : (
             <button
+              type="button"
               onClick={toggleRight}
               className="flex-1 flex items-center justify-center text-slate-600 hover:text-primary transition-colors"
               title="Expand right panel"

@@ -10,8 +10,8 @@
  * </ErrorBoundary>
  */
 
-import React, { ReactNode } from "react";
 import { AlertTriangle } from "lucide-react";
+import React, { type ReactNode } from "react";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -26,10 +26,7 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
-export class ErrorBoundary extends React.Component<
-  ErrorBoundaryProps,
-  ErrorBoundaryState
-> {
+export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -41,11 +38,7 @@ export class ErrorBoundary extends React.Component<
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Log error details
-    console.error(
-      `[ErrorBoundary] ${this.props.name} crashed:`,
-      error,
-      errorInfo,
-    );
+    console.error(`[ErrorBoundary] ${this.props.name} crashed:`, error, errorInfo);
 
     // Call user-provided error handler
     this.props.onError?.(error, errorInfo);
@@ -76,6 +69,7 @@ export class ErrorBoundary extends React.Component<
             {this.state.error?.message || "An unexpected error occurred"}
           </p>
           <button
+            type="button"
             onClick={this.handleReset}
             className="px-3 py-1.5 text-xs font-medium rounded-lg bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 transition-colors"
           >

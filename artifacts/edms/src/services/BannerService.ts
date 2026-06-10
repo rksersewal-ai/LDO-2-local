@@ -70,9 +70,7 @@ let _store = loadStore();
 
 export const BannerService = {
   getAll(): Promise<BannerRecord[]> {
-    return Promise.resolve(
-      [..._store].sort((left, right) => left.order - right.order),
-    );
+    return Promise.resolve([..._store].sort((left, right) => left.order - right.order));
   },
 
   create(input: Omit<BannerRecord, "id" | "order">): Promise<BannerRecord> {
@@ -86,10 +84,7 @@ export const BannerService = {
     return Promise.resolve(banner);
   },
 
-  update(
-    id: string,
-    patch: Partial<Omit<BannerRecord, "id">>,
-  ): Promise<BannerRecord | null> {
+  update(id: string, patch: Partial<Omit<BannerRecord, "id">>): Promise<BannerRecord | null> {
     const index = _store.findIndex((banner) => banner.id === id);
     if (index < 0) {
       return Promise.resolve(null);

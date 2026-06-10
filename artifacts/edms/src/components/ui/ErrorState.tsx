@@ -1,5 +1,4 @@
-import React from "react";
-import { AlertTriangle, RefreshCw, WifiOff, ServerCrash } from "lucide-react";
+import { AlertTriangle, RefreshCw, ServerCrash, WifiOff } from "lucide-react";
 
 interface ErrorStateProps {
   message?: string;
@@ -45,15 +44,14 @@ export function ErrorState({
         {icons[variant]}
       </div>
       <div>
-        <p className="text-foreground font-semibold mb-1">
-          {message ?? defaultMessages[variant]}
-        </p>
+        <p className="text-foreground font-semibold mb-1">{message ?? defaultMessages[variant]}</p>
         <p className="text-muted-foreground text-sm max-w-sm mx-auto">
           {detail ?? defaultDetails[variant]}
         </p>
       </div>
       {onRetry && (
         <button
+          type="button"
           onClick={onRetry}
           className="flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary/60 hover:bg-slate-700/60 text-foreground/90 text-sm font-medium border border-border transition-colors"
         >
@@ -65,13 +63,7 @@ export function ErrorState({
   );
 }
 
-export function InlineError({
-  message,
-  className = "",
-}: {
-  message: string;
-  className?: string;
-}) {
+export function InlineError({ message, className = "" }: { message: string; className?: string }) {
   return (
     <div
       className={`flex items-center gap-2 px-3 py-2 rounded-xl bg-rose-900/20 border border-rose-500/20 text-rose-300 text-sm ${className}`}

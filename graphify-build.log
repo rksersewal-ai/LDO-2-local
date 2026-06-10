@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "<string>", line 8, in <module>
+    result = build(
+        path=Path('.'),
+    ...<2 lines>...
+        no_viz=True
+    )
+TypeError: build() got an unexpected keyword argument 'path'
+Starting graph build...

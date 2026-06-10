@@ -2,15 +2,10 @@
  * ExportButton — shared export button supporting CSV, Excel, and JSON.
  * Eliminates duplicated export logic across AuditLog, DocumentHub, WorkLedger.
  */
-import React, { useState, useCallback } from "react";
-import {
-  Download,
-  FileText,
-  FileSpreadsheet,
-  Braces,
-  ChevronDown,
-  Loader2,
-} from "lucide-react";
+
+import { Braces, ChevronDown, Download, FileSpreadsheet, FileText, Loader2 } from "lucide-react";
+import type React from "react";
+import { useCallback, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
 import {
@@ -34,10 +29,7 @@ export interface ExportButtonProps {
   variant?: "default" | "outline" | "ghost" | "secondary";
 }
 
-const FORMAT_META: Record<
-  ExportFormat,
-  { label: string; icon: React.ReactNode }
-> = {
+const FORMAT_META: Record<ExportFormat, { label: string; icon: React.ReactNode }> = {
   csv: { label: "Export as CSV", icon: <FileText className="h-4 w-4" /> },
   excel: {
     label: "Export as Excel (.xlsx)",
@@ -117,11 +109,7 @@ export function ExportButton({
             disabled={loading !== null}
             className="gap-2"
           >
-            {loading === fmt ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              FORMAT_META[fmt].icon
-            )}
+            {loading === fmt ? <Loader2 className="h-4 w-4 animate-spin" /> : FORMAT_META[fmt].icon}
             {FORMAT_META[fmt].label}
           </DropdownMenuItem>
         ))}

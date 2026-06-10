@@ -20,13 +20,18 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,css,json,md}\" \"artifacts/**/*.{ts,tsx,js,jsx,css,json,md}\" \"lib/**/*.{ts,tsx,js,jsx,css,json,md}\"",
-    "lint:frontend": "prettier --check \"src/**/*.{ts,tsx,js,jsx,css,json,md}\" \"artifacts/**/*.{ts,tsx,js,jsx,css,json,md}\" \"lib/**/*.{ts,tsx,js,jsx,css,json,md}\"",
+    "format": "biome format --write .",
+    "format:prettier": "prettier --write \"src/**/*.{ts,tsx,js,jsx,css,json,md}\" \"artifacts/**/*.{ts,tsx,js,jsx,css,json,md}\" \"lib/**/*.{ts,tsx,js,jsx,css,json,md}\"",
+    "lint:frontend": "biome lint .",
+    "lint:frontend:prettier": "prettier --check \"src/**/*.{ts,tsx,js,jsx,css,json,md}\" \"artifacts/**/*.{ts,tsx,js,jsx,css,json,md}\" \"lib/**/*.{ts,tsx,js,jsx,css,json,md}\"",
     "lint:backend": "python -m ruff check backend",
-    "lint": "pnpm run lint:frontend && pnpm run lint:backend"
+    "lint": "pnpm run lint:frontend && pnpm run lint:backend",
+    "biome:check": "biome check .",
+    "biome:fix": "biome check --write ."
   },
   "private": true,
   "devDependencies": {
+    "@biomejs/biome": "^2.4.12",
     "@rollup/rollup-win32-x64-msvc": "4.60.1",
     "@tailwindcss/oxide-win32-x64-msvc": "4.2.2",
     "@vitest/ui": "4.1.2",

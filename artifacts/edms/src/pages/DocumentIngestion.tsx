@@ -1,34 +1,27 @@
-import { useState, useRef, useCallback, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  Upload,
-  X,
-  FileText,
-  File,
-  FileImage,
   AlertCircle,
+  ArrowLeft,
   CheckCircle2,
   ChevronRight,
+  File,
+  FileImage,
+  FileText,
   GitBranch,
-  Loader2,
-  ArrowLeft,
-  Scan,
   Hash,
+  Loader2,
+  Scan,
   ToggleRight,
+  Upload,
+  X,
 } from "lucide-react";
-import {
-  GlassCard,
-  Badge,
-  Button,
-  Input,
-  Select,
-  PageHeader,
-} from "../components/ui/Shared";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router";
+import { toast } from "sonner";
 import { PLNumberSelect } from "../components/ui/PLNumberSelect";
+import { Button, GlassCard, Input, PageHeader, Select } from "../components/ui/Shared";
 import { Switch } from "../components/ui/switch";
 import { usePLItems } from "../hooks/usePLItems";
-import { toast } from "sonner";
 import apiClient from "../services/ApiClient";
 
 const DOC_TYPES = [
@@ -79,24 +72,16 @@ function formatFileSize(bytes: number): string {
 function getFileIconColor(name: string): string {
   const ext = name.split(".").pop()?.toLowerCase();
   if (["pdf"].includes(ext || "")) return "text-rose-400";
-  if (["png", "jpg", "jpeg", "svg"].includes(ext || ""))
-    return "text-purple-400";
+  if (["png", "jpg", "jpeg", "svg"].includes(ext || "")) return "text-purple-400";
   if (["xlsx", "xls", "csv"].includes(ext || "")) return "text-green-400";
   if (["docx", "doc"].includes(ext || "")) return "text-blue-400";
   if (["dwg", "dxf"].includes(ext || "")) return "text-amber-400";
   return "text-primary";
 }
 
-function FileIcon({
-  name,
-  className = "w-5 h-5",
-}: {
-  name: string;
-  className?: string;
-}) {
+function FileIcon({ name, className = "w-5 h-5" }: { name: string; className?: string }) {
   const ext = name.split(".").pop()?.toLowerCase();
-  if (["png", "jpg", "jpeg", "svg"].includes(ext || ""))
-    return <FileImage className={className} />;
+  if (["png", "jpg", "jpeg", "svg"].includes(ext || "")) return <FileImage className={className} />;
   if (["xlsx", "xls", "csv", "docx", "doc"].includes(ext || ""))
     return <File className={className} />;
   return <FileText className={className} />;
@@ -114,14 +99,12 @@ export default function DocumentIngestion() {
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [templateDraft, setTemplateDraft] = useState<TemplateDraftState | null>(
-    () => {
-      const state = location.state as {
-        templateDraft?: TemplateDraftState;
-      } | null;
-      return state?.templateDraft ?? null;
-    },
-  );
+  const [templateDraft, setTemplateDraft] = useState<TemplateDraftState | null>(() => {
+    const state = location.state as {
+      templateDraft?: TemplateDraftState;
+    } | null;
+    return state?.templateDraft ?? null;
+  });
 
   // Form state
   const [docName, setDocName] = useState("");
@@ -195,8 +178,7 @@ export default function DocumentIngestion() {
 
   function validate(): boolean {
     const errs: Record<string, string> = {};
-    if (!selectedFile || !uploadedFile)
-      errs.file = "Please select a file to upload";
+    if (!selectedFile || !uploadedFile) errs.file = "Please select a file to upload";
     if (!docName.trim()) errs.docName = "Document name is required";
     if (!docType) errs.docType = "Please select a document type";
     if (!revision.trim()) errs.revision = "Revision is required (e.g. A.0)";
@@ -229,19 +211,14 @@ export default function DocumentIngestion() {
         formData.append("description", description);
       }
       const tags = Array.from(
-        new Set(
-          [docType, category, ...(templateDraft?.tags ?? [])].filter(Boolean),
-        ),
+        new Set([docType, category, ...(templateDraft?.tags ?? [])].filter(Boolean)),
       );
       formData.append("tags", JSON.stringify(tags));
       if (templateDraft?.templateId) {
         formData.append("template_id", templateDraft.templateId);
       }
       if (templateDraft?.formValues) {
-        formData.append(
-          "template_fields",
-          JSON.stringify(templateDraft.formValues),
-        );
+        formData.append("template_fields", JSON.stringify(templateDraft.formValues));
       }
 
       const result = await apiClient.ingestDocument(formData);
@@ -269,9 +246,7 @@ export default function DocumentIngestion() {
     }
   }
 
-  const ext = uploadedFile
-    ? (uploadedFile.name.split(".").pop()?.toUpperCase() ?? "")
-    : "";
+  const ext = uploadedFile ? (uploadedFile.name.split(".").pop()?.toUpperCase() ?? "") : "";
 
   return (
     <div className="space-y-5 max-w-[1200px] mx-auto">
@@ -281,6 +256,7 @@ export default function DocumentIngestion() {
         breadcrumb={
           <nav className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <button
+              type="button"
               onClick={() => navigate("/documents")}
               className="hover:text-primary transition-colors flex items-center gap-1"
             >
@@ -291,11 +267,7 @@ export default function DocumentIngestion() {
           </nav>
         }
         actions={
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => navigate("/documents")}
-          >
+          <Button variant="secondary" size="sm" onClick={() => navigate("/documents")}>
             <ArrowLeft className="w-3.5 h-3.5" /> Cancel
           </Button>
         }
@@ -305,45 +277,39 @@ export default function DocumentIngestion() {
         {/* Left: File upload zone */}
         <div className="space-y-4">
           {templateDraft && (
-            <GlassCard className="p-4 border-teal-500/20 bg-teal-950/20">
+            <GlassCard className="p-4 border-teal-500/20 bg-teal-500/10 backdrop-blur-md shadow-sm">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-widest text-primary/90 mb-1">
                     Template Context
                   </p>
-                  <h3 className="text-sm font-semibold text-white">
+                  <h3 className="text-sm font-semibold text-foreground">
                     {templateDraft.templateName}
                   </h3>
                   <p className="text-xs text-muted-foreground">
-                    {templateDraft.templateCategory} template values will stay
-                    attached while you complete ingestion.
+                    {templateDraft.templateCategory} template values will stay attached while you
+                    complete ingestion.
                   </p>
                   <p className="mt-2 text-xs text-muted-foreground max-w-2xl">
                     {templateDraft.templateDescription}
                   </p>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setTemplateDraft(null)}
-                >
+                <Button variant="ghost" size="sm" onClick={() => setTemplateDraft(null)}>
                   <X className="w-3.5 h-3.5" /> Clear
                 </Button>
               </div>
               <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2">
-                {Object.entries(templateDraft.formValues).map(
-                  ([label, value]) => (
-                    <div
-                      key={label}
-                      className="rounded-lg border border-white/6 bg-slate-950/40 px-3 py-2"
-                    >
-                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                        {label}
-                      </p>
-                      <p className="text-xs text-foreground mt-0.5">{value}</p>
-                    </div>
-                  ),
-                )}
+                {Object.entries(templateDraft.formValues).map(([label, value]) => (
+                  <div
+                    key={label}
+                    className="rounded-lg border border-border/50 bg-background/40 backdrop-blur-sm px-3 py-2"
+                  >
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                      {label}
+                    </p>
+                    <p className="text-xs text-foreground mt-0.5">{value}</p>
+                  </div>
+                ))}
               </div>
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {templateDraft.tags.map((tag) => (
@@ -358,7 +324,7 @@ export default function DocumentIngestion() {
             </GlassCard>
           )}
 
-          <GlassCard className="p-5">
+          <GlassCard className="p-4 bg-card/40 border-border/50 backdrop-blur-md rounded-xl transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-secondary/40">
             <h2 className="text-sm font-semibold text-foreground/90 mb-4 flex items-center gap-2">
               <Upload className="w-4 h-4 text-primary" /> File Upload
             </h2>
@@ -375,15 +341,10 @@ export default function DocumentIngestion() {
                   ? "border-teal-400/70 bg-teal-500/10"
                   : uploadedFile
                     ? "border-teal-500/30 bg-teal-500/5"
-                    : "border-border/60 hover:border-teal-500/40 hover:bg-teal-500/5 cursor-pointer"
+                    : "border-border/50 hover:border-teal-500/40 hover:bg-teal-500/5 cursor-pointer"
               }`}
             >
-              <input
-                ref={fileInputRef}
-                type="file"
-                className="hidden"
-                onChange={onFileInput}
-              />
+              <input ref={fileInputRef} type="file" className="hidden" onChange={onFileInput} />
 
               <AnimatePresence mode="wait">
                 {!uploadedFile ? (
@@ -395,35 +356,29 @@ export default function DocumentIngestion() {
                     className="py-14 flex flex-col items-center text-center px-6"
                   >
                     <div
-                      className={`w-14 h-14 rounded-2xl border flex items-center justify-center mb-4 transition-all ${isDraggingOver ? "bg-teal-500/20 border-teal-400/50" : "bg-secondary/60 border-border"}`}
+                      className={`w-14 h-14 rounded-2xl border flex items-center justify-center mb-4 transition-all ${isDraggingOver ? "bg-teal-500/20 border-teal-400/50" : "bg-background/40 border-border/50"}`}
                     >
                       <Upload
                         className={`w-6 h-6 ${isDraggingOver ? "text-primary" : "text-muted-foreground"}`}
                       />
                     </div>
                     <p className="text-sm font-medium text-foreground/90 mb-1">
-                      {isDraggingOver
-                        ? "Drop to upload"
-                        : "Drag & drop your file here"}
+                      {isDraggingOver ? "Drop to upload" : "Drag & drop your file here"}
                     </p>
                     <p className="text-xs text-muted-foreground mb-4">
                       or click to browse your computer
                     </p>
                     <div className="flex flex-wrap gap-1.5 justify-center mb-3">
-                      {["PDF", "DOCX", "PNG", "JPG", "XLSX", "DWG", "DXF"].map(
-                        (t) => (
-                          <span
-                            key={t}
-                            className="px-2 py-0.5 bg-secondary/60 border border-border rounded-md text-[10px] font-mono text-muted-foreground"
-                          >
-                            {t}
-                          </span>
-                        ),
-                      )}
+                      {["PDF", "DOCX", "PNG", "JPG", "XLSX", "DWG", "DXF"].map((t) => (
+                        <span
+                          key={t}
+                          className="px-2 py-0.5 bg-background/40 border border-border/50 rounded-md text-[10px] font-mono text-muted-foreground"
+                        >
+                          {t}
+                        </span>
+                      ))}
                     </div>
-                    <p className="text-[11px] text-slate-600">
-                      Maximum file size: 50 MB
-                    </p>
+                    <p className="text-[11px] text-muted-foreground">Maximum file size: 50 MB</p>
                   </motion.div>
                 ) : (
                   <motion.div
@@ -431,15 +386,13 @@ export default function DocumentIngestion() {
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
-                    className="p-5 flex items-center gap-4"
+                    className="p-4 flex items-center gap-4"
                   >
                     <div
                       className={`w-12 h-12 rounded-xl bg-card border border-border flex flex-col items-center justify-center gap-0.5 shrink-0 ${getFileIconColor(uploadedFile.name)}`}
                     >
                       <FileIcon name={uploadedFile.name} className="w-5 h-5" />
-                      <span className="text-[8px] font-mono font-bold">
-                        {ext}
-                      </span>
+                      <span className="text-[8px] font-mono font-bold">{ext}</span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground truncate">
@@ -450,12 +403,11 @@ export default function DocumentIngestion() {
                       </p>
                       <div className="flex items-center gap-1.5 mt-1">
                         <CheckCircle2 className="w-3 h-3 text-primary" />
-                        <span className="text-xs text-primary">
-                          Ready to ingest
-                        </span>
+                        <span className="text-xs text-primary">Ready to ingest</span>
                       </div>
                     </div>
                     <button
+                      type="button"
                       onClick={(e) => {
                         e.stopPropagation();
                         setUploadedFile(null);
@@ -464,7 +416,7 @@ export default function DocumentIngestion() {
                           fileInputRef.current.value = "";
                         }
                       }}
-                      className="shrink-0 p-2 rounded-lg text-muted-foreground hover:text-white hover:bg-slate-700/60 transition-colors"
+                      className="shrink-0 p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -480,7 +432,7 @@ export default function DocumentIngestion() {
             )}
 
             {/* Supported formats info */}
-            <div className="mt-4 p-3 bg-card/40 rounded-xl border border-border">
+            <div className="mt-4 p-3 bg-background/40 rounded-xl border border-border/50">
               <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
                 Supported Document Types
               </p>
@@ -495,7 +447,7 @@ export default function DocumentIngestion() {
                 ].map(([type, fmts]) => (
                   <div key={type} className="flex items-center justify-between">
                     <span className="text-muted-foreground">{type}</span>
-                    <span className="font-mono text-slate-600">{fmts}</span>
+                    <span className="font-mono text-slate-500">{fmts}</span>
                   </div>
                 ))}
               </div>
@@ -504,7 +456,7 @@ export default function DocumentIngestion() {
         </div>
 
         {/* Right: Metadata form */}
-        <GlassCard className="p-5">
+        <GlassCard className="p-4 bg-card/40 border-border/50 backdrop-blur-md rounded-xl">
           <h2 className="text-sm font-semibold text-foreground/90 mb-5 flex items-center gap-2">
             <GitBranch className="w-4 h-4 text-primary" /> Document Metadata
           </h2>
@@ -522,7 +474,7 @@ export default function DocumentIngestion() {
                   setDocName(e.target.value);
                   setErrors((p) => ({ ...p, docName: "" }));
                 }}
-                className="w-full"
+                className="w-full h-9"
               />
               {errors.docName && (
                 <p className="text-xs text-rose-400 mt-1 flex items-center gap-1">
@@ -544,7 +496,7 @@ export default function DocumentIngestion() {
                     setDocType(e.target.value);
                     setErrors((p) => ({ ...p, docType: "" }));
                   }}
-                  className="w-full"
+                  className="w-full h-9"
                 >
                   <option value="">Select type...</option>
                   {DOC_TYPES.map((t) => (
@@ -571,7 +523,7 @@ export default function DocumentIngestion() {
                     setRevision(e.target.value);
                     setErrors((p) => ({ ...p, revision: "" }));
                   }}
-                  className="w-full font-mono"
+                  className="w-full h-9 font-mono"
                 />
                 {errors.revision && (
                   <p className="text-xs text-rose-400 mt-1 flex items-center gap-1">
@@ -593,7 +545,7 @@ export default function DocumentIngestion() {
                   setCategory(e.target.value);
                   setErrors((p) => ({ ...p, category: "" }));
                 }}
-                className="w-full"
+                className="w-full h-9"
               >
                 <option value="">Select category...</option>
                 {CATEGORIES.map((c) => (
@@ -637,7 +589,7 @@ export default function DocumentIngestion() {
             </div>
 
             {/* OCR toggle */}
-            <div className="p-3.5 bg-card/40 rounded-xl border border-border">
+            <div className="p-3 bg-background/40 rounded-xl border border-border/50">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Scan className="w-4 h-4 text-primary" />
@@ -657,7 +609,7 @@ export default function DocumentIngestion() {
                 />
               </div>
               {ocrEnabled && (
-                <div className="mt-2.5 pt-2.5 border-t border-border flex items-center gap-1.5 text-[11px] text-primary">
+                <div className="mt-2.5 pt-2.5 border-t border-border/50 flex items-center gap-1.5 text-[11px] text-primary">
                   <ToggleRight className="w-3 h-3" />
                   OCR will begin immediately after upload
                 </div>
@@ -667,14 +619,13 @@ export default function DocumentIngestion() {
             {/* Submit */}
             <div className="pt-2 space-y-2">
               <Button
-                className="w-full py-2.5"
+                className="w-full py-2.5 h-9 flex items-center justify-center"
                 onClick={handleSubmit}
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" /> Ingesting
-                    Document...
+                    <Loader2 className="w-4 h-4 animate-spin" /> Ingesting Document...
                   </>
                 ) : (
                   <>
@@ -682,10 +633,9 @@ export default function DocumentIngestion() {
                   </>
                 )}
               </Button>
-              <p className="text-[10px] text-center text-slate-600">
-                Document will be set to{" "}
-                <span className="text-amber-400">In Review</span> status after
-                ingestion
+              <p className="text-[10px] text-center text-muted-foreground">
+                Document will be set to <span className="text-amber-400">In Review</span> status
+                after ingestion
               </p>
             </div>
           </div>
@@ -693,7 +643,7 @@ export default function DocumentIngestion() {
       </div>
 
       {/* Status indicators */}
-      <GlassCard className="p-4">
+      <GlassCard className="p-3.5 bg-card/40 border-border/50 backdrop-blur-md rounded-xl">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-3">
           Ingestion Checklist
         </p>
@@ -708,7 +658,7 @@ export default function DocumentIngestion() {
               {item.done ? (
                 <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
               ) : (
-                <div className="w-4 h-4 rounded-full border-2 border-slate-600 shrink-0" />
+                <div className="w-4 h-4 rounded-full border-2 border-muted shrink-0" />
               )}
               <span
                 className={`text-xs ${item.done ? "text-primary/90" : "text-muted-foreground"}`}

@@ -1,4 +1,4 @@
-import { X, ChevronDown } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { RightPanelContent } from "../../contexts/RightPanelContext";
 
@@ -35,13 +35,9 @@ export function RightPanel({ content, onClose }: RightPanelProps) {
       <div className="px-6 py-4 border-b border-border/30 shrink-0 bg-slate-950/20">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 min-w-0">
-            {content.icon && (
-              <div className="text-primary mt-0.5 shrink-0">{content.icon}</div>
-            )}
+            {content.icon && <div className="text-primary mt-0.5 shrink-0">{content.icon}</div>}
             <div className="min-w-0">
-              <h2 className="text-sm font-semibold text-white truncate">
-                {content.title}
-              </h2>
+              <h2 className="text-sm font-semibold text-white truncate">{content.title}</h2>
               {content.subtitle && (
                 <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
                   {content.subtitle}
@@ -52,6 +48,7 @@ export function RightPanel({ content, onClose }: RightPanelProps) {
           <div className="flex items-center gap-2 shrink-0">
             {content.headerActions}
             <button
+              type="button"
               onClick={onClose}
               className="w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground/90 hover:bg-slate-700/50 transition-colors flex items-center justify-center"
             >
@@ -67,6 +64,7 @@ export function RightPanel({ content, onClose }: RightPanelProps) {
           {content.sections.map((section, i) => (
             <div key={i} className="border-border/30">
               <button
+                type="button"
                 onClick={() => toggleSection(i)}
                 className="w-full flex items-center justify-between px-6 py-3 hover:bg-secondary/30 transition-colors"
               >

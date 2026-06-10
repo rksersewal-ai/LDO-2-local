@@ -1,9 +1,19 @@
-import { Router, type IRouter, type Request, type Response } from "express";
+import { type IRouter, type Request, type Response, Router } from "express";
 
 const router: IRouter = Router();
 
+interface MockUser {
+  id: string;
+  username: string;
+  name: string;
+  designation: string;
+  role: string;
+  department: string;
+  email: string;
+}
+
 // Mock users for demo (matches frontend credentials)
-const MOCK_USERS: Record<string, { password: string; user: any }> = {
+const MOCK_USERS: Record<string, { password: string; user: MockUser }> = {
   admin: {
     password: "admin123",
     user: {
@@ -79,7 +89,7 @@ router.post("/login/", (req: Request, res: Response) => {
   });
 });
 
-router.post("/logout/", (req: Request, res: Response) => {
+router.post("/logout/", (_req: Request, res: Response) => {
   // Mock logout - just return success
   return res.json({ message: "Logged out successfully" });
 });

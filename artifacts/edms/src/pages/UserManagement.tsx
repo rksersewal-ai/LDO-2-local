@@ -1,4 +1,3 @@
-import { useEffect, useMemo, useState } from "react";
 import {
   Mail,
   Pencil,
@@ -8,18 +7,10 @@ import {
   ShieldCheck,
   Trash2,
   UserCog,
-  UserRound,
   Users,
 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import {
-  Button,
-  GlassCard,
-  Input,
-  PageHeader,
-  Select,
-  Badge,
-} from "../components/ui/Shared";
 import {
   Dialog,
   DialogContent,
@@ -28,9 +19,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../components/ui/dialog";
+import { Badge, Button, GlassCard, Input, PageHeader, Select } from "../components/ui/Shared";
 import { Switch } from "../components/ui/switch";
-import { useAuth, type UserRole } from "../lib/auth";
-import { UserService, type ManagedUser } from "../services/UserService";
+import { type UserRole, useAuth } from "../lib/auth";
+import { type ManagedUser, UserService } from "../services/UserService";
 
 interface UserFormState {
   username: string;
@@ -42,6 +34,7 @@ interface UserFormState {
   phone: string;
   employeeId: string;
   isActive: boolean;
+  password?: string;
 }
 
 const DEFAULT_FORM: UserFormState = {
@@ -54,6 +47,7 @@ const DEFAULT_FORM: UserFormState = {
   phone: "",
   employeeId: "",
   isActive: true,
+  password: "",
 };
 
 function roleVariant(role: UserRole) {
@@ -134,6 +128,7 @@ export default function UserManagement() {
       phone: entry.phone ?? "",
       employeeId: entry.employeeId ?? "",
       isActive: entry.isActive,
+      password: entry.password ?? "",
     });
     setDialogOpen(true);
   };
@@ -144,10 +139,16 @@ export default function UserManagement() {
       return;
     }
 
+    if (!editingUser && !form.password?.trim()) {
+      toast.error("Password is required for new users");
+      return;
+    }
+
     if (editingUser) {
       const updated = await UserService.update(editingUser.id, {
         ...editingUser,
         ...form,
+        password: form.password?.trim() ? form.password : editingUser.password,
       });
       if (!updated) {
         toast.error("User could not be updated");
@@ -175,9 +176,7 @@ export default function UserManagement() {
       return;
     }
     await loadUsers();
-    toast.success(
-      `${updated.name} ${updated.isActive ? "activated" : "deactivated"}`,
-    );
+    toast.success(`${updated.name} ${updated.isActive ? "activated" : "deactivated"}`);
   };
 
   const deleteUser = async () => {
@@ -222,7 +221,10 @@ export default function UserManagement() {
               value: users.filter((entry) => entry.role === "engineer").length,
             },
           ].map((stat) => (
-            <GlassCard key={stat.label} className="px-4 py-3">
+            <GlassCard
+              key={stat.label}
+              className="px-3.5 py-2.5 border-border/50 bg-card/40 backdrop-blur-md hover:-translate-y-0.5 hover:border-primary/30 hover:bg-secondary/40 transition-all duration-200"
+            >
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                 {stat.label}
               </p>
@@ -235,23 +237,21 @@ export default function UserManagement() {
           ))}
         </div>
 
-        <GlassCard className="p-4">
+        <GlassCard className="p-3 border-border/50 bg-card/40 backdrop-blur-md">
           <div className="flex flex-wrap items-center gap-3">
             <div className="relative min-w-[260px] flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                className="pl-9"
+                className="pl-9 h-9"
                 placeholder="Search by name, username, email, department..."
               />
             </div>
             <Select
               value={roleFilter}
-              onChange={(event) =>
-                setRoleFilter(event.target.value as "all" | UserRole)
-              }
-              className="w-[220px]"
+              onChange={(event) => setRoleFilter(event.target.value as "all" | UserRole)}
+              className="w-[220px] h-9"
             >
               <option value="all">All roles</option>
               {UserService.getRoleOptions().map((role) => (
@@ -263,8 +263,8 @@ export default function UserManagement() {
           </div>
         </GlassCard>
 
-        <GlassCard className="overflow-hidden">
-          <div className="grid grid-cols-[1.3fr_1.1fr_1fr_0.8fr_0.7fr_1fr] gap-4 border-b border-white/6 px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+        <GlassCard className="overflow-hidden border-border/50 bg-card/40 backdrop-blur-md">
+          <div className="grid grid-cols-[1.3fr_1.1fr_1fr_0.8fr_0.7fr_1fr] gap-4 border-b border-border/50 px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground bg-secondary/20">
             <span>User</span>
             <span>Role & Department</span>
             <span>Contact</span>
@@ -272,11 +272,11 @@ export default function UserManagement() {
             <span>Last Login</span>
             <span className="text-right">Actions</span>
           </div>
-          <div className="divide-y divide-white/6">
+          <div className="divide-y divide-border/50">
             {filtered.map((entry) => (
               <div
                 key={entry.id}
-                className="grid grid-cols-[1.3fr_1.1fr_1fr_0.8fr_0.7fr_1fr] gap-4 px-5 py-4"
+                className="grid grid-cols-[1.3fr_1.1fr_1fr_0.8fr_0.7fr_1fr] gap-4 px-5 py-4 hover:bg-secondary/20 transition-colors"
               >
                 <div className="min-w-0">
                   <div className="flex items-center gap-3">
@@ -284,9 +284,7 @@ export default function UserManagement() {
                       {entry.initials}
                     </div>
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-white">
-                        {entry.name}
-                      </p>
+                      <p className="truncate text-sm font-semibold text-white">{entry.name}</p>
                       <p className="truncate text-xs font-mono text-primary/90">
                         {entry.username} · {entry.employeeId ?? entry.id}
                       </p>
@@ -294,27 +292,18 @@ export default function UserManagement() {
                   </div>
                 </div>
                 <div className="min-w-0">
-                  <Badge
-                    variant={roleVariant(entry.role)}
-                    className="mb-2 capitalize"
-                  >
+                  <Badge variant={roleVariant(entry.role)} className="mb-2 capitalize">
                     {entry.role}
                   </Badge>
-                  <p className="truncate text-sm text-foreground/90">
-                    {entry.designation}
-                  </p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {entry.department}
-                  </p>
+                  <p className="truncate text-sm text-foreground/90">{entry.designation}</p>
+                  <p className="truncate text-xs text-muted-foreground">{entry.department}</p>
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-sm text-foreground/90">
-                    <Mail className="w-3.5 h-3.5 text-muted-foreground" />{" "}
-                    {entry.email}
+                    <Mail className="w-3.5 h-3.5 text-muted-foreground" /> {entry.email}
                   </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Phone className="w-3.5 h-3.5" />{" "}
-                    {entry.phone ?? "No phone set"}
+                    <Phone className="w-3.5 h-3.5" /> {entry.phone ?? "No phone set"}
                   </div>
                 </div>
                 <div className="flex items-center">
@@ -326,20 +315,11 @@ export default function UserManagement() {
                   {formatDateTime(entry.lastLogin)}
                 </div>
                 <div className="flex items-center justify-end gap-2">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => openEdit(entry)}
-                  >
+                  <Button variant="secondary" size="sm" onClick={() => openEdit(entry)}>
                     <Pencil className="w-3.5 h-3.5" /> Edit
                   </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => toggleActive(entry)}
-                  >
-                    <ShieldCheck className="w-3.5 h-3.5" />{" "}
-                    {entry.isActive ? "Disable" : "Enable"}
+                  <Button variant="secondary" size="sm" onClick={() => toggleActive(entry)}>
+                    <ShieldCheck className="w-3.5 h-3.5" /> {entry.isActive ? "Disable" : "Enable"}
                   </Button>
                   <Button
                     variant="danger"
@@ -364,19 +344,16 @@ export default function UserManagement() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="border border-border/60 bg-slate-950 text-foreground sm:max-w-[760px]">
           <DialogHeader>
-            <DialogTitle>
-              {editingUser ? "Update User" : "Create User"}
-            </DialogTitle>
+            <DialogTitle>{editingUser ? "Update User" : "Create User"}</DialogTitle>
             <DialogDescription className="text-muted-foreground">
-              Maintain account identity, responsibility, and role scope for the
-              EDMS workspace.
+              Maintain account identity, responsibility, and role scope for the EDMS workspace.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 Full Name
-              </label>
+              </span>
               <Input
                 value={form.name}
                 onChange={(event) =>
@@ -388,9 +365,9 @@ export default function UserManagement() {
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 Username
-              </label>
+              </span>
               <Input
                 value={form.username}
                 onChange={(event) =>
@@ -402,9 +379,9 @@ export default function UserManagement() {
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 Email
-              </label>
+              </span>
               <Input
                 value={form.email}
                 onChange={(event) =>
@@ -416,9 +393,9 @@ export default function UserManagement() {
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 Role
-              </label>
+              </span>
               <Select
                 value={form.role}
                 onChange={(event) =>
@@ -436,9 +413,9 @@ export default function UserManagement() {
               </Select>
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 Designation
-              </label>
+              </span>
               <Input
                 value={form.designation}
                 onChange={(event) =>
@@ -450,9 +427,9 @@ export default function UserManagement() {
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 Department
-              </label>
+              </span>
               <Input
                 value={form.department}
                 onChange={(event) =>
@@ -464,9 +441,9 @@ export default function UserManagement() {
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 Phone
-              </label>
+              </span>
               <Input
                 value={form.phone}
                 onChange={(event) =>
@@ -478,9 +455,9 @@ export default function UserManagement() {
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 Employee ID
-              </label>
+              </span>
               <Input
                 value={form.employeeId}
                 onChange={(event) =>
@@ -491,14 +468,27 @@ export default function UserManagement() {
                 }
               />
             </div>
+            <div>
+              <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                Password {editingUser ? "(Optional)" : "*"}
+              </span>
+              <Input
+                type="password"
+                placeholder={editingUser ? "Leave blank to keep existing" : "Enter password"}
+                value={form.password}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    password: event.target.value,
+                  }))
+                }
+              />
+            </div>
             <div className="md:col-span-2 flex items-center justify-between rounded-xl border border-white/6 bg-card/40 px-4 py-3">
               <div>
-                <p className="text-sm font-medium text-foreground">
-                  Account Active
-                </p>
+                <p className="text-sm font-medium text-foreground">Account Active</p>
                 <p className="text-xs text-muted-foreground">
-                  Inactive users remain visible in history but lose operational
-                  access.
+                  Inactive users remain visible in history but lose operational access.
                 </p>
               </div>
               <Switch
@@ -536,16 +526,15 @@ export default function UserManagement() {
           <DialogHeader>
             <DialogTitle>Remove User</DialogTitle>
             <DialogDescription className="text-muted-foreground">
-              This removes the user from the local admin directory used by the
-              current frontend workspace.
+              This removes the user from the local admin directory used by the current frontend
+              workspace.
             </DialogDescription>
           </DialogHeader>
           <div className="rounded-xl border border-white/6 bg-card/40 px-4 py-3 text-sm text-foreground/90">
             {pendingDelete ? (
               <span>
-                Remove{" "}
-                <strong className="text-white">{pendingDelete.name}</strong>{" "}
-                from the user registry?
+                Remove <strong className="text-white">{pendingDelete.name}</strong> from the user
+                registry?
               </span>
             ) : null}
           </div>

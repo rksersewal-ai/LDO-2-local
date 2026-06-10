@@ -1,0 +1,4 @@
+[33msrc/components/ui/tooltip.tsx (2:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m
+[33msrc/components/ui/dropdown-menu.tsx (2:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m
+[33msrc/components/ui/command.tsx (2:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m
+[33msrc/components/ui/collapsible.tsx (2:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m

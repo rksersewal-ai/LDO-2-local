@@ -2,8 +2,11 @@
  * BulkActionDialog — dialog for confirming bulk operations on selected items.
  * Shows count of affected items with clear messaging.
  */
+
+import { AlertTriangle, Loader2 } from "lucide-react";
 import React from "react";
-import { Loader2, AlertTriangle } from "lucide-react";
+import { Badge } from "./badge";
+import { Button } from "./button";
 import {
   Dialog,
   DialogContent,
@@ -12,8 +15,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./dialog";
-import { Button } from "./button";
-import { Badge } from "./badge";
 
 export interface BulkAction {
   key: string;
@@ -83,9 +84,7 @@ export function BulkActionDialog({
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">{action.label}</p>
                   {action.description && (
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      {action.description}
-                    </p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{action.description}</p>
                   )}
                 </div>
                 <Button
@@ -101,9 +100,7 @@ export function BulkActionDialog({
                   onClick={() => handleAction(action.key)}
                   className="shrink-0"
                 >
-                  {isActive && (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
-                  )}
+                  {isActive && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />}
                   {action.label}
                 </Button>
               </div>
@@ -112,11 +109,7 @@ export function BulkActionDialog({
         </div>
 
         <DialogFooter>
-          <Button
-            variant="ghost"
-            onClick={() => onOpenChange(false)}
-            disabled={isLoading}
-          >
+          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={isLoading}>
             Cancel
           </Button>
         </DialogFooter>

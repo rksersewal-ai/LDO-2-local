@@ -35,19 +35,14 @@ export interface ReportDefinition {
 function daysBetween(start: string, end: Date = new Date()) {
   const startTime = new Date(start).getTime();
   const endTime = end.getTime();
-  if (Number.isNaN(startTime) || Number.isNaN(endTime) || endTime < startTime)
-    return 0;
+  if (Number.isNaN(startTime) || Number.isNaN(endTime) || endTime < startTime) return 0;
   return Math.floor((endTime - startTime) / (1000 * 60 * 60 * 24));
 }
 
-export function parseReportDate(
-  value: string | number | null | undefined,
-): number | null {
+export function parseReportDate(value: string | number | null | undefined): number | null {
   if (typeof value === "number") return value;
   if (!value) return null;
-  const normalized = String(value).includes(" ")
-    ? String(value).replace(" ", "T")
-    : String(value);
+  const normalized = String(value).includes(" ") ? String(value).replace(" ", "T") : String(value);
   const timestamp = new Date(normalized).getTime();
   return Number.isNaN(timestamp) ? null : timestamp;
 }
@@ -57,8 +52,7 @@ export const REPORT_DEFINITIONS: ReportDefinition[] = [
     ...MOCK_REPORTS[0],
     filenamePrefix: "document-status-summary",
     dateKey: "uploadDate",
-    emptyState:
-      "No documents match the selected date range and search criteria.",
+    emptyState: "No documents match the selected date range and search criteria.",
     columns: [
       { key: "documentId", label: "Document ID", mono: true },
       { key: "title", label: "Title" },
@@ -87,8 +81,7 @@ export const REPORT_DEFINITIONS: ReportDefinition[] = [
     ...MOCK_REPORTS[1],
     filenamePrefix: "ocr-processing-report",
     dateKey: "startedAt",
-    emptyState:
-      "No OCR jobs match the selected date range and search criteria.",
+    emptyState: "No OCR jobs match the selected date range and search criteria.",
     columns: [
       { key: "jobId", label: "Job ID", mono: true },
       { key: "documentId", label: "Document ID", mono: true },
@@ -117,8 +110,7 @@ export const REPORT_DEFINITIONS: ReportDefinition[] = [
     ...MOCK_REPORTS[2],
     filenamePrefix: "approval-cycle-time-analysis",
     dateKey: "submitted",
-    emptyState:
-      "No approvals match the selected date range and search criteria.",
+    emptyState: "No approvals match the selected date range and search criteria.",
     columns: [
       { key: "approvalId", label: "Approval ID", mono: true },
       { key: "title", label: "Title" },
@@ -151,8 +143,7 @@ export const REPORT_DEFINITIONS: ReportDefinition[] = [
     ...MOCK_REPORTS[3],
     filenamePrefix: "work-ledger-activity-report",
     dateKey: "activityDate",
-    emptyState:
-      "No work ledger activity matches the selected date range and search criteria.",
+    emptyState: "No work ledger activity matches the selected date range and search criteria.",
     columns: [
       { key: "workId", label: "Work ID", mono: true },
       { key: "title", label: "Title" },
@@ -181,8 +172,7 @@ export const REPORT_DEFINITIONS: ReportDefinition[] = [
     ...MOCK_REPORTS[4],
     filenamePrefix: "user-access-audit-report",
     dateKey: "eventTime",
-    emptyState:
-      "No audit events match the selected date range and search criteria.",
+    emptyState: "No audit events match the selected date range and search criteria.",
     columns: [
       { key: "eventId", label: "Event ID", mono: true },
       { key: "action", label: "Action" },

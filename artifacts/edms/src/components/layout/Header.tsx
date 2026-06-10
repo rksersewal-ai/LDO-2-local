@@ -1,38 +1,35 @@
-import { useState, useRef, useEffect } from "react";
 import {
-  Search,
+  AlertTriangle,
+  ArrowRight,
   Bell,
-  User,
-  Type,
+  LifeBuoy,
   LogOut,
   Minus,
+  Moon,
   Plus,
   RotateCcw,
-  Sun,
-  Moon,
-  AlertTriangle,
-  X,
+  Search,
   Settings as SettingsIcon,
-  LifeBuoy,
   ShieldCheck,
-  ArrowRight,
+  Sun,
+  Type,
+  User,
+  X,
 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
-import { useAuth } from "../../lib/auth";
-import { NotificationPanel } from "./NotificationPanel";
-import { CommandPalette } from "../ui/CommandPalette";
-import { useTheme } from "../../contexts/ThemeContext";
-import {
-  PreferencesService,
-  type UserPreferences,
-} from "../../services/PreferencesService";
-import { useDocumentChangeAlerts } from "../../hooks/useDocumentChangeAlerts";
-import { useAppInbox } from "../../hooks/useAppInbox";
-import { InboxService } from "../../services/InboxService";
-import type { AppInboxItem } from "../../lib/types";
-import type { InboxAction } from "../../lib/inboxActions";
 import { cn } from "@/lib/utils";
-import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
+import { useTheme } from "../../contexts/ThemeContext";
+import { useAppInbox } from "../../hooks/useAppInbox";
+import { useDocumentChangeAlerts } from "../../hooks/useDocumentChangeAlerts";
+import { useAuth } from "../../lib/auth";
+import type { InboxAction } from "../../lib/inboxActions";
+import type { AppInboxItem } from "../../lib/types";
+import { InboxService } from "../../services/InboxService";
+import { PreferencesService, type UserPreferences } from "../../services/PreferencesService";
+import { CommandPalette } from "../ui/CommandPalette";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { NotificationPanel } from "./NotificationPanel";
 
 const ROUTE_LABELS: Record<string, string> = {
   "": "Dashboard",
@@ -59,10 +56,7 @@ const ROUTE_LABELS: Record<string, string> = {
 };
 
 function segmentLabel(seg: string): string {
-  return (
-    ROUTE_LABELS[seg] ??
-    seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, " ")
-  );
+  return ROUTE_LABELS[seg] ?? seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, " ");
 }
 
 export function Header() {
@@ -70,41 +64,27 @@ export function Header() {
   const navigate = useNavigate();
   const { user, logout, hasPermission } = useAuth();
   const { theme, toggleTheme } = useTheme();
-  const {
-    alerts: documentChangeAlerts,
-    approveAlert,
-    bypassAlert,
-  } = useDocumentChangeAlerts();
-  const {
-    items: inboxItems,
-    source: inboxSource,
-    refresh: refreshInbox,
-  } = useAppInbox();
+  const { alerts: documentChangeAlerts, approveAlert, bypassAlert } = useDocumentChangeAlerts();
+  const { items: inboxItems, source: inboxSource, refresh: refreshInbox } = useAppInbox();
 
   const [showNotifications, setShowNotifications] = useState(false);
   const [showTextControls, setShowTextControls] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  const [preferences, setPreferences] = useState<UserPreferences>(() =>
-    PreferencesService.get(),
-  );
+  const [preferences, setPreferences] = useState<UserPreferences>(() => PreferencesService.get());
   const [commandOpen, setCommandOpen] = useState(false);
   const [showBanner, setShowBanner] = useState(true);
   const [now, setNow] = useState(() => new Date());
-  const [busyInboxActionId, setBusyInboxActionId] = useState<string | null>(
-    null,
-  );
+  const [busyInboxActionId, setBusyInboxActionId] = useState<string | null>(null);
   const headerRef = useRef<HTMLDivElement>(null);
 
   const paths = location.pathname.split("/").filter(Boolean);
-  const standardInboxItems = inboxItems.filter(
-    (item) => item.type !== "supervisor_review",
-  );
+  const standardInboxItems = inboxItems.filter((item) => item.type !== "supervisor_review");
   const unreadCount = standardInboxItems.length + documentChangeAlerts.length;
 
   const getBreadcrumbPath = (index: number): string => {
     if (index === 0) return "/";
-    return "/" + paths.slice(0, index).join("/");
+    return `/${paths.slice(0, index).join("/")}`;
   };
 
   const breadcrumbs = [
@@ -136,8 +116,7 @@ export function Header() {
     if (location.pathname.startsWith("/search")) {
       return {
         title: "Cross-entity search tips",
-        summary:
-          "Search now deep-links directly into documents, work records, and cases.",
+        summary: "Search now deep-links directly into documents, work records, and cases.",
         tips: [
           "Use duplicate-aware filters when reconciling document families.",
           "Switch scope after the first broad query to reduce operator noise.",
@@ -150,8 +129,7 @@ export function Header() {
     if (location.pathname.startsWith("/approvals")) {
       return {
         title: "Approval queue guide",
-        summary:
-          "Work newest release blockers first, then clear lower-risk document requests.",
+        summary: "Work newest release blockers first, then clear lower-risk document requests.",
         tips: [
           "Pending items from Document Hub land here automatically.",
           "Use the linked document preview before approving or rejecting.",
@@ -164,8 +142,7 @@ export function Header() {
     if (location.pathname.startsWith("/ledger")) {
       return {
         title: "Work ledger habits",
-        summary:
-          "Keep records complete, linked to PLs, and verified before closure.",
+        summary: "Keep records complete, linked to PLs, and verified before closure.",
         tips: [
           "Open the focused record from search results using the `id` query.",
           "Use the category chips to separate daily operational work from exceptions.",
@@ -191,14 +168,8 @@ export function Header() {
 
   const applyPreferences = (prefs: UserPreferences) => {
     setPreferences(prefs);
-    document.documentElement.style.setProperty(
-      "--app-font-size",
-      `${prefs.fontSize}px`,
-    );
-    document.documentElement.classList.toggle(
-      "reduce-motion",
-      prefs.reduceMotion,
-    );
+    document.documentElement.style.setProperty("--app-font-size", `${prefs.fontSize}px`);
+    document.documentElement.classList.toggle("reduce-motion", prefs.reduceMotion);
   };
 
   const adjustFontSize = (delta: number) => {
@@ -206,8 +177,7 @@ export function Header() {
     applyPreferences(PreferencesService.set({ fontSize: next }));
   };
 
-  const resetFontSize = () =>
-    applyPreferences(PreferencesService.set({ fontSize: 14 }));
+  const resetFontSize = () => applyPreferences(PreferencesService.set({ fontSize: 14 }));
 
   const closeFloatingPanels = () => {
     setShowNotifications(false);
@@ -221,10 +191,7 @@ export function Header() {
     navigate("/login");
   };
 
-  const handleInboxWorkflowAction = async (
-    notification: AppInboxItem,
-    action: InboxAction,
-  ) => {
+  const handleInboxWorkflowAction = async (notification: AppInboxItem, action: InboxAction) => {
     setBusyInboxActionId(`${notification.id}:${action.key}`);
     try {
       await InboxService.actOnItem(notification.id, action.payload);
@@ -248,8 +215,7 @@ export function Header() {
   }, []);
 
   useEffect(() => {
-    if (!showTextControls && !showNotifications && !showProfile && !showHelp)
-      return;
+    if (!showTextControls && !showNotifications && !showProfile && !showHelp) return;
     const handlePointerDown = (event: MouseEvent) => {
       if (headerRef.current?.contains(event.target as Node)) return;
       closeFloatingPanels();
@@ -260,7 +226,18 @@ export function Header() {
 
   useEffect(() => {
     applyPreferences(PreferencesService.get());
-    return PreferencesService.subscribe((prefs) => applyPreferences(prefs));
+    let disposed = false;
+    const unsubscribe = PreferencesService.subscribe((prefs) => {
+      window.setTimeout(() => {
+        if (!disposed) {
+          applyPreferences(prefs);
+        }
+      }, 0);
+    });
+    return () => {
+      disposed = true;
+      unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -282,10 +259,10 @@ export function Header() {
   /* Ghost icon button — no border, clean hover */
   const ghostBtn = (active: boolean) =>
     cn(
-      "flex h-9 w-9 items-center justify-center rounded-xl border transition-all duration-150",
+      "flex h-8 w-8 items-center justify-center rounded-md border transition-colors duration-150",
       active
-        ? "border-border/80 bg-card/90 text-foreground shadow-[0_10px_24px_rgba(15,23,42,0.08)]"
-        : "border-transparent text-muted-foreground hover:border-border/70 hover:bg-card/80 hover:text-foreground",
+        ? "border-border bg-secondary text-foreground"
+        : "border-transparent text-muted-foreground hover:border-border hover:bg-secondary hover:text-foreground",
     );
 
   /* User initials */
@@ -300,20 +277,15 @@ export function Header() {
 
   return (
     <>
-      <CommandPalette
-        open={commandOpen}
-        onClose={() => setCommandOpen(false)}
-      />
+      <CommandPalette open={commandOpen} onClose={() => setCommandOpen(false)} />
 
       <div ref={headerRef} className="shrink-0">
         {/* ── System announcement banner ───────────────────────────────── */}
         {showBanner && (
           <div
             className={cn(
-              "flex items-center justify-between gap-3 border-b px-5 py-2",
-              isLightTheme
-                ? "border-amber-200/90 bg-amber-50/95"
-                : "border-amber-500/28 bg-[hsl(38,80%,14%/0.55)]",
+              "flex items-center justify-between gap-3 border-b px-4 py-1.5",
+              isLightTheme ? "border-border bg-card" : "border-border bg-card",
             )}
           >
             <div className="flex items-center gap-2">
@@ -327,7 +299,7 @@ export function Header() {
               <span
                 className={cn(
                   "text-[11px] font-semibold uppercase tracking-[0.05em]",
-                  isLightTheme ? "text-amber-800" : "text-amber-300",
+                  isLightTheme ? "text-foreground" : "text-foreground",
                 )}
               >
                 Maintenance Window
@@ -335,15 +307,16 @@ export function Header() {
               <span
                 className={cn(
                   "text-[11px]",
-                  isLightTheme ? "text-amber-900/75" : "text-amber-100/70",
+                  isLightTheme ? "text-muted-foreground" : "text-muted-foreground",
                 )}
               >
-                OCR engine restart scheduled at 03:00 UTC. Expect minor
-                ingestion and preview delays.
+                OCR engine restart scheduled at 03:00 UTC. Expect minor ingestion and preview
+                delays.
               </span>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <button
+                type="button"
                 onClick={() => {
                   navigate("/ocr");
                   setShowBanner(false);
@@ -351,14 +324,15 @@ export function Header() {
                 className={cn(
                   "rounded-md border px-2.5 py-1 text-[11px] font-medium transition-colors",
                   isLightTheme
-                    ? "border-amber-200 bg-white/80 text-amber-900 hover:bg-white"
-                    : "border-amber-500/30 text-amber-300 hover:bg-white/5",
+                    ? "border-border bg-background text-foreground hover:bg-secondary"
+                    : "border-border bg-background text-foreground hover:bg-secondary",
                 )}
               >
                 OCR Monitor
               </button>
               {hasPermission(["admin"]) && (
                 <button
+                  type="button"
                   onClick={() => {
                     navigate("/health");
                     setShowBanner(false);
@@ -366,21 +340,22 @@ export function Header() {
                   className={cn(
                     "rounded-md border px-2.5 py-1 text-[11px] font-medium transition-colors",
                     isLightTheme
-                      ? "border-amber-200 bg-white/80 text-amber-900 hover:bg-white"
-                      : "border-amber-500/30 text-amber-300 hover:bg-white/5",
+                      ? "border-border bg-background text-foreground hover:bg-secondary"
+                      : "border-border bg-background text-foreground hover:bg-secondary",
                   )}
                 >
                   System Health
                 </button>
               )}
               <button
+                type="button"
                 onClick={() => setShowBanner(false)}
                 aria-label="Dismiss banner"
                 className={cn(
                   "shrink-0 rounded-md p-1 transition-colors",
                   isLightTheme
-                    ? "text-amber-700 hover:bg-white"
-                    : "text-amber-400 hover:bg-white/5",
+                    ? "text-muted-foreground hover:bg-secondary"
+                    : "text-muted-foreground hover:bg-secondary",
                 )}
               >
                 <X className="h-3.5 w-3.5" aria-hidden="true" />
@@ -390,12 +365,9 @@ export function Header() {
         )}
 
         {/* ── Top bar ─────────────────────────────────────────────────── */}
-        <header className="workspace-topbar relative z-30 flex h-16 items-center justify-between gap-4 border-b border-border/80 px-5 md:px-6">
-          <div className="min-w-0">
-            <nav
-              aria-label="Breadcrumb"
-              className="flex min-w-0 items-center gap-0"
-            >
+        <header className="workspace-topbar relative z-30 flex h-14 items-center justify-between gap-3 border-b border-border px-4 pl-14 md:pl-4">
+          <div className="min-w-0 shrink-0">
+            <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-0">
               {breadcrumbs.map((crumb, i) => (
                 <span key={i} className="flex items-center">
                   {i > 0 && (
@@ -407,13 +379,14 @@ export function Header() {
                     </span>
                   )}
                   {i === breadcrumbs.length - 1 ? (
-                    <span className="max-w-[200px] truncate text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                    <span className="max-w-[180px] truncate text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
                       {crumb.label}
                     </span>
                   ) : (
                     <button
+                      type="button"
                       onClick={() => navigate(crumb.path)}
-                      className="max-w-[120px] truncate text-xs text-muted-foreground transition-colors hover:text-foreground"
+                      className="max-w-[110px] truncate text-[11px] text-muted-foreground transition-colors hover:text-foreground"
                     >
                       {crumb.label}
                     </button>
@@ -422,31 +395,28 @@ export function Header() {
               ))}
             </nav>
             <div className="mt-1 flex min-w-0 items-center gap-2">
-              <h1 className="truncate text-[17px] font-semibold tracking-[-0.02em] text-foreground">
-                {pageTitle}
-              </h1>
-              <span className="hidden xl:inline-flex items-center rounded-full border border-border/70 bg-background/65 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+              <h1 className="truncate text-base font-semibold text-foreground">{pageTitle}</h1>
+              <span className="hidden xl:inline-flex items-center rounded-md border border-border bg-background px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
                 {contextualGuide.title}
               </span>
             </div>
           </div>
 
           {/* Right: utilities */}
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex min-w-0 flex-1 items-center justify-end gap-1">
             <button
+              type="button"
               onClick={() => navigate("/profile")}
-              className="hidden xl:flex items-center gap-1.5 mr-2 rounded-full border border-border/70 bg-background/70 px-3 py-1.5 text-[11px] font-medium text-muted-foreground transition-colors hover:border-border hover:bg-card hover:text-foreground"
+              className="mr-1 hidden h-8 items-center gap-1.5 rounded-md border border-border bg-background px-2.5 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground xl:flex"
             >
               <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-              <span className="capitalize">
-                {user?.role ?? "viewer"} access
-              </span>
+              <span className="capitalize">{user?.role ?? "viewer"} access</span>
             </button>
 
             {/* Live clock */}
             {preferences.showLiveClock && (
               <span
-                className="hidden lg:block mr-2 rounded-full border border-border/70 bg-background/70 px-3 py-1.5 text-[11px] font-medium tabular-nums text-muted-foreground"
+                className="mr-1 hidden h-8 items-center rounded-md border border-border bg-background px-2.5 text-[11px] font-medium tabular-nums text-muted-foreground lg:flex"
                 aria-live="polite"
               >
                 {clockLabel}
@@ -455,13 +425,14 @@ export function Header() {
 
             {/* Search trigger */}
             <button
+              type="button"
               onClick={() => setCommandOpen(true)}
-              className="workspace-search-trigger hidden h-10 w-48 items-center gap-2 rounded-full border border-border/70 px-4 text-left text-[13px] text-muted-foreground transition-colors hover:border-border hover:bg-card lg:w-56 xl:mr-2 xl:w-64 sm:flex"
+              className="workspace-search-trigger hidden h-8 w-44 items-center gap-2 rounded-md border border-border px-2.5 text-left text-xs text-muted-foreground transition-colors hover:bg-secondary sm:flex lg:w-56 xl:mr-1 xl:w-72"
               aria-label="Open command palette"
             >
               <Search className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-              <span className="flex-1">Search records, PLs, work items…</span>
-              <kbd className="hidden rounded border border-border/60 bg-card px-1.5 py-0.5 font-mono text-[10px] leading-none text-muted-foreground/70 xl:block">
+              <span className="flex-1 truncate">Search records, PLs, work items...</span>
+              <kbd className="hidden rounded border border-border bg-card px-1.5 py-0.5 font-mono text-[10px] leading-none text-muted-foreground/70 xl:block">
                 ⌘K
               </kbd>
             </button>
@@ -471,6 +442,7 @@ export function Header() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
+                    type="button"
                     onClick={() => {
                       setShowHelp(!showHelp);
                       setShowNotifications(false);
@@ -481,16 +453,13 @@ export function Header() {
                     aria-pressed={showHelp}
                     className={ghostBtn(showHelp)}
                   >
-                    <LifeBuoy
-                      className="h-[15px] w-[15px]"
-                      aria-hidden="true"
-                    />
+                    <LifeBuoy className="h-[15px] w-[15px]" aria-hidden="true" />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent>Context help</TooltipContent>
               </Tooltip>
               {showHelp && (
-                <div className="absolute right-0 top-full mt-2 z-50 w-80 rounded-2xl border border-border bg-card/95 p-4 shadow-xl backdrop-blur-xl animate-fade-in">
+                <div className="absolute right-0 top-full z-50 mt-2 w-80 rounded-xl border border-border bg-card p-4 shadow-md animate-fade-in">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-primary">
@@ -504,6 +473,7 @@ export function Header() {
                       </p>
                     </div>
                     <button
+                      type="button"
                       onClick={() => setShowHelp(false)}
                       className="rounded p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
                       aria-label="Close contextual help"
@@ -515,13 +485,14 @@ export function Header() {
                     {contextualGuide.tips.map((tip) => (
                       <div
                         key={tip}
-                        className="rounded-md border border-border/70 bg-secondary/30 px-3 py-2 text-xs text-muted-foreground"
+                        className="rounded-md border border-border bg-background px-3 py-2 text-xs text-muted-foreground"
                       >
                         {tip}
                       </div>
                     ))}
                   </div>
                   <button
+                    type="button"
                     onClick={() => {
                       navigate(contextualGuide.actionPath);
                       closeFloatingPanels();
@@ -539,6 +510,7 @@ export function Header() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
+                  type="button"
                   onClick={toggleTheme}
                   aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
                   className={ghostBtn(false)}
@@ -558,6 +530,7 @@ export function Header() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
+                    type="button"
                     onClick={() => {
                       setShowTextControls(!showTextControls);
                       setShowNotifications(false);
@@ -573,8 +546,9 @@ export function Header() {
                 <TooltipContent>Text size</TooltipContent>
               </Tooltip>
               {showTextControls && (
-                <div className="absolute right-0 top-full mt-2 z-50 flex items-center gap-1 rounded-2xl border border-border bg-card/95 px-2 py-2 shadow-xl backdrop-blur-xl animate-fade-in">
+                <div className="absolute right-0 top-full z-50 mt-2 flex items-center gap-1 rounded-xl border border-border bg-card px-2 py-2 shadow-md animate-fade-in">
                   <button
+                    type="button"
                     onClick={() => adjustFontSize(-1)}
                     aria-label="Smaller text"
                     className="h-7 w-7 rounded border border-border bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors cursor-pointer"
@@ -585,6 +559,7 @@ export function Header() {
                     {fontSize}
                   </span>
                   <button
+                    type="button"
                     onClick={() => adjustFontSize(+1)}
                     aria-label="Larger text"
                     className="h-7 w-7 rounded border border-border bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors cursor-pointer"
@@ -592,6 +567,7 @@ export function Header() {
                     <Plus className="h-3 w-3" aria-hidden="true" />
                   </button>
                   <button
+                    type="button"
                     onClick={resetFontSize}
                     aria-label="Reset text size"
                     className="h-7 w-7 rounded border border-border bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors cursor-pointer"
@@ -607,6 +583,7 @@ export function Header() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
+                    type="button"
                     onClick={() => {
                       setShowNotifications(!showNotifications);
                       setShowTextControls(false);
@@ -644,11 +621,12 @@ export function Header() {
             </div>
 
             {/* Divider */}
-            <div className="h-6 w-px bg-border/60 mx-0.5" aria-hidden="true" />
+            <div className="mx-0.5 h-6 w-px bg-border" aria-hidden="true" />
 
             {/* User profile */}
             <div className="relative">
               <button
+                type="button"
                 onClick={() => {
                   setShowProfile(!showProfile);
                   setShowNotifications(false);
@@ -658,7 +636,7 @@ export function Header() {
                 aria-pressed={showProfile}
                 aria-expanded={showProfile}
                 className={cn(
-                  "flex items-center gap-2 h-9 px-2 pr-3 rounded-md transition-colors duration-150 cursor-pointer",
+                  "flex h-8 items-center gap-2 rounded-md px-1.5 pr-2.5 transition-colors duration-150 cursor-pointer",
                   showProfile
                     ? "bg-accent text-accent-foreground"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary",
@@ -666,10 +644,10 @@ export function Header() {
               >
                 {/* Avatar circle */}
                 <div
-                  className="h-6 w-6 rounded-md flex items-center justify-center shrink-0 text-[11px] font-bold select-none"
+                  className="flex h-6 w-6 shrink-0 select-none items-center justify-center rounded-md text-[11px] font-bold"
                   style={{
-                    background: "hsl(var(--primary) / 0.18)",
-                    color: "hsl(var(--primary))",
+                    background: "color-mix(in oklab, var(--primary) 18%, transparent)",
+                    color: "var(--primary)",
                   }}
                 >
                   {initials}
@@ -685,71 +663,57 @@ export function Header() {
               </button>
 
               {showProfile && (
-                <div className="absolute right-0 top-full mt-2 w-56 rounded-md border border-border bg-card shadow-xl z-50 overflow-hidden animate-fade-in">
+                <div className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-md border border-border bg-card shadow-md animate-fade-in">
                   {/* User info */}
                   <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
                     <div
                       className="h-9 w-9 rounded-md flex items-center justify-center shrink-0 text-sm font-bold select-none"
                       style={{
-                        background: "hsl(var(--primary) / 0.16)",
-                        color: "hsl(var(--primary))",
+                        background: "color-mix(in oklab, var(--primary) 16%, transparent)",
+                        color: "var(--primary)",
                       }}
                     >
                       {initials}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-foreground truncate">
-                        {user?.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {user?.designation}
-                      </p>
-                      <p className="text-[11px] text-muted-foreground/70 truncate">
-                        {user?.email}
-                      </p>
+                      <p className="text-sm font-semibold text-foreground truncate">{user?.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{user?.designation}</p>
+                      <p className="text-[11px] text-muted-foreground/70 truncate">{user?.email}</p>
                     </div>
                   </div>
 
                   {/* Menu items */}
                   <div className="py-1">
                     <button
+                      type="button"
                       onClick={() => {
                         navigate("/profile");
                         closeFloatingPanels();
                       }}
                       className="w-full flex items-center gap-2.5 px-4 py-2 text-[13px] text-foreground/80 hover:text-foreground hover:bg-secondary/60 transition-colors cursor-pointer"
                     >
-                      <User
-                        className="h-3.5 w-3.5 shrink-0"
-                        aria-hidden="true"
-                      />{" "}
-                      Profile Settings
+                      <User className="h-3.5 w-3.5 shrink-0" aria-hidden="true" /> Profile Settings
                     </button>
                     {hasPermission(["admin"]) && (
                       <button
+                        type="button"
                         onClick={() => {
                           navigate("/settings");
                           closeFloatingPanels();
                         }}
                         className="w-full flex items-center gap-2.5 px-4 py-2 text-[13px] text-foreground/80 hover:text-foreground hover:bg-secondary/60 transition-colors cursor-pointer"
                       >
-                        <SettingsIcon
-                          className="h-3.5 w-3.5 shrink-0"
-                          aria-hidden="true"
-                        />{" "}
-                        System Settings
+                        <SettingsIcon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" /> System
+                        Settings
                       </button>
                     )}
                     <div className="my-1 h-px bg-border" />
                     <button
+                      type="button"
                       onClick={handleLogout}
                       className="w-full flex items-center gap-2.5 px-4 py-2 text-[13px] text-rose-400 hover:text-rose-300 hover:bg-rose-500/5 transition-colors cursor-pointer"
                     >
-                      <LogOut
-                        className="h-3.5 w-3.5 shrink-0"
-                        aria-hidden="true"
-                      />{" "}
-                      Sign Out
+                      <LogOut className="h-3.5 w-3.5 shrink-0" aria-hidden="true" /> Sign Out
                     </button>
                   </div>
                 </div>

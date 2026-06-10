@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 type MaxWidth = "sm" | "md" | "lg" | "xl" | "full";
 
@@ -31,14 +31,6 @@ interface PageContainerProps {
  *   <h1>My Page</h1>
  * </PageContainer>
  */
-export function PageContainer({
-  children,
-  maxWidth = "xl",
-  className = "",
-}: PageContainerProps) {
-  return (
-    <div className={`${maxWidthMap[maxWidth]} mx-auto h-full ${className}`}>
-      {children}
-    </div>
-  );
+export function PageContainer({ children, maxWidth = "xl", className = "" }: PageContainerProps) {
+  return <div className={`${maxWidthMap[maxWidth]} mx-auto h-full ${className}`}>{children}</div>;
 }

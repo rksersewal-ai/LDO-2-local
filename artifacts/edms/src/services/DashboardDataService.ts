@@ -7,57 +7,81 @@
  * Pages should import from this service instead of pulling mock arrays directly.
  */
 
-import { MOCK_DOCUMENTS, MOCK_AUDIT_LOG } from "../lib/mock";
+import { z } from "zod";
+import { PL_DATABASE, PRODUCTS, type Product } from "../lib/bomData";
+import { DUPLICATE_GROUPS } from "../lib/deduplicationMock";
+import { MOCK_AUDIT_LOG, MOCK_DOCUMENTS } from "../lib/mock";
 import {
   MOCK_APPROVALS,
-  MOCK_OCR_JOBS,
-  MOCK_NOTIFICATIONS,
-  MOCK_WORK_LEDGER,
   MOCK_CASES,
+  MOCK_NOTIFICATIONS,
+  MOCK_OCR_JOBS,
   MOCK_REPORTS,
+  MOCK_WORK_LEDGER,
 } from "../lib/mockExtended";
-import { PRODUCTS, PL_DATABASE } from "../lib/bomData";
-import { DUPLICATE_GROUPS } from "../lib/deduplicationMock";
 import apiClient from "./ApiClient";
 
 const useMockApi = import.meta.env.VITE_ENABLE_DEV_MOCK_API === "true";
 
+type DashboardDocument = (typeof MOCK_DOCUMENTS)[number];
+type DashboardApproval = (typeof MOCK_APPROVALS)[number];
+type DashboardOcrJob = (typeof MOCK_OCR_JOBS)[number];
+type DashboardNotification = (typeof MOCK_NOTIFICATIONS)[number];
+type DashboardCase = (typeof MOCK_CASES)[number];
+type DashboardWorkRecord = (typeof MOCK_WORK_LEDGER)[number];
+type DashboardDuplicateGroup = (typeof DUPLICATE_GROUPS)[number];
+type DashboardReport = (typeof MOCK_REPORTS)[number];
+type DashboardAuditLogEntry = (typeof MOCK_AUDIT_LOG)[number];
+type DashboardPlRecord = (typeof PL_DATABASE)[keyof typeof PL_DATABASE];
+type DashboardPlItem = DashboardPlRecord & { id: string };
+
+const DashboardStatsSchema = z
+  .object({
+    documents: z
+      .object({
+        total: z.number().nullish(),
+        approved: z.number().nullish(),
+      })
+      .nullish(),
+  })
+  .passthrough();
+
 export interface DashboardKpiSnapshot {
-  documents: { total: number; approved: number; data: readonly any[] };
-  approvals: { total: number; pending: number; data: readonly any[] };
+  documents: { total: number; approved: number; data: readonly DashboardDocument[] };
+  approvals: { total: number; pending: number; data: readonly DashboardApproval[] };
   ocrJobs: {
     total: number;
     failed: number;
     processing: number;
-    data: readonly any[];
+    data: readonly DashboardOcrJob[];
   };
-  notifications: { total: number; unread: number; data: readonly any[] };
+  notifications: { total: number; unread: number; data: readonly DashboardNotification[] };
   cases: {
     total: number;
     open: number;
     highSeverity: number;
-    data: readonly any[];
+    data: readonly DashboardCase[];
   };
   workRecords: {
     total: number;
     completed: number;
     inProgress: number;
-    data: readonly any[];
+    data: readonly DashboardWorkRecord[];
   };
-  plItems: { total: number; data: readonly any[] };
+  plItems: { total: number; data: readonly DashboardPlItem[] };
   products: {
     total: number;
     inProduction: number;
     inDevelopment: number;
-    data: readonly any[];
+    data: readonly Product[];
   };
-  dedupGroups: { total: number; pending: number; data: readonly any[] };
-  reports: { total: number; data: readonly any[] };
-  auditLog: readonly any[];
+  dedupGroups: { total: number; pending: number; data: readonly DashboardDuplicateGroup[] };
+  reports: { total: number; data: readonly DashboardReport[] };
+  auditLog: readonly DashboardAuditLogEntry[];
 }
 
 function buildMockSnapshot(): DashboardKpiSnapshot {
-  const plRecords = Object.entries(PL_DATABASE).map(([id, rec]) => ({
+  const plRecords: DashboardPlItem[] = Object.entries(PL_DATABASE).map(([id, rec]) => ({
     id,
     ...rec,
   }));
@@ -105,8 +129,7 @@ function buildMockSnapshot(): DashboardKpiSnapshot {
     products: {
       total: PRODUCTS.length,
       inProduction: PRODUCTS.filter((p) => p.lifecycle === "Production").length,
-      inDevelopment: PRODUCTS.filter((p) => p.lifecycle === "In Development")
-        .length,
+      inDevelopment: PRODUCTS.filter((p) => p.lifecycle === "In Development").length,
       data: PRODUCTS,
     },
     dedupGroups: {
@@ -138,15 +161,15 @@ export const DashboardDataService = {
 
     // Real API path — falls back to mock on failure
     try {
-      const stats = await apiClient.getDashboardStats();
+      const rawStats = await apiClient.getDashboardStats();
+      const stats = DashboardStatsSchema.parse(rawStats);
       // Map backend stats to our snapshot shape; fill gaps from mock for now
       const mock = buildMockSnapshot();
       return {
         ...mock,
         documents: {
-          total: (stats as any).documents?.total ?? mock.documents.total,
-          approved:
-            (stats as any).documents?.approved ?? mock.documents.approved,
+          total: stats.documents?.total ?? mock.documents.total,
+          approved: stats.documents?.approved ?? mock.documents.approved,
           data: mock.documents.data,
         },
       };

@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  ReactNode,
-} from "react";
+import { createContext, type ReactNode, useCallback, useContext, useState } from "react";
 import type { ToastMessage, ToastType } from "../components/ui/Toast";
 
 interface ToastContextType {
@@ -39,20 +33,17 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const showSuccess = useCallback(
-    (message: string, duration?: number) =>
-      addToast(message, "success", duration),
+    (message: string, duration?: number) => addToast(message, "success", duration),
     [addToast],
   );
 
   const showError = useCallback(
-    (message: string, duration?: number) =>
-      addToast(message, "error", duration),
+    (message: string, duration?: number) => addToast(message, "error", duration),
     [addToast],
   );
 
   const showWarning = useCallback(
-    (message: string, duration?: number) =>
-      addToast(message, "warning", duration),
+    (message: string, duration?: number) => addToast(message, "warning", duration),
     [addToast],
   );
 

@@ -1,29 +1,30 @@
 import {
-  Bell,
-  CheckSquare,
-  ServerCog,
   AlertCircle,
-  Briefcase,
-  X,
-  ExternalLink,
   AlertTriangle,
+  Bell,
+  Briefcase,
+  CheckSquare,
+  ExternalLink,
+  Eye,
   GitBranch,
   GitCommitHorizontal,
-  Eye,
   MoreHorizontal,
+  ServerCog,
+  X,
 } from "lucide-react";
+import type { KeyboardEvent } from "react";
 import { useNavigate } from "react-router";
-import type { DocumentChangeAlert } from "../../services/DocumentChangeAlertService";
+import {
+  resolveDocumentPreviewPath,
+  resolveNotificationPreviewDocumentId,
+} from "../../lib/documentPreview";
+import { getWorkflowActions, type InboxAction } from "../../lib/inboxActions";
 import {
   resolveNotificationActionLabel,
   resolveNotificationPath,
 } from "../../lib/notificationRouting";
 import type { AppInboxItem } from "../../lib/types";
-import { getWorkflowActions, type InboxAction } from "../../lib/inboxActions";
-import {
-  resolveDocumentPreviewPath,
-  resolveNotificationPreviewDocumentId,
-} from "../../lib/documentPreview";
+import type { DocumentChangeAlert } from "../../services/DocumentChangeAlertService";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,21 +33,15 @@ import {
 } from "../ui/dropdown-menu";
 
 const typeIcon = (type: string) => {
-  if (type === "approval")
-    return <CheckSquare className="w-4 h-4 text-amber-400" />;
+  if (type === "approval") return <CheckSquare className="w-4 h-4 text-amber-400" />;
   if (type === "ocr") return <ServerCog className="w-4 h-4 text-blue-400" />;
   if (type === "case") return <AlertCircle className="w-4 h-4 text-rose-400" />;
   if (type === "work") return <Briefcase className="w-4 h-4 text-primary" />;
-  if (type === "design-change")
-    return <AlertTriangle className="w-4 h-4 text-amber-300" />;
-  if (type === "dedup_review")
-    return <AlertTriangle className="w-4 h-4 text-violet-300" />;
-  if (type === "indexing_failure")
-    return <ServerCog className="w-4 h-4 text-rose-300" />;
-  if (type === "change_request")
-    return <GitBranch className="w-4 h-4 text-cyan-300" />;
-  if (type === "change_notice")
-    return <GitCommitHorizontal className="w-4 h-4 text-indigo-300" />;
+  if (type === "design-change") return <AlertTriangle className="w-4 h-4 text-amber-300" />;
+  if (type === "dedup_review") return <AlertTriangle className="w-4 h-4 text-violet-300" />;
+  if (type === "indexing_failure") return <ServerCog className="w-4 h-4 text-rose-300" />;
+  if (type === "change_request") return <GitBranch className="w-4 h-4 text-cyan-300" />;
+  if (type === "change_notice") return <GitCommitHorizontal className="w-4 h-4 text-indigo-300" />;
   return <Bell className="w-4 h-4 text-muted-foreground" />;
 };
 
@@ -68,10 +63,7 @@ export function NotificationPanel({
     alertId: string,
     payload?: { notes?: string; bypassReason?: string },
   ) => Promise<void> | void;
-  onWorkflowAction?: (
-    notification: AppInboxItem,
-    action: InboxAction,
-  ) => Promise<void> | void;
+  onWorkflowAction?: (notification: AppInboxItem, action: InboxAction) => Promise<void> | void;
   actionable?: boolean;
   busyItemId?: string | null;
 }) {
@@ -93,14 +85,20 @@ export function NotificationPanel({
     onClose();
   };
 
+  const activateRowFromKeyboard = (event: KeyboardEvent<HTMLDivElement>, action: () => void) => {
+    if (event.target !== event.currentTarget) return;
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      action();
+    }
+  };
+
   return (
     <div className="absolute right-0 top-full mt-2 w-96 bg-card/95 backdrop-blur-xl border border-teal-500/20 rounded-2xl shadow-2xl shadow-teal-950/50 z-50 overflow-hidden">
       <div className="flex items-center justify-between px-5 py-4 border-b border-border">
         <div className="flex items-center gap-2">
           <Bell className="w-4 h-4 text-primary" />
-          <span className="text-sm font-semibold text-foreground">
-            Notifications
-          </span>
+          <span className="text-sm font-semibold text-foreground">Notifications</span>
           {unread > 0 && (
             <span className="bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
               {unread}
@@ -108,6 +106,7 @@ export function NotificationPanel({
           )}
         </div>
         <button
+          type="button"
           onClick={onClose}
           className="text-muted-foreground hover:text-foreground/90 transition-colors"
         >
@@ -121,15 +120,19 @@ export function NotificationPanel({
               Linked document change alerts
             </div>
             {documentChangeAlerts.map((alert) => (
+              // biome-ignore lint/a11y/useSemanticElements: outer container needs click handler, but nested buttons make semantic button tag invalid HTML
               <div
+                role="button"
+                tabIndex={0}
                 key={alert.id}
-                className="px-5 py-4 border-b border-border/40 hover:bg-amber-500/6 transition-colors cursor-pointer"
+                className="w-full px-5 py-4 border-b border-border/40 hover:bg-amber-500/6 transition-colors text-left"
                 onClick={() => openDocumentAlert(alert)}
+                onKeyDown={(event) =>
+                  activateRowFromKeyboard(event, () => openDocumentAlert(alert))
+                }
               >
                 <div className="flex items-start gap-3">
-                  <div className="mt-0.5 shrink-0">
-                    {typeIcon("design-change")}
-                  </div>
+                  <div className="mt-0.5 shrink-0">{typeIcon("design-change")}</div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
                       <span className="text-xs font-semibold text-foreground">
@@ -140,9 +143,7 @@ export function NotificationPanel({
                     <p className="text-xs text-foreground/90 leading-relaxed">
                       {alert.documentName}
                     </p>
-                    <p className="text-[11px] text-amber-200 mt-1">
-                      {alert.message}
-                    </p>
+                    <p className="text-[11px] text-amber-200 mt-1">{alert.message}</p>
                     <p className="text-[10px] text-muted-foreground mt-1">
                       {alert.designSupervisor
                         ? `Design Supervisor: ${alert.designSupervisor}`
@@ -152,6 +153,7 @@ export function NotificationPanel({
                 </div>
                 <div className="mt-3 flex items-center gap-2">
                   <button
+                    type="button"
                     onClick={(event) => {
                       event.stopPropagation();
                       openPreview(alert.documentId);
@@ -162,6 +164,7 @@ export function NotificationPanel({
                     Preview
                   </button>
                   <button
+                    type="button"
                     onClick={(event) => {
                       event.stopPropagation();
                       openDocumentAlert(alert);
@@ -185,15 +188,12 @@ export function NotificationPanel({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                       align="end"
-                      className="w-48 border border-border/60 bg-slate-950 text-foreground"
+                      className="w-48 border border-border bg-popover text-popover-foreground"
                     >
                       <DropdownMenuItem
                         className="focus:bg-secondary"
                         onSelect={() =>
-                          void onApproveAlert?.(
-                            alert.id,
-                            "Approved from header notification",
-                          )
+                          void onApproveAlert?.(alert.id, "Approved from header notification")
                         }
                       >
                         Approve update
@@ -220,22 +220,23 @@ export function NotificationPanel({
           const actions = actionable ? getWorkflowActions(n) : [];
           const previewDocumentId = resolveNotificationPreviewDocumentId(n);
           return (
+            // biome-ignore lint/a11y/useSemanticElements: outer container needs click handler, but nested buttons make semantic button tag invalid HTML
             <div
+              role="button"
+              tabIndex={0}
               key={n.id}
               onClick={() => openNotification(n)}
-              className="flex items-start gap-3 px-5 py-4 border-b border-border/50 hover:bg-secondary/30 cursor-pointer transition-colors"
+              onKeyDown={(event) => activateRowFromKeyboard(event, () => openNotification(n))}
+              className="w-full flex items-start gap-3 px-5 py-4 border-b border-border/50 hover:bg-secondary/30 transition-colors text-left"
             >
               <div className="mt-0.5 shrink-0">{typeIcon(n.type)}</div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-xs font-semibold text-foreground">
-                    {n.title}
-                  </span>
+                  <span className="text-xs font-semibold text-foreground">{n.title}</span>
                   <span className="w-1.5 h-1.5 rounded-full bg-teal-500 shrink-0" />
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  {n.subtitle ||
-                    "Actionable workflow item waiting in the queue."}
+                  {n.subtitle || "Actionable workflow item waiting in the queue."}
                 </p>
                 <span className="text-[10px] text-slate-600 mt-1 block">
                   {n.created_at || "Now"}
@@ -280,7 +281,7 @@ export function NotificationPanel({
                       </DropdownMenuTrigger>
                       <DropdownMenuContent
                         align="end"
-                        className="w-48 border border-border/60 bg-slate-950 text-foreground"
+                        className="w-48 border border-border bg-popover text-popover-foreground"
                       >
                         {actions.map((action) => (
                           <DropdownMenuItem
@@ -289,9 +290,7 @@ export function NotificationPanel({
                             className={`focus:bg-secondary ${action.variant === "danger" ? "text-rose-200 focus:text-rose-100" : ""}`}
                             onSelect={() => void onWorkflowAction?.(n, action)}
                           >
-                            {busyItemId === `${n.id}:${action.key}`
-                              ? "Working..."
-                              : action.label}
+                            {busyItemId === `${n.id}:${action.key}` ? "Working..." : action.label}
                           </DropdownMenuItem>
                         ))}
                       </DropdownMenuContent>
@@ -308,6 +307,7 @@ export function NotificationPanel({
       </div>
       <div className="px-5 py-3 border-t border-border">
         <button
+          type="button"
           onClick={() => {
             navigate("/notifications");
             onClose();

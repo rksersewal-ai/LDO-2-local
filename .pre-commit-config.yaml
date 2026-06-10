@@ -25,11 +25,20 @@ repos:
         files: ^backend/
 
   # ─── JavaScript/TypeScript (Frontend) ─────────────────────────────────────
+  - repo: local
+    hooks:
+      - id: biome-check
+        name: Biome Check
+        entry: pnpm biome:check
+        language: system
+        files: ^(src|artifacts|lib)/.*\.(ts|tsx|js|jsx)$
+        pass_filenames: false
+
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v4.0.0-alpha.8
     hooks:
       - id: prettier
-        files: ^(src|artifacts|lib)/.*\.(ts|tsx|js|jsx|css|json|md)$
+        files: ^(src|artifacts|lib)/.*\.(css|json|md)$
         exclude: ^(pnpm-lock\.yaml|.*node_modules.*)$
 
   # ─── Conventional Commits ──────────────────────────────────────────────────

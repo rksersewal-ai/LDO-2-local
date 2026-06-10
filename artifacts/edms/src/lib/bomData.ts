@@ -171,12 +171,12 @@ export function searchTree(nodes: BOMNode[], query: string): Set<string> {
         node.id.toLowerCase().includes(q) ||
         node.tags.some((t) => t.toLowerCase().includes(q));
       const childFound =
-        node.children.length > 0
-          ? search(node.children, [...ancestors, node.id])
-          : false;
+        node.children.length > 0 ? search(node.children, [...ancestors, node.id]) : false;
       if (match || childFound) {
         matches.add(node.id);
-        ancestors.forEach((a) => matches.add(a));
+        ancestors.forEach((a) => {
+          matches.add(a);
+        });
         found = true;
       }
     }
@@ -255,33 +255,22 @@ export function parseWeightKg(weight?: string): number | null {
 }
 
 export function getNodeUnitWeightKg(node: BOMNode): number {
-  if (
-    typeof node.unitWeightKg === "number" &&
-    Number.isFinite(node.unitWeightKg)
-  ) {
+  if (typeof node.unitWeightKg === "number" && Number.isFinite(node.unitWeightKg)) {
     return node.unitWeightKg;
   }
 
   return parseWeightKg(PL_DATABASE[node.id]?.weight) ?? 0;
 }
 
-export function estimateUnitCost(
-  node: Pick<BOMNode, "id" | "type" | "unitCost">,
-): number {
+export function estimateUnitCost(node: Pick<BOMNode, "id" | "type" | "unitCost">): number {
   if (typeof node.unitCost === "number" && Number.isFinite(node.unitCost)) {
     return node.unitCost;
   }
 
   const plRecord = PL_DATABASE[node.id];
   const weightKg = parseWeightKg(plRecord?.weight) ?? 0;
-  const sourceRate =
-    plRecord?.source === "Buy"
-      ? 520
-      : plRecord?.source === "Make/Buy"
-        ? 390
-        : 280;
-  const typeFactor =
-    node.type === "assembly" ? 2.2 : node.type === "sub-assembly" ? 1.55 : 1;
+  const sourceRate = plRecord?.source === "Buy" ? 520 : plRecord?.source === "Make/Buy" ? 390 : 280;
+  const typeFactor = node.type === "assembly" ? 2.2 : node.type === "sub-assembly" ? 1.55 : 1;
 
   if (weightKg > 0) {
     return Math.round(weightKg * sourceRate * typeFactor);
@@ -292,9 +281,7 @@ export function estimateUnitCost(
   return 12000;
 }
 
-function computeSingleUnitRollup(
-  node: BOMNode,
-): Omit<BOMRollup, "lineQuantity"> {
+function computeSingleUnitRollup(node: BOMNode): Omit<BOMRollup, "lineQuantity"> {
   let componentInstances = 1;
   let totalWeightKg = getNodeUnitWeightKg(node);
   let totalCost = estimateUnitCost(node);
@@ -325,8 +312,7 @@ export function computeTreeRollup(nodes: BOMNode[]): BOMRollup {
       const rollup = computeNodeRollup(node);
       return {
         lineQuantity: accumulator.lineQuantity + rollup.lineQuantity,
-        componentInstances:
-          accumulator.componentInstances + rollup.componentInstances,
+        componentInstances: accumulator.componentInstances + rollup.componentInstances,
         totalWeightKg: accumulator.totalWeightKg + rollup.totalWeightKg,
         totalCost: accumulator.totalCost + rollup.totalCost,
       };
@@ -350,10 +336,7 @@ export function getAncestorIds(
       return ancestors;
     }
 
-    const nextAncestors = getAncestorIds(node.children, targetId, [
-      ...ancestors,
-      node.id,
-    ]);
+    const nextAncestors = getAncestorIds(node.children, targetId, [...ancestors, node.id]);
     if (nextAncestors.length > 0) {
       return nextAncestors;
     }

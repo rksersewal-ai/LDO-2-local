@@ -13,19 +13,14 @@ function readHistory(): NavigationEntry[] {
       return [];
     }
     const parsed = JSON.parse(raw) as NavigationEntry[];
-    return Array.isArray(parsed)
-      ? parsed.filter((entry) => typeof entry?.path === "string")
-      : [];
+    return Array.isArray(parsed) ? parsed.filter((entry) => typeof entry?.path === "string") : [];
   } catch {
     return [];
   }
 }
 
 function writeHistory(entries: NavigationEntry[]) {
-  localStorage.setItem(
-    NAVIGATION_HISTORY_KEY,
-    JSON.stringify(entries.slice(-MAX_HISTORY_ITEMS)),
-  );
+  localStorage.setItem(NAVIGATION_HISTORY_KEY, JSON.stringify(entries.slice(-MAX_HISTORY_ITEMS)));
 }
 
 export const NavigationHistoryService = {

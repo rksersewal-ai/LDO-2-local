@@ -1,4 +1,3 @@
-import { useEffect, useMemo, useState } from "react";
 import {
   Bell,
   Clock3,
@@ -11,25 +10,15 @@ import {
   ShieldCheck,
   UserRound,
 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import {
-  Badge,
-  Button,
-  GlassCard,
-  Input,
-  PageHeader,
-  Select,
-} from "../components/ui/Shared";
+import { Badge, Button, GlassCard, Input, PageHeader, Select } from "../components/ui/Shared";
 import { Switch } from "../components/ui/switch";
-import { useAuth } from "../lib/auth";
 import { useTheme } from "../contexts/ThemeContext";
-import {
-  PreferencesService,
-  type UserPreferences,
-} from "../services/PreferencesService";
-import { UserService } from "../services/UserService";
+import { useAuth } from "../lib/auth";
+import { PreferencesService, type UserPreferences } from "../services/PreferencesService";
 
-function formatLastLogin(value?: string) {
+function _formatLastLogin(value?: string) {
   if (!value) return "Not available";
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return value;
@@ -51,9 +40,7 @@ export default function ProfilePage() {
     designation: user?.designation ?? "",
     department: user?.department ?? "",
   });
-  const [prefs, setPrefs] = useState<UserPreferences>(() =>
-    PreferencesService.get(),
-  );
+  const [prefs, setPrefs] = useState<UserPreferences>(() => PreferencesService.get());
 
   useEffect(() => {
     setProfile({
@@ -67,14 +54,8 @@ export default function ProfilePage() {
   useEffect(() => {
     const nextPrefs = PreferencesService.get();
     setPrefs(nextPrefs);
-    document.documentElement.style.setProperty(
-      "--app-font-size",
-      `${nextPrefs.fontSize}px`,
-    );
-    document.documentElement.classList.toggle(
-      "reduce-motion",
-      nextPrefs.reduceMotion,
-    );
+    document.documentElement.style.setProperty("--app-font-size", `${nextPrefs.fontSize}px`);
+    document.documentElement.classList.toggle("reduce-motion", nextPrefs.reduceMotion);
   }, []);
 
   const roleLabel = useMemo(() => user?.role ?? "viewer", [user]);
@@ -93,14 +74,8 @@ export default function ProfilePage() {
   const savePreference = (patch: Partial<UserPreferences>) => {
     const updated = PreferencesService.set(patch);
     setPrefs(updated);
-    document.documentElement.style.setProperty(
-      "--app-font-size",
-      `${updated.fontSize}px`,
-    );
-    document.documentElement.classList.toggle(
-      "reduce-motion",
-      updated.reduceMotion,
-    );
+    document.documentElement.style.setProperty("--app-font-size", `${updated.fontSize}px`);
+    document.documentElement.classList.toggle("reduce-motion", updated.reduceMotion);
     toast.success("Personal settings updated");
   };
 
@@ -114,15 +89,13 @@ export default function ProfilePage() {
 
       <div className="grid gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
         <div className="space-y-4">
-          <GlassCard className="p-6">
+          <GlassCard className="p-3.5 border-border/50 bg-card/40 backdrop-blur-md hover:-translate-y-0.5 hover:border-primary/30 hover:bg-secondary/40 transition-all duration-200">
             <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-teal-500 to-emerald-500 text-xl font-bold text-white">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-teal-500 to-emerald-500 text-xl font-bold text-foreground">
                 {user?.name?.charAt(0) ?? "U"}
               </div>
               <div>
-                <p className="text-lg font-semibold text-white">
-                  {user?.name ?? "User"}
-                </p>
+                <p className="text-lg font-semibold text-foreground">{user?.name ?? "User"}</p>
                 <p className="text-sm text-muted-foreground">
                   {user?.designation ?? "Workspace User"}
                 </p>
@@ -133,21 +106,19 @@ export default function ProfilePage() {
             </div>
             <div className="mt-5 space-y-3 text-sm text-foreground/90">
               <div className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-muted-foreground" />{" "}
-                {user?.email ?? "No email set"}
+                <Mail className="w-4 h-4 text-muted-foreground" /> {user?.email ?? "No email set"}
               </div>
               <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-muted-foreground" />{" "}
-                Department: {user?.department ?? "Not set"}
+                <ShieldCheck className="w-4 h-4 text-muted-foreground" /> Department:{" "}
+                {user?.department ?? "Not set"}
               </div>
               <div className="flex items-center gap-2">
-                <Clock3 className="w-4 h-4 text-muted-foreground" /> Session
-                active
+                <Clock3 className="w-4 h-4 text-muted-foreground" /> Session active
               </div>
             </div>
           </GlassCard>
 
-          <GlassCard className="p-5">
+          <GlassCard className="p-3.5 border-border/50 bg-card/40 backdrop-blur-md hover:-translate-y-0.5 hover:border-primary/30 hover:bg-secondary/40 transition-all duration-200">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
               Current Workspace Behavior
             </p>
@@ -173,17 +144,18 @@ export default function ProfilePage() {
         </div>
 
         <div className="space-y-6">
-          <GlassCard className="p-6">
+          <GlassCard className="p-3.5 border-border/50 bg-card/40 backdrop-blur-md">
             <div className="mb-5 flex items-center gap-2">
               <UserRound className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-semibold text-white">Identity</h2>
+              <h2 className="text-lg font-semibold text-foreground">Identity</h2>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                   Full Name
-                </label>
+                </span>
                 <Input
+                  className="h-9"
                   value={profile.name}
                   onChange={(event) =>
                     setProfile((current) => ({
@@ -194,10 +166,11 @@ export default function ProfilePage() {
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                   Email
-                </label>
+                </span>
                 <Input
+                  className="h-9"
                   value={profile.email}
                   onChange={(event) =>
                     setProfile((current) => ({
@@ -208,10 +181,11 @@ export default function ProfilePage() {
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                   Designation
-                </label>
+                </span>
                 <Input
+                  className="h-9"
                   value={profile.designation}
                   onChange={(event) =>
                     setProfile((current) => ({
@@ -222,10 +196,11 @@ export default function ProfilePage() {
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                   Department
-                </label>
+                </span>
                 <Input
+                  className="h-9"
                   value={profile.department}
                   onChange={(event) =>
                     setProfile((current) => ({
@@ -243,19 +218,18 @@ export default function ProfilePage() {
             </div>
           </GlassCard>
 
-          <GlassCard className="p-6">
+          <GlassCard className="p-3.5 border-border/50 bg-card/40 backdrop-blur-md">
             <div className="mb-5 flex items-center gap-2">
               <Palette className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-semibold text-white">
-                Personalized Settings
-              </h2>
+              <h2 className="text-lg font-semibold text-foreground">Personalized Settings</h2>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                   Theme
-                </label>
+                </span>
                 <Select
+                  className="h-9 text-xs"
                   value={theme}
                   onChange={(event) => {
                     const next = event.target.value as "dark" | "light";
@@ -269,14 +243,13 @@ export default function ProfilePage() {
                 </Select>
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                   Font Size
-                </label>
+                </span>
                 <Select
+                  className="h-9 text-xs"
                   value={String(prefs.fontSize)}
-                  onChange={(event) =>
-                    savePreference({ fontSize: Number(event.target.value) })
-                  }
+                  onChange={(event) => savePreference({ fontSize: Number(event.target.value) })}
                 >
                   {[12, 13, 14, 15, 16, 17, 18].map((size) => (
                     <option key={size} value={size}>
@@ -286,14 +259,13 @@ export default function ProfilePage() {
                 </Select>
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                   Default Landing Page
-                </label>
+                </span>
                 <Select
+                  className="h-9 text-xs"
                   value={prefs.defaultView}
-                  onChange={(event) =>
-                    savePreference({ defaultView: event.target.value })
-                  }
+                  onChange={(event) => savePreference({ defaultView: event.target.value })}
                 >
                   <option value="/">Dashboard</option>
                   <option value="/documents">Document Hub</option>
@@ -303,15 +275,15 @@ export default function ProfilePage() {
                 </Select>
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                   Time Format
-                </label>
+                </span>
                 <Select
+                  className="h-9 text-xs"
                   value={prefs.timeFormat}
                   onChange={(event) =>
                     savePreference({
-                      timeFormat: event.target
-                        .value as UserPreferences["timeFormat"],
+                      timeFormat: event.target.value as UserPreferences["timeFormat"],
                     })
                   }
                 >
@@ -326,29 +298,23 @@ export default function ProfilePage() {
                 {
                   icon: Clock3,
                   title: "Show live header clock",
-                  description:
-                    "Display the current day and time in the top-right app chrome.",
+                  description: "Display the current day and time in the top-right app chrome.",
                   checked: prefs.showLiveClock,
-                  onChange: (checked: boolean) =>
-                    savePreference({ showLiveClock: checked }),
+                  onChange: (checked: boolean) => savePreference({ showLiveClock: checked }),
                 },
                 {
                   icon: Eye,
                   title: "Use compact tables",
-                  description:
-                    "Tighten row density for scan-heavy lists and admin tables.",
+                  description: "Tighten row density for scan-heavy lists and admin tables.",
                   checked: prefs.compactTables,
-                  onChange: (checked: boolean) =>
-                    savePreference({ compactTables: checked }),
+                  onChange: (checked: boolean) => savePreference({ compactTables: checked }),
                 },
                 {
                   icon: MoonStar,
                   title: "Reduce motion",
-                  description:
-                    "Tone down non-essential animation in the workspace shell.",
+                  description: "Tone down non-essential animation in the workspace shell.",
                   checked: prefs.reduceMotion,
-                  onChange: (checked: boolean) =>
-                    savePreference({ reduceMotion: checked }),
+                  onChange: (checked: boolean) => savePreference({ reduceMotion: checked }),
                 },
                 {
                   icon: Bell,
@@ -356,49 +322,40 @@ export default function ProfilePage() {
                   description:
                     "Preserve the wider navigation rail as your default desktop preference.",
                   checked: prefs.sidebarExpanded,
-                  onChange: (checked: boolean) =>
-                    savePreference({ sidebarExpanded: checked }),
+                  onChange: (checked: boolean) => savePreference({ sidebarExpanded: checked }),
                 },
               ].map((setting) => (
                 <div
                   key={setting.title}
-                  className="flex items-center justify-between rounded-xl border border-white/6 bg-card/35 px-4 py-3"
+                  className="flex items-center justify-between rounded-xl border border-border/50 bg-card/35 p-3.5"
                 >
                   <div className="flex items-start gap-3">
                     <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-teal-500/12 text-primary/90">
                       <setting.icon className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-foreground">
-                        {setting.title}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {setting.description}
-                      </p>
+                      <p className="text-sm font-medium text-foreground">{setting.title}</p>
+                      <p className="text-xs text-muted-foreground">{setting.description}</p>
                     </div>
                   </div>
-                  <Switch
-                    checked={setting.checked}
-                    onCheckedChange={setting.onChange}
-                  />
+                  <Switch checked={setting.checked} onCheckedChange={setting.onChange} />
                 </div>
               ))}
             </div>
           </GlassCard>
 
-          <GlassCard className="p-6">
+          <GlassCard className="p-3.5 border-border/50 bg-card/40 backdrop-blur-md">
             <div className="mb-4 flex items-center gap-2">
               <LayoutDashboard className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-semibold text-white">
-                Workspace Defaults
-              </h2>
+              <h2 className="text-lg font-semibold text-foreground">Workspace Defaults</h2>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                   Document Page Size
-                </label>
+                </span>
                 <Select
+                  className="h-9 text-xs"
                   value={String(prefs.documentHubPageSize)}
                   onChange={(event) =>
                     savePreference({
@@ -414,10 +371,11 @@ export default function ProfilePage() {
                 </Select>
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                   Work Ledger Page Size
-                </label>
+                </span>
                 <Select
+                  className="h-9 text-xs"
                   value={String(prefs.workLedgerPageSize)}
                   onChange={(event) =>
                     savePreference({

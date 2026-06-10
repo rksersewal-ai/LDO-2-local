@@ -1,34 +1,34 @@
-import { NavLink, useLocation } from "react-router";
 import {
-  LayoutDashboard,
-  FolderOpen,
-  Component,
   Activity,
+  BarChart3,
+  Bell,
+  BookOpen,
   Briefcase,
   CheckSquare,
-  BarChart3,
-  ShieldAlert,
-  Settings,
-  ServerCog,
-  DatabaseBackup,
-  Megaphone,
   ClipboardList,
-  FileBarChart,
-  BookOpen,
-  Telescope,
-  Bell,
-  FileCheck2,
-  MonitorCheck,
+  Component,
   CopyCheck,
-  Users,
+  DatabaseBackup,
+  FileBarChart,
+  FileCheck2,
+  FolderOpen,
   Layers3,
+  LayoutDashboard,
+  Megaphone,
+  MonitorCheck,
   PanelLeftClose,
   PanelLeftOpen,
+  ServerCog,
+  Settings,
+  ShieldAlert,
+  Telescope,
+  Users,
 } from "lucide-react";
-import { useAuth } from "../../lib/auth";
-import type { UserRole } from "../../lib/auth";
+import { NavLink, useLocation } from "react-router";
 import { cn } from "@/lib/utils";
-import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
+import type { UserRole } from "../../lib/auth";
+import { useAuth } from "../../lib/auth";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
@@ -46,33 +46,22 @@ interface NavGroup {
 
 const navGroups: NavGroup[] = [
   {
-    label: "Core",
+    label: "General",
     items: [
       { icon: LayoutDashboard, label: "Dashboard", path: "/" },
-      { icon: Telescope, label: "Search Explorer", path: "/search" },
-      { icon: FolderOpen, label: "Document Hub", path: "/documents" },
+      { icon: Telescope, label: "Global Search", path: "/search" },
+      { icon: FolderOpen, label: "Documents", path: "/documents" },
     ],
   },
   {
-    label: "Engineering",
+    label: "Tasks",
     items: [
       {
-        icon: Component,
-        label: "BOM Explorer",
-        path: "/bom",
-        roles: ["admin", "supervisor", "engineer"],
+        icon: CheckSquare,
+        label: "Approvals",
+        path: "/approvals",
+        roles: ["admin", "supervisor", "engineer", "reviewer"],
       },
-      {
-        icon: DatabaseBackup,
-        label: "PL Knowledge Hub",
-        path: "/pl",
-        roles: ["admin", "supervisor", "engineer"],
-      },
-    ],
-  },
-  {
-    label: "Workflow",
-    items: [
       {
         icon: Briefcase,
         label: "Work Ledger",
@@ -85,24 +74,23 @@ const navGroups: NavGroup[] = [
         path: "/cases",
         roles: ["admin", "supervisor", "engineer", "reviewer"],
       },
+    ],
+  },
+  {
+    label: "Pages",
+    items: [
       {
-        icon: CheckSquare,
-        label: "Approvals",
-        path: "/approvals",
-        roles: ["admin", "supervisor", "engineer", "reviewer"],
+        icon: Component,
+        label: "BOM",
+        path: "/bom",
+        roles: ["admin", "supervisor", "engineer"],
       },
-    ],
-  },
-  {
-    label: "Tools",
-    items: [
-      { icon: Bell, label: "Alert Rules", path: "/alerts" },
-      { icon: FileCheck2, label: "Doc Templates", path: "/templates" },
-    ],
-  },
-  {
-    label: "Reports",
-    items: [
+      {
+        icon: DatabaseBackup,
+        label: "PL Knowledge",
+        path: "/pl",
+        roles: ["admin", "supervisor", "engineer"],
+      },
       {
         icon: BarChart3,
         label: "Reports",
@@ -118,8 +106,18 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    label: "System",
+    label: "Users",
     items: [
+      { icon: Users, label: "User Management", path: "/admin/users", roles: ["admin"] },
+      { icon: ShieldAlert, label: "Profile", path: "/profile" },
+      { icon: Bell, label: "Notifications", path: "/notifications" },
+    ],
+  },
+  {
+    label: "Settings",
+    items: [
+      { icon: Bell, label: "Alert Rules", path: "/alerts" },
+      { icon: FileCheck2, label: "Templates", path: "/templates" },
       {
         icon: ServerCog,
         label: "Admin",
@@ -133,7 +131,18 @@ const navGroups: NavGroup[] = [
         path: "/admin/initial-run",
         roles: ["admin"],
       },
-      { icon: Users, label: "Users", path: "/admin/users", roles: ["admin"] },
+      {
+        icon: Settings,
+        label: "System Settings",
+        path: "/settings",
+        roles: ["admin"],
+      },
+      { icon: Megaphone, label: "Banners", path: "/banners", roles: ["admin"] },
+    ],
+  },
+  {
+    label: "Developers",
+    items: [
       {
         icon: CopyCheck,
         label: "Deduplication",
@@ -153,13 +162,6 @@ const navGroups: NavGroup[] = [
         path: "/audit",
         roles: ["admin"],
       },
-      { icon: Megaphone, label: "Banners", path: "/banners", roles: ["admin"] },
-      {
-        icon: Settings,
-        label: "Settings",
-        path: "/settings",
-        roles: ["admin"],
-      },
       {
         icon: BookOpen,
         label: "Design System",
@@ -170,8 +172,8 @@ const navGroups: NavGroup[] = [
   },
 ];
 
-const NAV_EXPANDED = 284;
-const NAV_COLLAPSED = 76;
+const NAV_EXPANDED = 248;
+const NAV_COLLAPSED = 64;
 
 interface SidebarProps {
   isExpanded: boolean;
@@ -187,10 +189,8 @@ export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
       style={{ width: isExpanded ? NAV_EXPANDED : NAV_COLLAPSED }}
       className="workspace-rail relative z-40 flex h-full shrink-0 flex-col overflow-hidden transition-[width] duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]"
     >
-      <div className="absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-sidebar-primary/80 to-transparent" />
-
       {/* ── Logo + collapse toggle ────────────────────────────────────────── */}
-      <div className="flex h-16 items-center border-b border-sidebar-border/80 px-4 shrink-0">
+      <div className="flex h-14 shrink-0 items-center border-b border-sidebar-border px-3">
         {/* Brand mark */}
         <div
           className={cn(
@@ -202,15 +202,15 @@ export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
           <img
             src="/sidebar-logo.png"
             alt="LDO-2"
-            className="relative h-9 w-9 shrink-0 rounded-2xl border border-sidebar-border/80 bg-card/70 object-contain p-1.5 shadow-[0_12px_28px_rgba(15,23,42,0.08)] select-none"
+            className="relative h-8 w-8 shrink-0 rounded-md border border-sidebar-border bg-card object-contain p-1 select-none"
           />
           {isExpanded && (
             <div className="overflow-hidden whitespace-nowrap">
-              <p className="text-[15px] font-semibold leading-tight tracking-[-0.02em] text-sidebar-foreground">
+              <p className="text-sm font-semibold leading-tight text-sidebar-foreground">
                 LDO-2 EDMS
               </p>
-              <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.14em] leading-tight text-muted-foreground">
-                Industrial Control
+              <p className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.12em] leading-tight text-muted-foreground">
+                Admin Console
               </p>
             </div>
           )}
@@ -219,10 +219,11 @@ export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
         {/* Collapse toggle (only in expanded state) */}
         {isExpanded && (
           <button
+            type="button"
             onClick={onToggle}
             title="Collapse navigation"
             aria-label="Collapse navigation"
-            className="shrink-0 flex h-9 w-9 items-center justify-center rounded-xl border border-transparent text-sidebar-foreground/50 transition-all duration-150 hover:border-sidebar-border hover:bg-card/75 hover:text-sidebar-foreground"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-transparent text-sidebar-foreground/50 transition-colors duration-150 hover:border-sidebar-border hover:bg-sidebar-accent hover:text-sidebar-foreground"
           >
             <PanelLeftClose className="h-[15px] w-[15px]" />
           </button>
@@ -232,20 +233,18 @@ export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
       {/* ── Expand toggle (collapsed state only) ─────────────────────────── */}
       {!isExpanded && (
         <button
+          type="button"
           onClick={onToggle}
           title="Expand navigation"
           aria-label="Expand navigation"
-          className="mx-auto mt-3 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-transparent text-sidebar-foreground/50 transition-all duration-150 hover:border-sidebar-border hover:bg-card/75 hover:text-sidebar-foreground"
+          className="mx-auto mt-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-transparent text-sidebar-foreground/50 transition-colors duration-150 hover:border-sidebar-border hover:bg-sidebar-accent hover:text-sidebar-foreground"
         >
           <PanelLeftOpen className="h-[15px] w-[15px]" />
         </button>
       )}
 
       {/* ── Nav scroll area ─────────────────────────────────────────────── */}
-      <nav
-        aria-label="Main navigation"
-        className="flex-1 overflow-y-auto py-2 scrollbar-hide"
-      >
+      <nav aria-label="Main navigation" className="flex-1 overflow-y-auto py-2 thin-scrollbar">
         {navGroups.map((group) => {
           const visibleItems = group.items.filter(
             (item) => !item.roles || hasPermission(item.roles),
@@ -253,12 +252,12 @@ export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
           if (visibleItems.length === 0) return null;
 
           return (
-            <div key={group.label} className="mb-2">
+            <div key={group.label} className="mb-1">
               {/* Section label */}
               {isExpanded ? (
                 <div className="nav-section-label">{group.label}</div>
               ) : (
-                <div className="mx-3 my-2 h-px bg-sidebar-border opacity-60" />
+                <div className="mx-3 my-2 h-px bg-sidebar-border" />
               )}
 
               {visibleItems.map((item) => {
@@ -276,22 +275,22 @@ export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                     to={item.path}
                     aria-current={isActive ? "page" : undefined}
                     className={cn(
-                      "group relative mx-2 flex h-10 items-center gap-2.5 rounded-xl border transition-all duration-150",
+                      "group relative mx-2 flex h-8 items-center gap-2 rounded-md border text-[13px] transition-colors duration-150",
                       isExpanded ? "px-3" : "justify-center px-0",
                       isActive
-                        ? "border-sidebar-border bg-card/90 font-medium text-sidebar-foreground shadow-[0_12px_24px_rgba(15,23,42,0.08)]"
-                        : "border-transparent text-sidebar-foreground/65 hover:border-sidebar-border/80 hover:bg-card/70 hover:text-sidebar-foreground",
+                        ? "border-sidebar-border bg-sidebar-accent font-medium text-sidebar-accent-foreground"
+                        : "border-transparent text-sidebar-foreground/65 hover:border-sidebar-border hover:bg-sidebar-accent/70 hover:text-sidebar-foreground",
                     )}
                   >
                     {/* Active left indicator */}
                     {isActive && (
-                      <span className="absolute left-1 top-1/2 h-[18px] w-[4px] -translate-y-1/2 rounded-r-full bg-sidebar-primary" />
+                      <span className="absolute left-1 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-sidebar-primary" />
                     )}
 
                     <Icon
                       aria-hidden="true"
                       className={cn(
-                        "h-[17px] w-[17px] shrink-0 transition-colors duration-100",
+                        "h-4 w-4 shrink-0 transition-colors duration-100",
                         isActive
                           ? "text-sidebar-primary"
                           : "text-sidebar-foreground/50 group-hover:text-sidebar-foreground",
@@ -308,8 +307,8 @@ export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                       <span
                         className="ml-auto shrink-0 h-4 min-w-4 px-1 rounded-full text-[10px] font-bold tabular-nums flex items-center justify-center"
                         style={{
-                          background: "hsl(var(--sidebar-primary) / 0.20)",
-                          color: "hsl(var(--sidebar-primary))",
+                          background: "color-mix(in oklab, var(--sidebar-primary) 20%, transparent)",
+                          color: "var(--sidebar-primary)",
                         }}
                       >
                         {item.badge}

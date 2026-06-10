@@ -116,13 +116,7 @@ const DEFAULT_TEMPLATES: DocumentTemplateRecord[] = [
         label: "Defect Category",
         type: "select",
         required: true,
-        options: [
-          "Mechanical",
-          "Electrical",
-          "Hydraulic",
-          "Software",
-          "Structural",
-        ],
+        options: ["Mechanical", "Electrical", "Hydraulic", "Software", "Structural"],
       },
       { label: "Reported By", type: "text", required: true },
       { label: "Date Found", type: "date", required: true },
@@ -233,9 +227,7 @@ function loadStore() {
             label: String(field.label ?? ""),
             type: (field.type ?? "text") as DocumentTemplateFieldType,
             required: Boolean(field.required),
-            options: Array.isArray(field.options)
-              ? field.options.map(String)
-              : undefined,
+            options: Array.isArray(field.options) ? field.options.map(String) : undefined,
           }))
         : cloneFields(DEFAULT_TEMPLATES[0].fields),
       tags: Array.isArray(template.tags) ? template.tags.map(String) : [],
@@ -266,9 +258,7 @@ function nextTemplateId() {
 
 export const DocumentTemplateService = {
   async getAll() {
-    return [..._store].sort((left, right) =>
-      left.name.localeCompare(right.name),
-    );
+    return [..._store].sort((left, right) => left.name.localeCompare(right.name));
   },
 
   async create(input: CreateTemplateInput) {
@@ -292,9 +282,7 @@ export const DocumentTemplateService = {
 
   async toggleStar(id: string) {
     _store = _store.map((template) =>
-      template.id === id
-        ? { ...template, starred: !template.starred }
-        : template,
+      template.id === id ? { ...template, starred: !template.starred } : template,
     );
     persist(_store);
     return _store.find((template) => template.id === id) ?? null;

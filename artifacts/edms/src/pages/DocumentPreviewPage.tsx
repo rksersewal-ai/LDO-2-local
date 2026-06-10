@@ -1,16 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router";
 import {
   ArrowLeft,
-  BrainCircuit,
   Boxes,
+  BrainCircuit,
   Check,
   Download,
-  Fingerprint,
   ExternalLink,
   FileCode2,
   FileImage,
   FileText,
+  Fingerprint,
   Loader2,
   Minimize2,
   MoreHorizontal,
@@ -20,14 +18,9 @@ import {
   Tag,
   X,
 } from "lucide-react";
-import { Badge, Button, GlassCard } from "../components/ui/Shared";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "../components/ui/dropdown-menu";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router";
+import { toast } from "sonner";
 import {
   CommandDialog,
   CommandEmpty,
@@ -36,15 +29,19 @@ import {
   CommandItem,
   CommandList,
 } from "../components/ui/command";
-import apiClient from "../services/ApiClient";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../components/ui/dropdown-menu";
+import { Badge, Button, GlassCard } from "../components/ui/Shared";
 import { MOCK_DOCUMENTS } from "../lib/mock";
-import { NavigationHistoryService } from "../services/NavigationHistoryService";
+import type { DocumentMetadataAssertion, DocumentOcrEntity } from "../lib/types";
+import apiClient from "../services/ApiClient";
 import { DocumentPreviewService } from "../services/DocumentPreviewService";
-import type {
-  DocumentMetadataAssertion,
-  DocumentOcrEntity,
-} from "../lib/types";
-import { toast } from "sonner";
+import { NavigationHistoryService } from "../services/NavigationHistoryService";
 
 interface PreviewDocumentRecord {
   id: string;
@@ -112,12 +109,9 @@ function mapBackendDocument(raw: any): PreviewDocumentRecord {
     description: raw.description || "No description available.",
     updatedAt: raw.updated_at || raw.created_at || "",
     fileUrl: resolveFileUrl(typeof raw.file === "string" ? raw.file : ""),
-    tags: Array.isArray(raw.tags)
-      ? raw.tags.map((value: unknown) => String(value))
-      : [],
+    tags: Array.isArray(raw.tags) ? raw.tags.map((value: unknown) => String(value)) : [],
     ocrStatus: raw.ocr_status || undefined,
-    ocrConfidence:
-      typeof raw.ocr_confidence === "number" ? raw.ocr_confidence : null,
+    ocrConfidence: typeof raw.ocr_confidence === "number" ? raw.ocr_confidence : null,
     duplicateStatus: raw.duplicate_status || undefined,
     duplicateGroupKey: raw.duplicate_group_key || undefined,
     sourceSystem: raw.source_system || undefined,
@@ -139,12 +133,9 @@ function mapMockDocument(raw: any): PreviewDocumentRecord {
     description: raw.description || "No description available.",
     updatedAt: raw.updatedAt || raw.updated_at || raw.date || "",
     fileUrl: resolveFileUrl(raw.filePath || raw.file || ""),
-    tags: Array.isArray(raw.tags)
-      ? raw.tags.map((value: unknown) => String(value))
-      : [],
+    tags: Array.isArray(raw.tags) ? raw.tags.map((value: unknown) => String(value)) : [],
     ocrStatus: raw.ocrStatus || undefined,
-    ocrConfidence:
-      typeof raw.ocrConfidence === "number" ? raw.ocrConfidence : null,
+    ocrConfidence: typeof raw.ocrConfidence === "number" ? raw.ocrConfidence : null,
     duplicateStatus: raw.duplicateStatus || undefined,
     duplicateGroupKey: raw.duplicateGroupKey || undefined,
     sourceSystem: raw.sourceSystem || undefined,
@@ -170,9 +161,7 @@ function normalizeValue(value?: string | null) {
 }
 
 function humanizeToken(value: string) {
-  return value
-    .replace(/[_-]+/g, " ")
-    .replace(/\b\w/g, (character) => character.toUpperCase());
+  return value.replace(/[_-]+/g, " ").replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
 function groupAssertions(assertions: DocumentMetadataAssertion[]) {
@@ -180,13 +169,11 @@ function groupAssertions(assertions: DocumentMetadataAssertion[]) {
     .filter((assertion) => assertion.status === "APPROVED")
     .reduce<Record<string, string[]>>((accumulator, assertion) => {
       const key = normalizeValue(assertion.field_key);
-      const value = normalizeValue(
-        assertion.normalized_value || assertion.value,
-      );
+      const value = normalizeValue(assertion.normalized_value || assertion.value);
       if (!key || !value) return accumulator;
-      accumulator[key] = Array.from(
-        new Set([...(accumulator[key] ?? []), value]),
-      ).sort((left, right) => left.localeCompare(right));
+      accumulator[key] = Array.from(new Set([...(accumulator[key] ?? []), value])).sort(
+        (left, right) => left.localeCompare(right),
+      );
       return accumulator;
     }, {});
 }
@@ -246,20 +233,14 @@ export default function DocumentPreviewPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const [documentRecord, setDocumentRecord] =
-    useState<PreviewDocumentRecord | null>(null);
+  const [documentRecord, setDocumentRecord] = useState<PreviewDocumentRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [evidenceLoading, setEvidenceLoading] = useState(true);
   const [minimized, setMinimized] = useState(false);
-  const [approvedAssertions, setApprovedAssertions] = useState<
-    DocumentMetadataAssertion[]
-  >([]);
-  const [extractedEntities, setExtractedEntities] = useState<
-    DocumentOcrEntity[]
-  >([]);
+  const [approvedAssertions, setApprovedAssertions] = useState<DocumentMetadataAssertion[]>([]);
+  const [extractedEntities, setExtractedEntities] = useState<DocumentOcrEntity[]>([]);
   const [busyKey, setBusyKey] = useState<string | null>(null);
-  const [promotionTarget, setPromotionTarget] =
-    useState<DocumentOcrEntity | null>(null);
+  const [promotionTarget, setPromotionTarget] = useState<DocumentOcrEntity | null>(null);
 
   const currentPath = `${location.pathname}${location.search}`;
   const previousPath = useMemo(
@@ -279,9 +260,7 @@ export default function DocumentPreviewPage() {
       setApprovedAssertions(
         assertionResponse.status === "fulfilled" ? assertionResponse.value : [],
       );
-      setExtractedEntities(
-        entityResponse.status === "fulfilled" ? entityResponse.value : [],
-      );
+      setExtractedEntities(entityResponse.status === "fulfilled" ? entityResponse.value : []);
     } finally {
       setEvidenceLoading(false);
     }
@@ -311,7 +290,7 @@ export default function DocumentPreviewPage() {
           title: mapped.title,
           openedAt: new Date().toISOString(),
         });
-      } catch (error) {
+      } catch (_error) {
         const fallback = MOCK_DOCUMENTS.find((doc) => doc.id === id);
         if (active) {
           if (fallback) {
@@ -397,20 +376,18 @@ export default function DocumentPreviewPage() {
     [extractedEntities],
   );
   const pendingAssertions = useMemo(
-    () =>
-      approvedAssertions.filter((assertion) => assertion.status !== "APPROVED"),
+    () => approvedAssertions.filter((assertion) => assertion.status !== "APPROVED"),
     [approvedAssertions],
   );
   const pendingEntities = useMemo(
-    () =>
-      extractedEntities.filter((entity) => entity.review_status === "PENDING"),
+    () => extractedEntities.filter((entity) => entity.review_status === "PENDING"),
     [extractedEntities],
   );
   const canEmbedPreview = Boolean(
     documentRecord?.fileUrl &&
-    ["PDF", "PNG", "JPG", "JPEG", "SVG", "TIFF", "IMAGE"].includes(
-      documentRecord.fileType.toUpperCase(),
-    ),
+      ["PDF", "PNG", "JPG", "JPEG", "SVG", "TIFF", "IMAGE"].includes(
+        documentRecord.fileType.toUpperCase(),
+      ),
   );
   const isImage =
     Boolean(documentRecord?.fileUrl) &&
@@ -461,21 +438,13 @@ export default function DocumentPreviewPage() {
   if (minimized && documentRecord) {
     return (
       <div className="fixed bottom-6 right-6 z-[120]">
-        <GlassCard className="flex items-center gap-3 rounded-2xl border border-teal-500/20 bg-slate-950/94 px-4 py-3 shadow-2xl shadow-slate-950/50">
+        <GlassCard className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-sm hover:border-primary/20 transition-all duration-200">
           <PreviewIcon className="h-4 w-4 text-primary/90" />
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-foreground">
-              {documentRecord.title}
-            </p>
-            <p className="text-[11px] text-muted-foreground">
-              Preview minimized
-            </p>
+            <p className="truncate text-sm font-semibold text-foreground">{documentRecord.title}</p>
+            <p className="text-[11px] text-muted-foreground">Preview minimized</p>
           </div>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => setMinimized(false)}
-          >
+          <Button size="sm" variant="secondary" onClick={() => setMinimized(false)}>
             Restore
           </Button>
           <Button size="sm" onClick={openFullDocument}>
@@ -495,10 +464,10 @@ export default function DocumentPreviewPage() {
   }
 
   return (
-    <div className="fixed inset-0 z-[110] bg-slate-950/60 backdrop-blur-md">
-      <div className="flex h-full items-center justify-center p-5">
-        <div className="flex h-[calc(100vh-3rem)] w-full max-w-7xl flex-col overflow-hidden rounded-[30px] border border-border bg-slate-950/96 shadow-[0_36px_120px_rgba(2,8,23,0.72)]">
-          <div className="flex items-start justify-between gap-4 border-b border-white/8 px-6 py-5">
+    <div className="fixed inset-0 z-[110] bg-background/80 backdrop-blur-sm">
+      <div className="flex h-full items-center justify-center p-4">
+        <div className="flex h-[calc(100vh-2rem)] w-full max-w-7xl flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+          <div className="flex items-start justify-between gap-4 border-b border-border px-4 py-3">
             <div className="min-w-0">
               <div className="mb-3 flex items-center gap-2">
                 <div className="flex items-center gap-1.5">
@@ -507,56 +476,37 @@ export default function DocumentPreviewPage() {
                   <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/90" />
                 </div>
                 <Badge variant="processing">Floating preview</Badge>
-                {documentRecord && (
-                  <Badge variant="default">{documentRecord.fileType}</Badge>
-                )}
+                {documentRecord && <Badge variant="default">{documentRecord.fileType}</Badge>}
                 {documentRecord && (
                   <Badge variant={statusBadgeVariant(documentRecord.status)}>
                     {documentRecord.status}
                   </Badge>
                 )}
-                {documentRecord?.duplicateStatus &&
-                  documentRecord.duplicateStatus !== "UNIQUE" && (
-                    <Badge
-                      variant={
-                        documentRecord.duplicateStatus === "MASTER"
-                          ? "success"
-                          : "warning"
-                      }
-                    >
-                      {documentRecord.duplicateStatus}
-                    </Badge>
-                  )}
+                {documentRecord?.duplicateStatus && documentRecord.duplicateStatus !== "UNIQUE" && (
+                  <Badge
+                    variant={documentRecord.duplicateStatus === "MASTER" ? "success" : "warning"}
+                  >
+                    {documentRecord.duplicateStatus}
+                  </Badge>
+                )}
               </div>
-              <h1 className="truncate text-2xl font-semibold text-white">
+              <h1 className="truncate text-xl font-semibold text-foreground">
                 {documentRecord?.title || "Document preview"}
               </h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                Review the document before taking a workflow decision. This
-                window can stay separate from the decision page.
+                Review the document before taking a workflow decision. This window can stay separate
+                from the decision page.
               </p>
               <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
-                <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1">
-                  Esc close
-                </span>
-                <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1">
-                  M minimize
-                </span>
-                <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1">
-                  O full document
-                </span>
-                <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1">
-                  N new tab
-                </span>
+                <span className="rounded-md border bg-background px-2 py-1">Esc close</span>
+                <span className="rounded-md border bg-background px-2 py-1">M minimize</span>
+                <span className="rounded-md border bg-background px-2 py-1">O full document</span>
+                <span className="rounded-md border bg-background px-2 py-1">N new tab</span>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center justify-end gap-2">
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => navigate(previousPath)}
-              >
+              <Button size="sm" variant="secondary" onClick={() => navigate(previousPath)}>
                 <ArrowLeft className="h-3.5 w-3.5" />
                 Back
               </Button>
@@ -580,11 +530,7 @@ export default function DocumentPreviewPage() {
                 <ExternalLink className="h-3.5 w-3.5" />
                 New tab
               </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => setMinimized(true)}
-              >
+              <Button size="sm" variant="secondary" onClick={() => setMinimized(true)}>
                 <Minimize2 className="h-3.5 w-3.5" />
                 Minimize
               </Button>
@@ -592,15 +538,15 @@ export default function DocumentPreviewPage() {
                 type="button"
                 aria-label="Close preview"
                 onClick={closePreview}
-                className="rounded-xl border border-border bg-card/70 p-2 text-muted-foreground transition-colors hover:border-white/20 hover:bg-secondary/80 hover:text-foreground"
+                className="rounded-md border border-border bg-background p-2 text-muted-foreground transition-colors hover:bg-secondary/80 hover:text-foreground"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
           </div>
 
-          <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 p-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-            <div className="min-h-0 overflow-hidden rounded-[24px] border border-white/8 bg-card/72">
+          <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 p-3 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="min-h-0 overflow-hidden rounded-lg border border-border bg-background">
               {loading ? (
                 <div className="flex h-full items-center justify-center text-muted-foreground">
                   <Loader2 className="mr-2 h-5 w-5 animate-spin text-primary/90" />
@@ -631,19 +577,15 @@ export default function DocumentPreviewPage() {
                         {documentRecord.title}
                       </p>
                       <p className="mt-2 text-sm text-muted-foreground">
-                        Inline rendering is not available for this file type.
-                        Use the full document page or open the file directly.
+                        Inline rendering is not available for this file type. Use the full document
+                        page or open the file directly.
                       </p>
                     </div>
                     <div className="flex flex-wrap items-center justify-center gap-2">
                       <Button size="sm" onClick={openFullDocument}>
                         Open full document
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={downloadDocument}
-                      >
+                      <Button size="sm" variant="secondary" onClick={downloadDocument}>
                         <Download className="h-3.5 w-3.5" />
                         Open file
                       </Button>
@@ -657,44 +599,32 @@ export default function DocumentPreviewPage() {
               )}
             </div>
 
-            <GlassCard className="min-h-0 space-y-4 overflow-auto rounded-[24px] p-5">
+            <GlassCard className="min-h-0 space-y-4 overflow-auto rounded-xl p-3.5 hover:border-primary/20 transition-all duration-200">
               <div className="space-y-2">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                   Document summary
                 </p>
-                <div className="space-y-3 rounded-2xl border border-white/6 bg-slate-950/45 p-4">
+                <div className="space-y-3 rounded-lg border border-border bg-background p-3">
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-xs text-muted-foreground">
-                      Document ID
-                    </span>
+                    <span className="text-xs text-muted-foreground">Document ID</span>
                     <span className="font-mono text-xs text-primary/90">
                       {documentRecord?.id || id}
                     </span>
                   </div>
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-xs text-muted-foreground">
-                      Status
-                    </span>
-                    <Badge
-                      variant={statusBadgeVariant(
-                        documentRecord?.status || "Unknown",
-                      )}
-                    >
+                    <span className="text-xs text-muted-foreground">Status</span>
+                    <Badge variant={statusBadgeVariant(documentRecord?.status || "Unknown")}>
                       {documentRecord?.status || "Unknown"}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-xs text-muted-foreground">
-                      Revision
-                    </span>
+                    <span className="text-xs text-muted-foreground">Revision</span>
                     <span className="font-mono text-xs text-foreground">
                       {documentRecord?.revision || "—"}
                     </span>
                   </div>
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-xs text-muted-foreground">
-                      Linked PL
-                    </span>
+                    <span className="text-xs text-muted-foreground">Linked PL</span>
                     <span className="font-mono text-xs text-foreground">
                       {documentRecord?.linkedPl || "Unlinked"}
                     </span>
@@ -702,14 +632,11 @@ export default function DocumentPreviewPage() {
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-xs text-muted-foreground">File</span>
                     <span className="text-xs text-foreground">
-                      {documentRecord?.fileType || "Unknown"} ·{" "}
-                      {documentRecord?.size || "—"}
+                      {documentRecord?.fileType || "Unknown"} · {documentRecord?.size || "—"}
                     </span>
                   </div>
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-xs text-muted-foreground">
-                      Updated
-                    </span>
+                    <span className="text-xs text-muted-foreground">Updated</span>
                     <span className="text-xs text-foreground">
                       {formatDateTime(documentRecord?.updatedAt)}
                     </span>
@@ -722,30 +649,20 @@ export default function DocumentPreviewPage() {
                   Intelligence status
                 </p>
                 <div className="grid gap-3 md:grid-cols-2">
-                  <div className="rounded-2xl border border-white/6 bg-slate-950/45 p-4">
+                  <div className="rounded-lg border border-border bg-background p-3">
                     <div className="flex items-center gap-2 text-foreground">
                       <BrainCircuit className="h-4 w-4 text-cyan-300" />
-                      <span className="text-sm font-semibold">
-                        OCR & extraction
-                      </span>
+                      <span className="text-sm font-semibold">OCR & extraction</span>
                     </div>
                     <div className="mt-3 space-y-2 text-xs">
                       <div className="flex items-center justify-between gap-3">
-                        <span className="text-muted-foreground">
-                          OCR status
-                        </span>
-                        <Badge
-                          variant={statusBadgeVariant(
-                            documentRecord?.ocrStatus || "Unknown",
-                          )}
-                        >
+                        <span className="text-muted-foreground">OCR status</span>
+                        <Badge variant={statusBadgeVariant(documentRecord?.ocrStatus || "Unknown")}>
                           {documentRecord?.ocrStatus || "Unknown"}
                         </Badge>
                       </div>
                       <div className="flex items-center justify-between gap-3">
-                        <span className="text-muted-foreground">
-                          Confidence
-                        </span>
+                        <span className="text-muted-foreground">Confidence</span>
                         <span className="text-foreground">
                           {typeof documentRecord?.ocrConfidence === "number"
                             ? `${documentRecord.ocrConfidence}%`
@@ -753,35 +670,23 @@ export default function DocumentPreviewPage() {
                         </span>
                       </div>
                       <div className="flex items-center justify-between gap-3">
-                        <span className="text-muted-foreground">
-                          Approved fields
-                        </span>
-                        <span className="text-foreground">
-                          {assertionGroups.length}
-                        </span>
+                        <span className="text-muted-foreground">Approved fields</span>
+                        <span className="text-foreground">{assertionGroups.length}</span>
                       </div>
                       <div className="flex items-center justify-between gap-3">
-                        <span className="text-muted-foreground">
-                          Entity groups
-                        </span>
-                        <span className="text-foreground">
-                          {entityGroups.length}
-                        </span>
+                        <span className="text-muted-foreground">Entity groups</span>
+                        <span className="text-foreground">{entityGroups.length}</span>
                       </div>
                     </div>
                   </div>
-                  <div className="rounded-2xl border border-white/6 bg-slate-950/45 p-4">
+                  <div className="rounded-lg border border-border bg-background p-3">
                     <div className="flex items-center gap-2 text-foreground">
                       <Fingerprint className="h-4 w-4 text-amber-300" />
-                      <span className="text-sm font-semibold">
-                        Search & dedup
-                      </span>
+                      <span className="text-sm font-semibold">Search & dedup</span>
                     </div>
                     <div className="mt-3 space-y-2 text-xs">
                       <div className="flex items-center justify-between gap-3">
-                        <span className="text-muted-foreground">
-                          Duplicate state
-                        </span>
+                        <span className="text-muted-foreground">Duplicate state</span>
                         <Badge
                           variant={
                             documentRecord?.duplicateStatus === "MASTER"
@@ -795,27 +700,19 @@ export default function DocumentPreviewPage() {
                         </Badge>
                       </div>
                       <div className="flex items-center justify-between gap-3">
-                        <span className="text-muted-foreground">
-                          Sparse fingerprint
-                        </span>
+                        <span className="text-muted-foreground">Sparse fingerprint</span>
                         <span className="text-foreground">
-                          {documentRecord?.fingerprintPresent
-                            ? "Present"
-                            : "Missing"}
+                          {documentRecord?.fingerprintPresent ? "Present" : "Missing"}
                         </span>
                       </div>
                       <div className="flex items-center justify-between gap-3">
-                        <span className="text-muted-foreground">
-                          Search indexed
-                        </span>
+                        <span className="text-muted-foreground">Search indexed</span>
                         <span className="text-foreground">
                           {formatDateTime(documentRecord?.searchIndexedAt)}
                         </span>
                       </div>
                       <div className="flex items-center justify-between gap-3">
-                        <span className="text-muted-foreground">
-                          Hash indexed
-                        </span>
+                        <span className="text-muted-foreground">Hash indexed</span>
                         <span className="text-foreground">
                           {formatDateTime(documentRecord?.hashIndexedAt)}
                         </span>
@@ -825,37 +722,31 @@ export default function DocumentPreviewPage() {
                 </div>
               </div>
 
-              {documentRecord?.linkedPl &&
-                documentRecord.linkedPl !== "Unlinked" && (
-                  <div className="space-y-2">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-                      Linked configuration
-                    </p>
-                    <div className="rounded-2xl border border-cyan-500/14 bg-cyan-500/[0.05] p-4">
-                      <div className="flex items-center gap-2 text-cyan-200">
-                        <Boxes className="h-4 w-4" />
-                        <span className="font-mono text-sm">
-                          {documentRecord.linkedPl}
-                        </span>
-                      </div>
-                      <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                        Open the PL workspace if this decision depends on linked
-                        revisions, baselines, or released document
-                        relationships.
-                      </p>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        className="mt-3"
-                        onClick={() =>
-                          navigate(`/pl/${documentRecord.linkedPl}`)
-                        }
-                      >
-                        Open linked PL
-                      </Button>
+              {documentRecord?.linkedPl && documentRecord.linkedPl !== "Unlinked" && (
+                <div className="space-y-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                    Linked configuration
+                  </p>
+                  <div className="rounded-lg border border-border bg-background p-3">
+                    <div className="flex items-center gap-2 text-foreground">
+                      <Boxes className="h-4 w-4" />
+                      <span className="font-mono text-sm">{documentRecord.linkedPl}</span>
                     </div>
+                    <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                      Open the PL workspace if this decision depends on linked revisions, baselines,
+                      or released document relationships.
+                    </p>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="mt-3"
+                      onClick={() => navigate(`/pl/${documentRecord.linkedPl}`)}
+                    >
+                      Open linked PL
+                    </Button>
                   </div>
-                )}
+                </div>
+              )}
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between gap-3">
@@ -869,7 +760,7 @@ export default function DocumentPreviewPage() {
                     </span>
                   )}
                 </div>
-                <div className="rounded-2xl border border-white/6 bg-slate-950/45 p-4">
+                <div className="rounded-lg border border-border bg-background p-3">
                   {assertionGroups.length > 0 ? (
                     <div className="space-y-3">
                       {assertionGroups.map(([fieldKey, values]) => (
@@ -880,11 +771,7 @@ export default function DocumentPreviewPage() {
                           </div>
                           <div className="flex flex-wrap gap-2">
                             {values.map((value) => (
-                              <Badge
-                                key={`${fieldKey}:${value}`}
-                                variant="success"
-                                size="sm"
-                              >
+                              <Badge key={`${fieldKey}:${value}`} variant="success" size="sm">
                                 {value}
                               </Badge>
                             ))}
@@ -894,8 +781,7 @@ export default function DocumentPreviewPage() {
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground">
-                      No approved assertions are available for this document
-                      yet.
+                      No approved assertions are available for this document yet.
                     </p>
                   )}
                 </div>
@@ -905,7 +791,7 @@ export default function DocumentPreviewPage() {
                 <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                   Metadata review queue
                 </p>
-                <div className="rounded-2xl border border-white/6 bg-slate-950/45 p-4 space-y-3">
+                <div className="space-y-3 rounded-lg border border-border bg-background p-3">
                   {pendingAssertions.length > 0 ? (
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
@@ -917,12 +803,11 @@ export default function DocumentPreviewPage() {
                         return (
                           <div
                             key={assertion.id}
-                            className="flex items-start justify-between gap-3 rounded-xl border border-border/80 bg-slate-950/40 px-3 py-3"
+                            className="flex items-start justify-between gap-3 rounded-lg border border-border bg-card px-3 py-3"
                           >
                             <div className="min-w-0">
                               <p className="text-sm font-semibold text-foreground">
-                                {humanizeToken(assertion.field_key)}:{" "}
-                                {assertion.value}
+                                {humanizeToken(assertion.field_key)}: {assertion.value}
                               </p>
                               <p className="mt-1 text-xs text-muted-foreground">
                                 Source {assertion.source || "manual"} · updated{" "}
@@ -946,17 +831,14 @@ export default function DocumentPreviewPage() {
                               </DropdownMenuTrigger>
                               <DropdownMenuContent
                                 align="end"
-                                className="w-44 border border-border/60 bg-slate-950 text-foreground"
+                                className="w-44 border border-border bg-popover text-popover-foreground"
                               >
                                 <DropdownMenuItem
                                   onSelect={() =>
                                     void runDocumentAction(
                                       actionKey,
                                       async () => {
-                                        await apiClient.approveDocumentAssertion(
-                                          id!,
-                                          assertion.id,
-                                        );
+                                        await apiClient.approveDocumentAssertion(id!, assertion.id);
                                       },
                                       `${humanizeToken(assertion.field_key)} approved.`,
                                     )
@@ -972,10 +854,7 @@ export default function DocumentPreviewPage() {
                                     void runDocumentAction(
                                       actionKey,
                                       async () => {
-                                        await apiClient.rejectDocumentAssertion(
-                                          id!,
-                                          assertion.id,
-                                        );
+                                        await apiClient.rejectDocumentAssertion(id!, assertion.id);
                                       },
                                       `${humanizeToken(assertion.field_key)} rejected.`,
                                     )
@@ -1003,7 +882,7 @@ export default function DocumentPreviewPage() {
                         return (
                           <div
                             key={entity.id}
-                            className="flex items-start justify-between gap-3 rounded-xl border border-border/80 bg-slate-950/40 px-3 py-3"
+                            className="flex items-start justify-between gap-3 rounded-lg border border-border bg-card px-3 py-3"
                           >
                             <div className="min-w-0">
                               <p className="text-sm font-semibold text-foreground">
@@ -1014,10 +893,7 @@ export default function DocumentPreviewPage() {
                                 {typeof entity.confidence === "number"
                                   ? `${Math.round(entity.confidence)}% confidence`
                                   : "No confidence"}{" "}
-                                ·{" "}
-                                {entity.source_engine ||
-                                  entity.method ||
-                                  "local extractor"}
+                                · {entity.source_engine || entity.method || "local extractor"}
                               </p>
                             </div>
                             <DropdownMenu>
@@ -1037,17 +913,14 @@ export default function DocumentPreviewPage() {
                               </DropdownMenuTrigger>
                               <DropdownMenuContent
                                 align="end"
-                                className="w-52 border border-border/60 bg-slate-950 text-foreground"
+                                className="w-52 border border-border bg-popover text-popover-foreground"
                               >
                                 <DropdownMenuItem
                                   onSelect={() =>
                                     void runDocumentAction(
                                       actionKey,
                                       async () => {
-                                        await apiClient.approveDocumentEntity(
-                                          id!,
-                                          entity.id,
-                                        );
+                                        await apiClient.approveDocumentEntity(id!, entity.id);
                                       },
                                       `${humanizeToken(entity.entity_type)} approved.`,
                                     )
@@ -1056,9 +929,7 @@ export default function DocumentPreviewPage() {
                                   <Check className="h-3.5 w-3.5" />
                                   Approve entity
                                 </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onSelect={() => setPromotionTarget(entity)}
-                                >
+                                <DropdownMenuItem onSelect={() => setPromotionTarget(entity)}>
                                   <ShieldCheck className="h-3.5 w-3.5" />
                                   Promote to assertion
                                 </DropdownMenuItem>
@@ -1069,10 +940,7 @@ export default function DocumentPreviewPage() {
                                     void runDocumentAction(
                                       actionKey,
                                       async () => {
-                                        await apiClient.rejectDocumentEntity(
-                                          id!,
-                                          entity.id,
-                                        );
+                                        await apiClient.rejectDocumentEntity(id!, entity.id);
                                       },
                                       `${humanizeToken(entity.entity_type)} rejected.`,
                                     )
@@ -1091,8 +959,7 @@ export default function DocumentPreviewPage() {
 
                   {!pendingAssertions.length && !pendingEntities.length && (
                     <p className="text-sm text-muted-foreground">
-                      No pending metadata review items are waiting on this
-                      document.
+                      No pending metadata review items are waiting on this document.
                     </p>
                   )}
                 </div>
@@ -1102,7 +969,7 @@ export default function DocumentPreviewPage() {
                 <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                   Extracted entities
                 </p>
-                <div className="rounded-2xl border border-white/6 bg-slate-950/45 p-4">
+                <div className="rounded-lg border border-border bg-background p-3">
                   {entityGroups.length > 0 ? (
                     <div className="space-y-3">
                       {entityGroups.map(([entityType, values]) => (
@@ -1115,11 +982,7 @@ export default function DocumentPreviewPage() {
                             {values.slice(0, 6).map((entity) => (
                               <Badge
                                 key={entity.id}
-                                variant={
-                                  entity.review_status === "APPROVED"
-                                    ? "success"
-                                    : "info"
-                                }
+                                variant={entity.review_status === "APPROVED" ? "success" : "info"}
                                 size="sm"
                               >
                                 {entity.normalized_value || entity.entity_value}
@@ -1152,7 +1015,7 @@ export default function DocumentPreviewPage() {
                   <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                     Indexing context
                   </p>
-                  <div className="rounded-2xl border border-white/6 bg-slate-950/45 p-4 space-y-3">
+                  <div className="space-y-3 rounded-lg border border-border bg-background p-3">
                     {documentRecord?.tags?.length ? (
                       <div>
                         <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-foreground">
@@ -1170,17 +1033,13 @@ export default function DocumentPreviewPage() {
                     ) : null}
                     <div className="grid gap-2 text-xs md:grid-cols-2">
                       <div className="flex items-center justify-between gap-3">
-                        <span className="text-muted-foreground">
-                          Source system
-                        </span>
+                        <span className="text-muted-foreground">Source system</span>
                         <span className="text-foreground">
                           {documentRecord?.sourceSystem || "—"}
                         </span>
                       </div>
                       <div className="flex items-center justify-between gap-3">
-                        <span className="text-muted-foreground">
-                          Duplicate group
-                        </span>
+                        <span className="text-muted-foreground">Duplicate group</span>
                         <span className="max-w-[148px] truncate text-foreground">
                           {documentRecord?.duplicateGroupKey || "—"}
                         </span>
@@ -1195,9 +1054,9 @@ export default function DocumentPreviewPage() {
                   Why this matters
                 </p>
                 <p className="text-sm leading-relaxed text-foreground/90">
-                  Open this preview before approving, rejecting, releasing, or
-                  ignoring a workflow item. The decision page remains separate
-                  so you can verify the latest document without losing context.
+                  Open this preview before approving, rejecting, releasing, or ignoring a workflow
+                  item. The decision page remains separate so you can verify the latest document
+                  without losing context.
                 </p>
               </div>
 
@@ -1220,9 +1079,7 @@ export default function DocumentPreviewPage() {
         onOpenChange={(open) => !open && setPromotionTarget(null)}
       >
         <div className="border-b border-border/80 px-4 py-4">
-          <p className="text-sm font-semibold text-foreground">
-            Promote extracted entity
-          </p>
+          <p className="text-sm font-semibold text-foreground">Promote extracted entity</p>
           <p className="mt-1 text-xs text-muted-foreground">
             {promotionTarget
               ? `Choose the governed field for "${promotionTarget.normalized_value || promotionTarget.entity_value}".`
@@ -1244,11 +1101,9 @@ export default function DocumentPreviewPage() {
                   void runDocumentAction(
                     actionKey,
                     async () => {
-                      await apiClient.promoteDocumentEntityToAssertion(
-                        id,
-                        promotionTarget.id,
-                        { field_key: fieldKey },
-                      );
+                      await apiClient.promoteDocumentEntityToAssertion(id, promotionTarget.id, {
+                        field_key: fieldKey,
+                      });
                       setPromotionTarget(null);
                     },
                     `${humanizeToken(fieldKey)} assertion created.`,
@@ -1258,9 +1113,7 @@ export default function DocumentPreviewPage() {
                 <ShieldCheck className="h-4 w-4 text-primary/90" />
                 <div className="flex min-w-0 flex-col">
                   <span>{humanizeToken(fieldKey)}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {fieldKey}
-                  </span>
+                  <span className="text-xs text-muted-foreground">{fieldKey}</span>
                 </div>
               </CommandItem>
             ))}

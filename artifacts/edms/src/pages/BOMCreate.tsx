@@ -1,26 +1,11 @@
+import { ArrowLeft, CheckCircle2, Layers, Plus, Shield } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import {
-  AlertCircle,
-  ArrowLeft,
-  CheckCircle2,
-  Layers,
-  Plus,
-  Search,
-  Shield,
-} from "lucide-react";
-import {
-  GlassCard,
-  Button,
-  Input,
-  PageHeader,
-  Select,
-  Badge,
-} from "../components/ui/Shared";
 import { PLNumberSelect } from "../components/ui/PLNumberSelect";
-import { PL_DATABASE, type BOMNode } from "../lib/bomData";
-import type { PLNumber } from "../lib/types";
+import { Badge, Button, GlassCard, Input, PageHeader, Select } from "../components/ui/Shared";
 import { usePLItems } from "../hooks/usePLItems";
+import { type BOMNode, PL_DATABASE } from "../lib/bomData";
+import type { PLNumber } from "../lib/types";
 import { BomDraftService } from "../services/BomDraftService";
 
 type LifecycleOption = "In Development" | "Production" | "Prototyping";
@@ -67,9 +52,7 @@ export default function BOMCreate() {
   const [form, setForm] = useState<CreateBomForm>(DEFAULT_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const matchedPL = form.rootPlNumber.trim()
-    ? PL_DATABASE[form.rootPlNumber.trim()]
-    : undefined;
+  const matchedPL = form.rootPlNumber.trim() ? PL_DATABASE[form.rootPlNumber.trim()] : undefined;
   const selectedPl = form.rootPlNumber.trim()
     ? plItems.find((item) => item.plNumber === form.rootPlNumber.trim())
     : undefined;
@@ -102,8 +85,7 @@ export default function BOMCreate() {
         id: "draft",
         name: form.productName.trim(),
         subtitle:
-          form.subtitle.trim() ||
-          (matchedPL?.name ?? selectedPl?.name ?? "Draft BOM workspace"),
+          form.subtitle.trim() || (matchedPL?.name ?? selectedPl?.name ?? "Draft BOM workspace"),
         category: form.category,
         description:
           form.description.trim() ||
@@ -127,23 +109,19 @@ export default function BOMCreate() {
         title="Create New BOM"
         subtitle="Start with a product name and one root PL. The workspace will open with that PL as the first node, and you can continue building the hierarchy from there."
         actions={
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => navigate("/bom")}
-          >
+          <Button variant="secondary" size="sm" onClick={() => navigate("/bom")}>
             <ArrowLeft className="w-3.5 h-3.5" /> Back to Explorer
           </Button>
         }
       />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_360px]">
-        <GlassCard className="p-6">
-          <div className="grid gap-5 md:grid-cols-2">
+        <GlassCard className="p-4 bg-card/40 border-border/50 backdrop-blur-md">
+          <div className="grid gap-4 md:grid-cols-2">
             <div className="md:col-span-2">
-              <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 Product Name
-              </label>
+              </span>
               <Input
                 value={form.productName}
                 onChange={(event) =>
@@ -153,19 +131,17 @@ export default function BOMCreate() {
                   }))
                 }
                 placeholder="e.g. High Capacity Traction Converter Pack"
-                className={errors.productName ? "border-rose-500/60" : ""}
+                className={errors.productName ? "border-rose-500/60 h-9" : "h-9"}
               />
               {errors.productName && (
-                <p className="mt-1 text-[11px] text-rose-400">
-                  {errors.productName}
-                </p>
+                <p className="mt-1 text-[11px] text-rose-400">{errors.productName}</p>
               )}
             </div>
 
             <div>
-              <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 Subtitle
-              </label>
+              </span>
               <Input
                 value={form.subtitle}
                 onChange={(event) =>
@@ -175,13 +151,14 @@ export default function BOMCreate() {
                   }))
                 }
                 placeholder="Optional operator-facing label"
+                className="h-9"
               />
             </div>
 
             <div>
-              <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 Lifecycle
-              </label>
+              </span>
               <Select
                 value={form.lifecycle}
                 onChange={(event) =>
@@ -190,6 +167,7 @@ export default function BOMCreate() {
                     lifecycle: event.target.value as LifecycleOption,
                   }))
                 }
+                className="h-9"
               >
                 <option value="In Development">In Development</option>
                 <option value="Production">Production</option>
@@ -198,9 +176,9 @@ export default function BOMCreate() {
             </div>
 
             <div>
-              <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 Category
-              </label>
+              </span>
               <Input
                 value={form.category}
                 onChange={(event) =>
@@ -210,13 +188,14 @@ export default function BOMCreate() {
                   }))
                 }
                 placeholder="e.g. Electrical Component"
+                className="h-9"
               />
             </div>
 
             <div className="md:col-span-2">
-              <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 Description
-              </label>
+              </span>
               <textarea
                 value={form.description}
                 onChange={(event) =>
@@ -226,33 +205,29 @@ export default function BOMCreate() {
                   }))
                 }
                 placeholder="Optional summary for the BOM workspace"
-                className="min-h-28 w-full rounded-lg border border-border bg-slate-950/60 px-3 py-3 text-sm text-foreground placeholder:text-slate-600 focus:border-teal-500/50 focus:outline-none focus:ring-1 focus:ring-teal-500/30"
+                className="min-h-24 w-full rounded-lg border border-border bg-background/80 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/40 focus:outline-none focus:ring-1 focus:ring-primary/15 transition-all duration-150"
               />
             </div>
 
             <div className="md:col-span-2">
-              <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 Root PL Number
-              </label>
+              </span>
               <PLNumberSelect
                 value={form.rootPlNumber}
-                onChange={(rootPlNumber) =>
-                  setForm((current) => ({ ...current, rootPlNumber }))
-                }
+                onChange={(rootPlNumber) => setForm((current) => ({ ...current, rootPlNumber }))}
                 plItems={plItems}
                 loading={plItemsLoading}
                 placeholder="Search and select the root PL..."
                 helperText="This PL becomes the first node in the BOM. Additional PLs can be added later from the editor."
               />
               {errors.rootPlNumber && (
-                <p className="mt-1 text-[11px] text-rose-400">
-                  {errors.rootPlNumber}
-                </p>
+                <p className="mt-1 text-[11px] text-rose-400">{errors.rootPlNumber}</p>
               )}
             </div>
           </div>
 
-          <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-white/6 pt-5">
+          <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-border/50 pt-4">
             <Button variant="secondary" onClick={() => navigate("/bom")}>
               Cancel
             </Button>
@@ -263,27 +238,27 @@ export default function BOMCreate() {
         </GlassCard>
 
         <div className="space-y-4">
-          <GlassCard className="overflow-hidden">
-            <div className="border-b border-white/6 px-5 py-4">
+          <GlassCard className="overflow-hidden bg-card/40 border-border/50 backdrop-blur-md">
+            <div className="border-b border-border/50 px-4 py-3">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                 Root PL Preview
               </p>
             </div>
-            <div className="p-5">
+            <div className="p-4">
               {matchedPL || selectedPl ? (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-base font-semibold text-white">
+                      <p className="text-sm font-semibold text-foreground">
                         {matchedPL?.name ?? selectedPl?.name}
                       </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
+                      <p className="mt-0.5 text-xs text-muted-foreground">
                         {matchedPL?.description ?? selectedPl?.description}
                       </p>
                     </div>
                     <Badge variant="success">Matched</Badge>
                   </div>
-                  <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div className="grid grid-cols-2 gap-2 text-xs">
                     <div>
                       <p className="text-muted-foreground">PL Number</p>
                       <p className="font-mono text-primary">
@@ -292,44 +267,35 @@ export default function BOMCreate() {
                     </div>
                     <div>
                       <p className="text-muted-foreground">Revision</p>
-                      <p className="font-mono text-foreground">
-                        {matchedPL?.revision ?? "A"}
-                      </p>
+                      <p className="font-mono text-foreground">{matchedPL?.revision ?? "A"}</p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">Type</p>
-                      <p className="capitalize text-foreground">
-                        {matchedPL?.type ?? "assembly"}
-                      </p>
+                      <p className="capitalize text-foreground">{matchedPL?.type ?? "assembly"}</p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground">
-                        {matchedPL ? "Department" : "Agency"}
-                      </p>
+                      <p className="text-muted-foreground">{matchedPL ? "Department" : "Agency"}</p>
                       <p className="text-foreground">
-                        {matchedPL?.department ??
-                          selectedPl?.controllingAgency ??
-                          "—"}
+                        {matchedPL?.department ?? selectedPl?.controllingAgency ?? "—"}
                       </p>
                     </div>
                   </div>
                   {(matchedPL?.safetyVital || selectedPl?.safetyCritical) && (
-                    <div className="flex items-center gap-2 rounded-xl border border-rose-500/25 bg-rose-500/10 px-3 py-2 text-xs text-rose-300">
+                    <div className="flex items-center gap-2 rounded-lg border border-rose-500/25 bg-rose-500/10 px-3 py-1.5 text-xs text-rose-300">
                       <Shield className="w-3.5 h-3.5" /> Safety-vital root PL
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="flex items-start gap-3 rounded-xl border border-white/6 bg-slate-950/35 px-4 py-4">
+                <div className="flex items-start gap-3 rounded-lg border border-border/50 bg-background/40 backdrop-blur-sm px-3 py-3">
                   <Layers className="mt-0.5 w-4 h-4 shrink-0 text-primary" />
                   <div>
-                    <p className="text-sm font-medium text-foreground">
+                    <p className="text-xs font-semibold text-foreground">
                       Enter the first PL to seed the hierarchy
                     </p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      The workspace will start with one top-level node, and the
-                      node editor will handle the rest of the assembly
-                      structure.
+                    <p className="mt-1 text-[11px] text-muted-foreground leading-relaxed">
+                      The workspace will start with one top-level node, and the node editor will
+                      handle the rest of the assembly structure.
                     </p>
                   </div>
                 </div>
@@ -337,21 +303,18 @@ export default function BOMCreate() {
             </div>
           </GlassCard>
 
-          <GlassCard className="p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+          <GlassCard className="p-4 bg-card/40 border-border/50 backdrop-blur-md">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-3">
               What happens next
             </p>
-            <div className="mt-4 space-y-3">
+            <div className="space-y-2.5">
               {[
                 "The BOM opens with the chosen root PL already placed at the top level.",
                 "Engineers can add more PLs from the node editor and drag them up or down the hierarchy.",
                 "This stays frontend-local for now so the backend contract can be finalized after the interaction model settles.",
               ].map((item) => (
-                <div
-                  key={item}
-                  className="flex items-start gap-3 text-sm text-foreground/90"
-                >
-                  <CheckCircle2 className="mt-0.5 w-4 h-4 shrink-0 text-primary" />
+                <div key={item} className="flex items-start gap-2.5 text-xs text-foreground/95">
+                  <CheckCircle2 className="mt-0.5 w-3.5 h-3.5 shrink-0 text-primary" />
                   <span>{item}</span>
                 </div>
               ))}

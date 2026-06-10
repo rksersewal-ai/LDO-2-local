@@ -1,29 +1,28 @@
-import { GlassCard, Badge, Button } from "../components/ui/Shared";
-import { MOCK_AUDIT_LOG } from "../lib/mock";
 import {
-  Server,
   Activity,
-  ShieldCheck,
+  AlertTriangle,
+  ArrowRight,
+  ClipboardList,
+  CopyCheck,
   Database,
   FileSearch,
-  ClipboardList,
-  Settings,
-  Megaphone,
-  ArrowRight,
-  AlertTriangle,
-  CopyCheck,
-  Users,
   Layers3,
+  Megaphone,
+  Server,
+  Settings,
+  ShieldCheck,
+  Users,
 } from "lucide-react";
 import { useNavigate } from "react-router";
+import { GlassCard } from "../components/ui/Shared";
+import { MOCK_AUDIT_LOG } from "../lib/mock";
 
 const quickLinks = [
   {
     icon: Layers3,
     label: "Initial Run",
     path: "/admin/initial-run",
-    description:
-      "Bootstrap source indexing, hashes, deduplication, and OCR backlog",
+    description: "Bootstrap source indexing, hashes, deduplication, and OCR backlog",
     color: "text-primary bg-teal-500/10",
   },
   {
@@ -76,9 +75,7 @@ export default function AdminWorkspace() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       <div>
-        <h1 className="text-2xl font-semibold text-foreground mb-2">
-          Admin & System Health
-        </h1>
+        <h1 className="text-2xl font-semibold text-foreground mb-2">Admin & System Health</h1>
         <p className="text-muted-foreground text-sm">
           OCR Pipeline Monitor, Audit Visibility, and System Diagnostics.
         </p>
@@ -117,21 +114,19 @@ export default function AdminWorkspace() {
         ].map((s) => {
           const Icon = s.icon;
           return (
-            <GlassCard key={s.label} className="p-4 flex items-center gap-4">
+            <GlassCard
+              key={s.label}
+              className="p-3.5 border-border/50 bg-card/40 backdrop-blur-md flex items-center gap-4 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-secondary/40 transition-all duration-200"
+            >
               <div
                 className={`w-10 h-10 rounded-full ${s.color} flex items-center justify-center shrink-0`}
               >
                 <Icon className="w-5 h-5" />
               </div>
               <div>
-                <div className="text-sm text-muted-foreground font-medium">
-                  {s.label}
-                </div>
+                <div className="text-sm text-muted-foreground font-medium">{s.label}</div>
                 <div className="text-lg font-bold text-white flex items-center gap-2">
-                  {s.value}{" "}
-                  <span
-                    className={`w-2 h-2 rounded-full ${s.dot} animate-pulse`}
-                  />
+                  {s.value} <span className={`w-2 h-2 rounded-full ${s.dot} animate-pulse`} />
                 </div>
               </div>
             </GlassCard>
@@ -140,30 +135,30 @@ export default function AdminWorkspace() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <GlassCard className="p-6">
+        <GlassCard className="p-3.5 border-border/50 bg-card/40 backdrop-blur-md">
           <h2 className="text-base font-bold text-white mb-4 flex items-center gap-2">
             <Activity className="w-4 h-4 text-primary" /> Recent System Events
           </h2>
           <div className="space-y-3">
             {MOCK_AUDIT_LOG.map((e) => (
-              <div
+              <button
+                type="button"
                 key={e.id}
-                className="flex items-start gap-3 p-3 rounded-xl bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer"
+                className="w-full flex items-start gap-3 p-3 rounded-xl bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer text-left font-normal"
                 onClick={() => navigate("/audit")}
               >
                 <div className="w-1.5 h-1.5 rounded-full bg-teal-500 mt-2 shrink-0" />
                 <div className="flex-1">
-                  <p className="text-xs font-semibold text-foreground">
-                    {e.action}
-                  </p>
+                  <p className="text-xs font-semibold text-foreground">{e.action}</p>
                   <p className="text-[11px] text-muted-foreground font-mono">
                     {e.entity} · {e.user} · {e.timestamp}
                   </p>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
           <button
+            type="button"
             onClick={() => navigate("/audit")}
             className="text-xs text-primary hover:text-primary/90 flex items-center gap-1 mt-3 transition-colors"
           >
@@ -172,13 +167,14 @@ export default function AdminWorkspace() {
         </GlassCard>
 
         <div className="space-y-4">
-          <GlassCard className="p-6">
+          <GlassCard className="p-3.5 border-border/50 bg-card/40 backdrop-blur-md">
             <h2 className="text-base font-bold text-white mb-4">Quick Links</h2>
             <div className="space-y-2">
               {quickLinks.map((link) => {
                 const Icon = link.icon;
                 return (
                   <button
+                    type="button"
                     key={link.label}
                     onClick={() => navigate(link.path)}
                     className="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-secondary/40 transition-colors text-left group"
@@ -189,12 +185,8 @@ export default function AdminWorkspace() {
                       <Icon className="w-4 h-4" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-semibold text-foreground">
-                        {link.label}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {link.description}
-                      </p>
+                      <p className="text-sm font-semibold text-foreground">{link.label}</p>
+                      <p className="text-xs text-muted-foreground">{link.description}</p>
                     </div>
                     <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-primary transition-colors" />
                   </button>
@@ -203,16 +195,13 @@ export default function AdminWorkspace() {
             </div>
           </GlassCard>
 
-          <GlassCard className="p-5 border-amber-500/20">
+          <GlassCard className="p-3.5 border-amber-500/20 bg-card/40 backdrop-blur-md hover:-translate-y-0.5 transition-all duration-200">
             <div className="flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
               <div>
-                <h3 className="text-sm font-bold text-amber-300 mb-1">
-                  OCR Engine Maintenance
-                </h3>
+                <h3 className="text-sm font-bold text-amber-300 mb-1">OCR Engine Maintenance</h3>
                 <p className="text-xs text-muted-foreground">
-                  Scheduled restart at 03:00 AM UTC. 45 minutes of reduced
-                  throughput expected.
+                  Scheduled restart at 03:00 AM UTC. 45 minutes of reduced throughput expected.
                 </p>
               </div>
             </div>

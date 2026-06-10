@@ -1,5 +1,3 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router";
 import {
   ArrowLeft,
   Calendar,
@@ -13,14 +11,13 @@ import {
   User,
   X,
 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
 import {
-  GlassCard,
-  Badge,
-  Button,
-  Input,
-  Select,
-} from "../components/ui/Shared";
+  DocumentPreviewButton,
+  getDocumentContextAttributes,
+} from "../components/documents/DocumentPreviewActions";
 import {
   Dialog,
   DialogContent,
@@ -29,16 +26,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../components/ui/dialog";
-import { Textarea } from "../components/ui/textarea";
 import { PLNumberSelect } from "../components/ui/PLNumberSelect";
+import { Badge, Button, GlassCard, Input, Select } from "../components/ui/Shared";
+import { Textarea } from "../components/ui/textarea";
+import { usePLItems } from "../hooks/usePLItems";
 import { MOCK_DOCUMENTS } from "../lib/mock";
 import type { CaseRecord } from "../lib/types";
-import { usePLItems } from "../hooks/usePLItems";
 import { CaseService } from "../services/CaseService";
-import {
-  DocumentPreviewButton,
-  getDocumentContextAttributes,
-} from "../components/documents/DocumentPreviewActions";
 
 type DisplayStatus = "Open" | "In Progress" | "Closed";
 type DisplaySeverity = "Low" | "Medium" | "High" | "Critical";
@@ -147,20 +141,16 @@ export default function Cases() {
   const [cases, setCases] = useState<CaseRecord[]>([]);
   const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"All" | DisplayStatus>(
-    "All",
+  const [statusFilter, setStatusFilter] = useState<"All" | DisplayStatus>("All");
+  const [commentsByCase, setCommentsByCase] = useState<Record<string, CaseComment[]>>(() =>
+    loadComments(),
   );
-  const [commentsByCase, setCommentsByCase] = useState<
-    Record<string, CaseComment[]>
-  >(() => loadComments());
   const [newCaseOpen, setNewCaseOpen] = useState(false);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [commentDialogOpen, setCommentDialogOpen] = useState(false);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [closeDialogOpen, setCloseDialogOpen] = useState(false);
-  const [newCaseForm, setNewCaseForm] = useState<NewCaseFormState>(
-    DEFAULT_NEW_CASE_FORM,
-  );
+  const [newCaseForm, setNewCaseForm] = useState<NewCaseFormState>(DEFAULT_NEW_CASE_FORM);
   const [statusDraft, setStatusDraft] = useState<DisplayStatus>("Open");
   const [statusNote, setStatusNote] = useState("");
   const [commentDraft, setCommentDraft] = useState("");
@@ -186,9 +176,7 @@ export default function Cases() {
       return;
     }
     const match =
-      cases.find(
-        (item) => item.id === requestedId || item.caseNumber === requestedId,
-      ) ?? null;
+      cases.find((item) => item.id === requestedId || item.caseNumber === requestedId) ?? null;
     if (match) {
       setSelectedCaseId(match.id);
     }
@@ -215,18 +203,15 @@ export default function Cases() {
 
   const selectedCase = useMemo(
     () =>
-      cases.find(
-        (item) =>
-          item.id === selectedCaseId || item.caseNumber === selectedCaseId,
-      ) ?? null,
+      cases.find((item) => item.id === selectedCaseId || item.caseNumber === selectedCaseId) ??
+      null,
     [cases, selectedCaseId],
   );
 
   const filtered = useMemo(() => {
     return cases.filter((record) => {
       const displayStatus = toDisplayStatus(record.status);
-      const matchesStatus =
-        statusFilter === "All" || displayStatus === statusFilter;
+      const matchesStatus = statusFilter === "All" || displayStatus === statusFilter;
       const query = search.trim().toLowerCase();
       const matchesSearch =
         !query ||
@@ -241,9 +226,7 @@ export default function Cases() {
   const linkedDocs = useMemo(
     () =>
       selectedCase
-        ? MOCK_DOCUMENTS.filter((document) =>
-            selectedCase.linkedDocumentIds.includes(document.id),
-          )
+        ? MOCK_DOCUMENTS.filter((document) => selectedCase.linkedDocumentIds.includes(document.id))
         : [],
     [selectedCase],
   );
@@ -264,9 +247,7 @@ export default function Cases() {
     });
   }, [documentSearch, selectedCase]);
 
-  const selectedComments = selectedCase
-    ? (commentsByCase[selectedCase.id] ?? [])
-    : [];
+  const selectedComments = selectedCase ? (commentsByCase[selectedCase.id] ?? []) : [];
 
   const openCase = (caseId: string | null) => {
     setSelectedCaseId(caseId);
@@ -393,9 +374,7 @@ export default function Cases() {
 
     try {
       await CaseService.update(selectedCase.id, {
-        linkedDocumentIds: selectedCase.linkedDocumentIds.filter(
-          (id) => id !== documentId,
-        ),
+        linkedDocumentIds: selectedCase.linkedDocumentIds.filter((id) => id !== documentId),
       });
       await refreshCases();
       toast.success(`Removed ${documentId} from ${selectedCase.caseNumber}`);
@@ -411,10 +390,7 @@ export default function Cases() {
     try {
       await CaseService.update(selectedCase.id, { status: "CLOSED" });
       if (statusNote.trim()) {
-        await addCommentToCase(
-          selectedCase.id,
-          `Case closed: ${statusNote.trim()}`,
-        );
+        await addCommentToCase(selectedCase.id, `Case closed: ${statusNote.trim()}`);
         setStatusNote("");
       } else {
         await refreshCases();
@@ -439,54 +415,33 @@ export default function Cases() {
       <>
         <div className="space-y-6 max-w-[1200px] mx-auto">
           <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              className="px-2"
-              onClick={() => openCase(null)}
-            >
+            <Button variant="ghost" className="px-2" onClick={() => openCase(null)}>
               <ArrowLeft className="w-4 h-4" />
             </Button>
             <div className="flex-1">
               <div className="flex items-center gap-3 flex-wrap">
                 <ShieldAlert className="w-5 h-5 text-rose-400" />
-                <h1 className="text-2xl font-bold text-white">
-                  {selectedCase.title}
-                </h1>
-                <Badge variant={statusVariant(displayStatus)}>
-                  {displayStatus}
-                </Badge>
-                <Badge variant={severityVariant(displaySeverity)}>
-                  {displaySeverity}
-                </Badge>
+                <h1 className="text-2xl font-bold text-white">{selectedCase.title}</h1>
+                <Badge variant={statusVariant(displayStatus)}>{displayStatus}</Badge>
+                <Badge variant={severityVariant(displaySeverity)}>{displaySeverity}</Badge>
               </div>
               <p className="text-sm text-muted-foreground mt-1 font-mono pl-8">
-                {selectedCase.caseNumber} · Updated{" "}
-                {formatDate(selectedCase.updatedAt)}
+                {selectedCase.caseNumber} · Updated {formatDate(selectedCase.updatedAt)}
               </p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
-              <GlassCard className="p-6">
-                <h2 className="text-lg font-bold text-white mb-4">
-                  Case Description
-                </h2>
-                <p className="text-foreground/90 leading-relaxed">
-                  {selectedCase.description}
-                </p>
+              <GlassCard className="p-3.5 border-border/50 bg-card/40 backdrop-blur-md hover:-translate-y-0.5 hover:border-primary/30 hover:bg-secondary/40 transition-all duration-200">
+                <h2 className="text-lg font-bold text-white mb-4">Case Description</h2>
+                <p className="text-foreground/90 leading-relaxed">{selectedCase.description}</p>
               </GlassCard>
 
-              <GlassCard className="p-6">
+              <GlassCard className="p-3.5 border-border/50 bg-card/40 backdrop-blur-md hover:-translate-y-0.5 hover:border-primary/30 hover:bg-secondary/40 transition-all duration-200">
                 <div className="flex items-center justify-between gap-3 mb-4">
-                  <h2 className="text-lg font-bold text-white">
-                    Linked Documents
-                  </h2>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setLinkDialogOpen(true)}
-                  >
+                  <h2 className="text-lg font-bold text-white">Linked Documents</h2>
+                  <Button variant="secondary" size="sm" onClick={() => setLinkDialogOpen(true)}>
                     <Plus className="w-3.5 h-3.5" /> Link Document
                   </Button>
                 </div>
@@ -495,21 +450,17 @@ export default function Cases() {
                     {linkedDocs.map((document) => (
                       <div
                         key={document.id}
-                        {...getDocumentContextAttributes(
-                          document.id,
-                          document.name,
-                        )}
+                        {...getDocumentContextAttributes(document.id, document.name)}
                         className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 border border-border"
                       >
                         <button
+                          type="button"
                           className="flex flex-1 items-center gap-3 text-left hover:text-primary/90 transition-colors"
                           onClick={() => navigate(`/documents/${document.id}`)}
                         >
                           <FileText className="w-4 h-4 text-primary" />
                           <div className="min-w-0">
-                            <p className="text-sm text-primary font-mono">
-                              {document.id}
-                            </p>
+                            <p className="text-sm text-primary font-mono">{document.id}</p>
                             <p className="text-xs text-muted-foreground truncate">
                               {document.name}
                             </p>
@@ -538,16 +489,10 @@ export default function Cases() {
                 )}
               </GlassCard>
 
-              <GlassCard className="p-6">
+              <GlassCard className="p-3.5 border-border/50 bg-card/40 backdrop-blur-md hover:-translate-y-0.5 hover:border-primary/30 hover:bg-secondary/40 transition-all duration-200">
                 <div className="flex items-center justify-between gap-3 mb-4">
-                  <h2 className="text-lg font-bold text-white">
-                    Notes & Activity
-                  </h2>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setCommentDialogOpen(true)}
-                  >
+                  <h2 className="text-lg font-bold text-white">Notes & Activity</h2>
+                  <Button variant="secondary" size="sm" onClick={() => setCommentDialogOpen(true)}>
                     <MessageSquareText className="w-3.5 h-3.5" /> Add Comment
                   </Button>
                 </div>
@@ -559,16 +504,12 @@ export default function Cases() {
                         className="rounded-xl border border-white/6 bg-slate-950/35 px-4 py-3"
                       >
                         <div className="flex items-center justify-between gap-3">
-                          <p className="text-sm font-medium text-foreground">
-                            {comment.author}
-                          </p>
+                          <p className="text-sm font-medium text-foreground">{comment.author}</p>
                           <p className="text-[11px] text-muted-foreground">
                             {formatDate(comment.createdAt)}
                           </p>
                         </div>
-                        <p className="mt-2 text-sm text-muted-foreground">
-                          {comment.text}
-                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">{comment.text}</p>
                       </div>
                     ))}
                   </div>
@@ -581,10 +522,8 @@ export default function Cases() {
             </div>
 
             <div className="space-y-4">
-              <GlassCard className="p-5">
-                <h3 className="text-sm font-bold text-white mb-4">
-                  Case Metadata
-                </h3>
+              <GlassCard className="p-3.5 border-border/50 bg-card/40 backdrop-blur-md">
+                <h3 className="text-sm font-bold text-white mb-4">Case Metadata</h3>
                 <div className="space-y-3">
                   {[
                     {
@@ -606,9 +545,7 @@ export default function Cases() {
                     <div key={field.label} className="flex items-center gap-3">
                       <field.icon className="w-4 h-4 text-muted-foreground shrink-0" />
                       <div>
-                        <p className="text-xs text-muted-foreground">
-                          {field.label}
-                        </p>
+                        <p className="text-xs text-muted-foreground">{field.label}</p>
                         <p className="text-sm text-foreground">{field.value}</p>
                       </div>
                     </div>
@@ -620,25 +557,21 @@ export default function Cases() {
                       <p className="text-xs text-muted-foreground">Linked PL</p>
                       {selectedCase.plNumber ? (
                         <button
-                          onClick={() =>
-                            navigate(`/pl/${selectedCase.plNumber}`)
-                          }
+                          type="button"
+                          onClick={() => navigate(`/pl/${selectedCase.plNumber}`)}
                           className="text-sm text-primary/90 hover:text-teal-200 transition-colors"
                         >
-                          {selectedCase.plNumber}{" "}
-                          {selectedPl ? `· ${selectedPl.name}` : ""}
+                          {selectedCase.plNumber} {selectedPl ? `· ${selectedPl.name}` : ""}
                         </button>
                       ) : (
-                        <p className="text-sm text-muted-foreground">
-                          No PL linked
-                        </p>
+                        <p className="text-sm text-muted-foreground">No PL linked</p>
                       )}
                     </div>
                   </div>
                 </div>
               </GlassCard>
 
-              <GlassCard className="p-5">
+              <GlassCard className="p-3.5 border-border/50 bg-card/40 backdrop-blur-md">
                 <h3 className="text-sm font-bold text-white mb-3">Actions</h3>
                 <div className="space-y-2">
                   <Button
@@ -684,20 +617,18 @@ export default function Cases() {
             <DialogHeader>
               <DialogTitle>Update Case Status</DialogTitle>
               <DialogDescription className="text-muted-foreground">
-                Apply a workflow status to {selectedCase.caseNumber} without
-                leaving the current review context.
+                Apply a workflow status to {selectedCase.caseNumber} without leaving the current
+                review context.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                   Status
-                </label>
+                </span>
                 <Select
                   value={statusDraft}
-                  onChange={(event) =>
-                    setStatusDraft(event.target.value as DisplayStatus)
-                  }
+                  onChange={(event) => setStatusDraft(event.target.value as DisplayStatus)}
                 >
                   <option value="Open">Open</option>
                   <option value="In Progress">In Progress</option>
@@ -705,9 +636,9 @@ export default function Cases() {
                 </Select>
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                   Operator Note
-                </label>
+                </span>
                 <Textarea
                   value={statusNote}
                   onChange={(event) => setStatusNote(event.target.value)}
@@ -716,10 +647,7 @@ export default function Cases() {
               </div>
             </div>
             <DialogFooter className="gap-2">
-              <Button
-                variant="secondary"
-                onClick={() => setStatusDialogOpen(false)}
-              >
+              <Button variant="secondary" onClick={() => setStatusDialogOpen(false)}>
                 Cancel
               </Button>
               <Button onClick={handleStatusSave}>Save Status</Button>
@@ -732,8 +660,7 @@ export default function Cases() {
             <DialogHeader>
               <DialogTitle>Add Case Comment</DialogTitle>
               <DialogDescription className="text-muted-foreground">
-                Add a review note, engineering observation, or follow-up
-                instruction.
+                Add a review note, engineering observation, or follow-up instruction.
               </DialogDescription>
             </DialogHeader>
             <Textarea
@@ -742,10 +669,7 @@ export default function Cases() {
               placeholder="Write the case note to store in the activity log."
             />
             <DialogFooter className="gap-2">
-              <Button
-                variant="secondary"
-                onClick={() => setCommentDialogOpen(false)}
-              >
+              <Button variant="secondary" onClick={() => setCommentDialogOpen(false)}>
                 Cancel
               </Button>
               <Button onClick={handleCommentSave}>Add Comment</Button>
@@ -758,8 +682,7 @@ export default function Cases() {
             <DialogHeader>
               <DialogTitle>Link Document</DialogTitle>
               <DialogDescription className="text-muted-foreground">
-                Search the repository and link one of the accessible documents
-                to this case.
+                Search the repository and link one of the accessible documents to this case.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
@@ -771,31 +694,17 @@ export default function Cases() {
               <div className="max-h-[360px] space-y-2 overflow-y-auto pr-1">
                 {filteredDocuments.length > 0 ? (
                   filteredDocuments.map((document) => (
-                    <div
+                    <button
+                      type="button"
                       key={document.id}
-                      {...getDocumentContextAttributes(
-                        document.id,
-                        document.name,
-                      )}
-                      role="button"
-                      tabIndex={0}
+                      {...getDocumentContextAttributes(document.id, document.name)}
                       onClick={() => handleLinkDocument(document.id)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault();
-                          handleLinkDocument(document.id);
-                        }
-                      }}
                       className="w-full rounded-xl border border-border bg-secondary/50 px-4 py-3 text-left transition-colors hover:border-teal-500/40 hover:bg-card"
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div>
-                          <p className="text-sm font-medium text-white">
-                            {document.name}
-                          </p>
-                          <p className="mt-1 text-[11px] font-mono text-primary">
-                            {document.id}
-                          </p>
+                          <p className="text-sm font-medium text-white">{document.name}</p>
+                          <p className="mt-1 text-[11px] font-mono text-primary">{document.id}</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <DocumentPreviewButton
@@ -808,10 +717,9 @@ export default function Cases() {
                         </div>
                       </div>
                       <p className="mt-2 text-xs text-muted-foreground">
-                        Linked PL: {document.linkedPL} · Revision{" "}
-                        {document.revision}
+                        Linked PL: {document.linkedPL} · Revision {document.revision}
                       </p>
-                    </div>
+                    </button>
                   ))
                 ) : (
                   <p className="rounded-xl border border-white/6 bg-slate-950/35 px-4 py-5 text-sm text-muted-foreground">
@@ -828,14 +736,14 @@ export default function Cases() {
             <DialogHeader>
               <DialogTitle>Close Case</DialogTitle>
               <DialogDescription className="text-muted-foreground">
-                This updates the case lifecycle and keeps the current filters
-                and list position intact when you return.
+                This updates the case lifecycle and keeps the current filters and list position
+                intact when you return.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-3">
               <p className="text-sm text-foreground/90">
-                {selectedCase.caseNumber} will be marked as closed. Add an
-                optional resolution note below.
+                {selectedCase.caseNumber} will be marked as closed. Add an optional resolution note
+                below.
               </p>
               <Textarea
                 value={statusNote}
@@ -844,10 +752,7 @@ export default function Cases() {
               />
             </div>
             <DialogFooter className="gap-2">
-              <Button
-                variant="secondary"
-                onClick={() => setCloseDialogOpen(false)}
-              >
+              <Button variant="secondary" onClick={() => setCloseDialogOpen(false)}>
                 Cancel
               </Button>
               <Button variant="danger" onClick={handleCloseCase}>
@@ -865,9 +770,7 @@ export default function Cases() {
       <div className="space-y-6 max-w-[1400px] mx-auto">
         <div className="flex items-end justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-foreground mb-2">
-              Cases
-            </h1>
+            <h1 className="text-2xl font-semibold text-foreground mb-2">Cases</h1>
             <p className="text-muted-foreground text-sm">
               Engineering discrepancy and compliance case management.
             </p>
@@ -882,27 +785,26 @@ export default function Cases() {
             <FileSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Search cases by ID, title..."
-              className="pl-9 w-full"
+              className="pl-9 w-full h-9"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
           <div className="flex gap-2">
-            {(["All", "Open", "In Progress", "Closed"] as const).map(
-              (status) => (
-                <button
-                  key={status}
-                  onClick={() => setStatusFilter(status)}
-                  className={`px-3 py-2 rounded-xl text-xs font-medium border transition-colors ${
-                    statusFilter === status
-                      ? "bg-teal-500/20 border-teal-500/40 text-primary/90"
-                      : "bg-secondary/50 border-border text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {status}
-                </button>
-              ),
-            )}
+            {(["All", "Open", "In Progress", "Closed"] as const).map((status) => (
+              <button
+                type="button"
+                key={status}
+                onClick={() => setStatusFilter(status)}
+                className={`px-3 h-9 rounded-md text-xs font-medium border transition-colors ${
+                  statusFilter === status
+                    ? "bg-teal-500/20 border-teal-500/40 text-primary/90"
+                    : "bg-secondary/50 border-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {status}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -913,26 +815,18 @@ export default function Cases() {
             return (
               <GlassCard
                 key={record.id}
-                className="p-5 hover:border-teal-500/40 cursor-pointer transition-all group"
+                className="p-3 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-secondary/40 transition-all duration-200 cursor-pointer"
                 onClick={() => openCase(record.id)}
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2 flex-wrap">
                     <ShieldAlert className="w-4 h-4 text-rose-400" />
-                    <span className="font-mono text-xs text-primary">
-                      {record.caseNumber}
-                    </span>
-                    <Badge variant={statusVariant(displayStatus)}>
-                      {displayStatus}
-                    </Badge>
-                    <Badge variant={severityVariant(displaySeverity)}>
-                      {displaySeverity}
-                    </Badge>
+                    <span className="font-mono text-xs text-primary">{record.caseNumber}</span>
+                    <Badge variant={statusVariant(displayStatus)}>{displayStatus}</Badge>
+                    <Badge variant={severityVariant(displaySeverity)}>{displaySeverity}</Badge>
                   </div>
                 </div>
-                <h3 className="text-sm font-semibold text-foreground mb-2">
-                  {record.title}
-                </h3>
+                <h3 className="text-sm font-semibold text-foreground mb-2">{record.title}</h3>
                 <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
                   {record.description}
                 </p>
@@ -954,9 +848,7 @@ export default function Cases() {
         {filtered.length === 0 && (
           <GlassCard className="p-12 text-center">
             <ShieldAlert className="w-10 h-10 mx-auto mb-2 opacity-30 text-muted-foreground" />
-            <p className="text-muted-foreground">
-              No cases match the current filters
-            </p>
+            <p className="text-muted-foreground">No cases match the current filters</p>
           </GlassCard>
         )}
       </div>
@@ -974,15 +866,15 @@ export default function Cases() {
           <DialogHeader>
             <DialogTitle>Create New Case</DialogTitle>
             <DialogDescription className="text-muted-foreground">
-              Start a new EDMS discrepancy or compliance case and link it to the
-              relevant PL at creation time.
+              Start a new EDMS discrepancy or compliance case and link it to the relevant PL at
+              creation time.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4">
             <div>
-              <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 Title
-              </label>
+              </span>
               <Input
                 value={newCaseForm.title}
                 onChange={(event) =>
@@ -995,9 +887,9 @@ export default function Cases() {
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 Description
-              </label>
+              </span>
               <Textarea
                 value={newCaseForm.description}
                 onChange={(event) =>
@@ -1011,9 +903,9 @@ export default function Cases() {
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                   Assignee
-                </label>
+                </span>
                 <Input
                   value={newCaseForm.assignee}
                   onChange={(event) =>
@@ -1026,9 +918,9 @@ export default function Cases() {
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                   Severity
-                </label>
+                </span>
                 <Select
                   value={newCaseForm.severity}
                   onChange={(event) =>
@@ -1046,14 +938,12 @@ export default function Cases() {
               </div>
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 Linked PL
-              </label>
+              </span>
               <PLNumberSelect
                 value={newCaseForm.plNumber}
-                onChange={(plNumber) =>
-                  setNewCaseForm((current) => ({ ...current, plNumber }))
-                }
+                onChange={(plNumber) => setNewCaseForm((current) => ({ ...current, plNumber }))}
                 plItems={plItems}
                 loading={plItemsLoading}
                 placeholder="Search and select a PL number..."

@@ -2,19 +2,14 @@
  * FilterBar — shared filter panel with faceted and inline variants.
  * Eliminates duplicated filter UIs across SearchExplorer, AuditLog, DocumentHub.
  */
-import React, { useCallback } from "react";
-import { X, SlidersHorizontal } from "lucide-react";
+
+import { SlidersHorizontal, X } from "lucide-react";
+import { useCallback } from "react";
 import { cn } from "@/lib/utils";
-import { Button } from "./button";
 import { Badge } from "./badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./select";
+import { Button } from "./button";
 import { Input } from "./input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
 
 // ─── Filter Definitions ───────────────────────────────────────────────────────
 
@@ -60,13 +55,7 @@ function countActive(values: FilterValues): number {
 
 // ─── FilterChip ───────────────────────────────────────────────────────────────
 
-function FilterChip({
-  label,
-  onRemove,
-}: {
-  label: string;
-  onRemove: () => void;
-}) {
+function FilterChip({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
     <Badge variant="secondary" className="flex items-center gap-1 pr-1 text-xs">
       {label}
@@ -114,9 +103,7 @@ export function FilterBar({
                 <SelectItem key={opt.value} value={opt.value}>
                   {opt.label}
                   {opt.count != null && (
-                    <span className="ml-1 text-muted-foreground">
-                      ({opt.count})
-                    </span>
+                    <span className="ml-1 text-muted-foreground">({opt.count})</span>
                   )}
                 </SelectItem>
               ))}
@@ -160,8 +147,7 @@ export function FilterBar({
     const v = values[field.key];
     if (!v || (Array.isArray(v) && v.length === 0)) continue;
     const display = Array.isArray(v) ? v.join(", ") : (v as string);
-    const optLabel =
-      field.options?.find((o) => o.value === display)?.label ?? display;
+    const optLabel = field.options?.find((o) => o.value === display)?.label ?? display;
     chips.push({ key: field.key, label: `${field.label}: ${optLabel}` });
   }
 
@@ -185,12 +171,7 @@ export function FilterBar({
         </div>
         {fields.map(renderField)}
         {active > 0 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 px-2 text-xs"
-            onClick={onClear}
-          >
+          <Button variant="ghost" size="sm" className="h-8 px-2 text-xs" onClick={onClear}>
             <X className="h-3 w-3 mr-1" />
             Clear
           </Button>

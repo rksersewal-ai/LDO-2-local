@@ -1,20 +1,11 @@
+import { CheckCircle, ChevronRight, RotateCcw, Save, Settings as SettingsIcon } from "lucide-react";
 import { useMemo, useState } from "react";
-import {
-  Settings as SettingsIcon,
-  Save,
-  CheckCircle,
-  ChevronRight,
-  RotateCcw,
-} from "lucide-react";
 import { toast } from "sonner";
-import { GlassCard, Button, Input } from "../components/ui/Shared";
+import { Button, GlassCard, Input } from "../components/ui/Shared";
 import { Switch } from "../components/ui/switch";
-import { PreferencesService } from "../services/PreferencesService";
-import {
-  SystemSettingsService,
-  type SystemSettingsState,
-} from "../services/SystemSettingsService";
 import { useTheme } from "../contexts/ThemeContext";
+import { PreferencesService } from "../services/PreferencesService";
+import { SystemSettingsService, type SystemSettingsState } from "../services/SystemSettingsService";
 
 type SettingsKey = keyof SystemSettingsState;
 
@@ -110,12 +101,7 @@ function getInitialValues(): SystemSettingsState {
 
   return {
     ...system,
-    theme:
-      prefs.theme === "dark"
-        ? "Dark (Default)"
-        : prefs.theme === "light"
-          ? "Light"
-          : "System",
+    theme: prefs.theme === "dark" ? "Dark (Default)" : prefs.theme === "light" ? "Light" : "System",
     density: prefs.compactTables ? "Compact" : system.density,
     animations: !prefs.reduceMotion,
   };
@@ -123,13 +109,9 @@ function getInitialValues(): SystemSettingsState {
 
 export default function Settings() {
   const { setTheme } = useTheme();
-  const [activeGroup, setActiveGroup] = useState<string>(
-    settingGroups[0].label,
-  );
+  const [activeGroup, setActiveGroup] = useState<string>(settingGroups[0].label);
   const [saved, setSaved] = useState(false);
-  const [values, setValues] = useState<SystemSettingsState>(() =>
-    getInitialValues(),
-  );
+  const [values, setValues] = useState<SystemSettingsState>(() => getInitialValues());
 
   const currentGroup = useMemo(
     () => settingGroups.find((group) => group.label === activeGroup),
@@ -142,11 +124,7 @@ export default function Settings() {
 
   const handleSave = () => {
     const nextThemePreference =
-      values.theme === "Dark (Default)"
-        ? "dark"
-        : values.theme === "Light"
-          ? "light"
-          : "system";
+      values.theme === "Dark (Default)" ? "dark" : values.theme === "Light" ? "light" : "system";
     SystemSettingsService.set(values);
     PreferencesService.set({
       theme: nextThemePreference,
@@ -154,9 +132,7 @@ export default function Settings() {
       reduceMotion: !values.animations,
     });
     if (values.theme === "System") {
-      const prefersLight =
-        window.matchMedia &&
-        window.matchMedia("(prefers-color-scheme: light)").matches;
+      const prefersLight = window.matchMedia?.("(prefers-color-scheme: light)").matches;
       setTheme(prefersLight ? "light" : "dark");
     } else {
       setTheme(nextThemePreference as "dark" | "light");
@@ -179,9 +155,7 @@ export default function Settings() {
     <div className="space-y-6 max-w-5xl mx-auto">
       <div className="flex items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground mb-2">
-            Settings
-          </h1>
+          <h1 className="text-2xl font-semibold text-foreground mb-2">Settings</h1>
           <p className="text-muted-foreground text-sm">
             System configuration and workspace preferences.
           </p>
@@ -190,10 +164,7 @@ export default function Settings() {
           <Button variant="secondary" onClick={handleReset}>
             <RotateCcw className="w-4 h-4" /> Reset Changes
           </Button>
-          <Button
-            onClick={handleSave}
-            className={saved ? "from-teal-700 to-emerald-700" : ""}
-          >
+          <Button onClick={handleSave} className={saved ? "from-teal-700 to-emerald-700" : ""}>
             {saved ? (
               <>
                 <CheckCircle className="w-4 h-4" /> Saved!
@@ -208,13 +179,14 @@ export default function Settings() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <GlassCard className="p-4 self-start">
+        <GlassCard className="p-3.5 self-start border-border/50 bg-card/40 backdrop-blur-md hover:-translate-y-0.5 hover:border-primary/30 hover:bg-secondary/40 transition-all duration-200">
           <nav className="space-y-1">
             {settingGroups.map((group) => (
               <button
+                type="button"
                 key={group.label}
                 onClick={() => setActiveGroup(group.label)}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors text-left ${
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm transition-colors text-left ${
                   activeGroup === group.label
                     ? "bg-teal-500/15 text-primary/90 border border-teal-500/25"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
@@ -230,8 +202,8 @@ export default function Settings() {
         </GlassCard>
 
         <div className="lg:col-span-3">
-          <GlassCard className="p-6">
-            <h2 className="text-lg font-bold text-white mb-5 flex items-center gap-2">
+          <GlassCard className="p-3.5 border-border/50 bg-card/40 backdrop-blur-md transition-all duration-200">
+            <h2 className="text-lg font-bold text-foreground mb-5 flex items-center gap-2">
               <SettingsIcon className="w-5 h-5 text-primary" />
               {activeGroup}
             </h2>
@@ -245,29 +217,23 @@ export default function Settings() {
                     className="flex items-center justify-between gap-4 py-3 border-b border-border/50 last:border-0"
                   >
                     <div className="max-w-md">
-                      <p className="text-sm font-medium text-foreground">
-                        {setting.label}
-                      </p>
+                      <p className="text-sm font-medium text-foreground">{setting.label}</p>
                     </div>
                     <div className="min-w-[180px]">
                       {setting.type === "toggle" && (
                         <div className="flex justify-end">
                           <Switch
                             checked={Boolean(settingValue)}
-                            onCheckedChange={(checked) =>
-                              setValue(settingKey, checked)
-                            }
+                            onCheckedChange={(checked) => setValue(settingKey, checked)}
                             aria-label={setting.label}
                           />
                         </div>
                       )}
                       {setting.type === "select" && (
                         <select
-                          className="bg-slate-950/50 border border-teal-500/20 text-foreground text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:border-teal-500/40 w-full"
+                          className="h-9 bg-slate-950/50 border border-border/50 text-foreground text-sm rounded-xl px-3 focus:outline-none focus:border-teal-500/40 w-full"
                           value={String(settingValue)}
-                          onChange={(event) =>
-                            setValue(settingKey, event.target.value)
-                          }
+                          onChange={(event) => setValue(settingKey, event.target.value)}
                         >
                           {setting.options?.map((option) => (
                             <option key={option} value={option}>
@@ -278,11 +244,9 @@ export default function Settings() {
                       )}
                       {setting.type === "input" && (
                         <Input
-                          className="w-full text-right"
+                          className="w-full text-right h-9"
                           value={String(settingValue)}
-                          onChange={(event) =>
-                            setValue(settingKey, event.target.value)
-                          }
+                          onChange={(event) => setValue(settingKey, event.target.value)}
                         />
                       )}
                     </div>

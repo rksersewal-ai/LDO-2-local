@@ -56,7 +56,7 @@ export class PreferencesService {
   }
 
   static set(prefs: Partial<UserPreferences>) {
-    const current = this.get();
+    const current = PreferencesService.get();
     const updated = { ...current, ...prefs };
     localStorage.setItem(PREFS_KEY, JSON.stringify(updated));
     if (typeof window !== "undefined") {

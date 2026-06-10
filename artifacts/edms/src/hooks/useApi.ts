@@ -1,180 +1,100 @@
-/**
- * useApi Hook
- * Simplified API integration hook for React components with standardized API responses
- *
- * All list endpoints return: NormalizedListResult<T>
- * All item endpoints return: T
- * All mutations return: T
- */
-
-import { useState, useCallback } from "react";
-import { AxiosError } from "axios";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import type { AxiosError, AxiosResponse } from "axios";
+import type { ListQueryParams, SearchScope } from "../lib/types";
 import apiClient from "../services/ApiClient";
-import type {
-  NormalizedListResult,
-  ListQueryParams,
-  SearchScope,
-} from "../lib/types";
 
-interface UseApiState<T> {
-  data: T | null;
-  loading: boolean;
-  error: string | null;
-}
-
-interface UseApiOptions {
-  onSuccess?: (data: any) => void;
+interface UseApiOptions<T = unknown> {
+  onSuccess?: (data: T) => void;
   onError?: (error: AxiosError) => void;
   autoFetch?: boolean;
 }
 
-/**
- * Generic API hook for GET requests
- * For list endpoints, ensures normalized response shape
- */
-export function useApiGet<T = any>(url: string, options: UseApiOptions = {}) {
-  const [state, setState] = useState<UseApiState<T>>({
-    data: null,
-    loading: options.autoFetch !== false,
-    error: null,
-  });
-
-  const fetch = useCallback(async () => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
-    try {
+export function useApiGet<T = unknown>(url: string, options: UseApiOptions<T> = {}) {
+  const { data, isLoading, error, refetch } = useQuery<T, AxiosError>({
+    queryKey: [url],
+    queryFn: async () => {
       const response = await apiClient.client.get(url);
-      setState((prev) => ({ ...prev, data: response.data, loading: false }));
-      options.onSuccess?.(response.data);
-    } catch (error) {
-      const err = error as AxiosError;
-      const message = apiClient.getErrorMessage(err);
-      setState((prev) => ({ ...prev, error: message, loading: false }));
-      options.onError?.(err);
-    }
-  }, [url, options]);
-
-  return { ...state, refetch: fetch };
-}
-
-/**
- * Generic API hook for POST/PATCH requests
- */
-export function useApiMutation<T = any, D = any>(
-  method: "post" | "patch" | "put" | "delete" = "post",
-  options: UseApiOptions = {},
-) {
-  const [state, setState] = useState<UseApiState<T>>({
-    data: null,
-    loading: false,
-    error: null,
-  });
-
-  const mutate = useCallback(
-    async (url: string, data?: D) => {
-      setState((prev) => ({ ...prev, loading: true, error: null }));
-      try {
-        let response;
-        if (method === "delete") {
-          response = await apiClient.client.delete(url);
-        } else {
-          response = await apiClient.client[method](url, data);
-        }
-        setState((prev) => ({ ...prev, data: response.data, loading: false }));
-        options.onSuccess?.(response.data);
-        return response.data;
-      } catch (error) {
-        const err = error as AxiosError;
-        const message = apiClient.getErrorMessage(err);
-        setState((prev) => ({ ...prev, error: message, loading: false }));
-        options.onError?.(err);
-        throw err;
-      }
+      return response.data;
     },
-    [method, options],
-  );
-
-  return { ...state, mutate };
-}
-
-/**
- * API hook for document list operations with pagination
- * Uses standardized ApiClient methods that return NormalizedListResult<Document>
- */
-export function useDocumentList(query?: ListQueryParams) {
-  const [state, setState] = useState<UseApiState<NormalizedListResult<any>>>({
-    data: null,
-    loading: true,
-    error: null,
+    enabled: options.autoFetch !== false,
   });
 
-  const fetch = useCallback(async () => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
-    try {
-      const response = await apiClient.getDocuments(query);
-      setState((prev) => ({ ...prev, data: response, loading: false }));
-    } catch (error) {
-      const err = error as AxiosError;
-      const message = apiClient.getErrorMessage(err);
-      setState((prev) => ({ ...prev, error: message, loading: false }));
-    }
-  }, [query?.page, query?.pageSize, query?.search, query?.sort]);
+  return {
+    data: data || null,
+    loading: isLoading,
+    error: error ? apiClient.getErrorMessage(error) : null,
+    refetch,
+  };
+}
+
+export function useApiMutation<T = unknown, D = unknown>(
+  method: "post" | "patch" | "put" | "delete" = "post",
+  options: UseApiOptions<T> = {},
+) {
+  const mutation = useMutation<T, AxiosError, { url: string; data?: D }>({
+    mutationFn: async ({ url, data }) => {
+      let response: AxiosResponse;
+      if (method === "delete") {
+        response = await apiClient.client.delete(url);
+      } else {
+        response = await apiClient.client[method](url, data);
+      }
+      return response.data;
+    },
+    onSuccess: (data) => options.onSuccess?.(data),
+    onError: (err) => options.onError?.(err),
+  });
+
+  return {
+    data: mutation.data || null,
+    loading: mutation.isPending,
+    error: mutation.error ? apiClient.getErrorMessage(mutation.error) : null,
+    mutate: (url: string, data?: D) => mutation.mutateAsync({ url, data }),
+  };
+}
+
+export function useDocumentList(query?: ListQueryParams) {
+  const result = useQuery({
+    queryKey: ["documents", query],
+    queryFn: () => apiClient.getDocuments(query),
+  });
 
   const createMutation = useApiMutation("post");
   const updateMutation = useApiMutation("patch");
   const deleteMutation = useApiMutation("delete");
 
   return {
-    ...state,
-    refetch: fetch,
-    createDocument: (data: FormData) =>
-      createMutation.mutate("/documents/", data),
-    updateDocument: (id: string, data: any) =>
-      updateMutation.mutate(`/documents/${id}/`, data),
+    data: result.data || null,
+    loading: result.isLoading,
+    error: result.error ? apiClient.getErrorMessage(result.error as AxiosError) : null,
+    refetch: result.refetch,
+    createDocument: (data: FormData) => createMutation.mutate("/documents/", data),
+    updateDocument: (id: string, data: any) => updateMutation.mutate(`/documents/${id}/`, data),
     deleteDocument: (id: string) => deleteMutation.mutate(`/documents/${id}/`),
   };
 }
 
-/**
- * API hook for work records list operations with pagination
- * Uses standardized ApiClient methods that return NormalizedListResult<WorkRecord>
- */
 export function useWorkRecordList(query?: ListQueryParams) {
-  const [state, setState] = useState<UseApiState<NormalizedListResult<any>>>({
-    data: null,
-    loading: true,
-    error: null,
+  const result = useQuery({
+    queryKey: ["work-records", query],
+    queryFn: () => apiClient.getWorkRecords(query),
   });
-
-  const fetch = useCallback(async () => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
-    try {
-      const response = await apiClient.getWorkRecords(query);
-      setState((prev) => ({ ...prev, data: response, loading: false }));
-    } catch (error) {
-      const err = error as AxiosError;
-      const message = apiClient.getErrorMessage(err);
-      setState((prev) => ({ ...prev, error: message, loading: false }));
-    }
-  }, [query?.page, query?.pageSize, query?.search, query?.sort]);
 
   const createMutation = useApiMutation("post");
   const updateMutation = useApiMutation("patch");
   const deleteMutation = useApiMutation("delete");
 
   return {
-    ...state,
-    refetch: fetch,
+    data: result.data || null,
+    loading: result.isLoading,
+    error: result.error ? apiClient.getErrorMessage(result.error as AxiosError) : null,
+    refetch: result.refetch,
     createRecord: (data: any) => createMutation.mutate("/work-records/", data),
-    updateRecord: (id: string, data: any) =>
-      updateMutation.mutate(`/work-records/${id}/`, data),
+    updateRecord: (id: string, data: any) => updateMutation.mutate(`/work-records/${id}/`, data),
     deleteRecord: (id: string) => deleteMutation.mutate(`/work-records/${id}/`),
   };
 }
 
-/**
- * @deprecated Use useDocumentList or useWorkRecordList instead
- * Legacy hook kept for backwards compatibility
- */
 export function useDocuments() {
   const list = useDocumentList();
   return {
@@ -188,10 +108,6 @@ export function useDocuments() {
   };
 }
 
-/**
- * @deprecated Use useWorkRecordList instead
- * Legacy hook kept for backwards compatibility
- */
 export function useWorkRecords() {
   const list = useWorkRecordList();
   return {
@@ -205,32 +121,21 @@ export function useWorkRecords() {
   };
 }
 
-/**
- * API hook for search functionality
- */
 export function useSearch(query: string, scope?: SearchScope) {
-  const [state, setState] = useState<UseApiState<any>>({
-    data: null,
-    loading: false,
-    error: null,
+  const result = useQuery({
+    queryKey: ["search", query, scope],
+    queryFn: () => apiClient.search(query, scope),
+    enabled: false, // Legacy search implementation expects manual triggering
   });
 
-  const search = useCallback(async () => {
-    if (!query.trim()) {
-      setState((prev) => ({ ...prev, data: null }));
-      return;
-    }
-
-    setState((prev) => ({ ...prev, loading: true, error: null }));
-    try {
-      const response = await apiClient.search(query, scope);
-      setState((prev) => ({ ...prev, data: response, loading: false }));
-    } catch (error) {
-      const err = error as AxiosError;
-      const message = apiClient.getErrorMessage(err);
-      setState((prev) => ({ ...prev, error: message, loading: false }));
-    }
-  }, [query, scope]);
-
-  return { ...state, search };
+  return {
+    data: result.data || null,
+    loading: result.isFetching,
+    error: result.error ? apiClient.getErrorMessage(result.error as AxiosError) : null,
+    search: () => {
+      if (query.trim()) {
+        result.refetch();
+      }
+    },
+  };
 }

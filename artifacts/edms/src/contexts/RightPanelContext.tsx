@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, type ReactNode, useContext, useState } from "react";
 
 export interface RightPanelContent {
   panelKey?: string;
@@ -21,9 +21,7 @@ interface RightPanelContextType {
   closePanel: () => void;
 }
 
-const RightPanelContext = createContext<RightPanelContextType | undefined>(
-  undefined,
-);
+const RightPanelContext = createContext<RightPanelContextType | undefined>(undefined);
 
 export function RightPanelProvider({ children }: { children: ReactNode }) {
   const [content, setContent] = useState<RightPanelContent | null>(null);
@@ -37,9 +35,7 @@ export function RightPanelProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <RightPanelContext.Provider
-      value={{ content, setContent, openPanel, closePanel }}
-    >
+    <RightPanelContext.Provider value={{ content, setContent, openPanel, closePanel }}>
       {children}
     </RightPanelContext.Provider>
   );

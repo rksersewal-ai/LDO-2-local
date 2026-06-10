@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { Document } from "../lib/types";
 import { DocumentService } from "../services/DocumentService";
 
@@ -7,9 +7,7 @@ interface UseDocumentsResult {
   loading: boolean;
   error: string | null;
   refetch: () => void;
-  add: (
-    doc: Omit<Document, "id" | "createdAt" | "updatedAt">,
-  ) => Promise<Document>;
+  add: (doc: Omit<Document, "id" | "createdAt" | "updatedAt">) => Promise<Document>;
   update: (id: string, patch: Partial<Document>) => Promise<Document | null>;
   remove: (id: string) => Promise<boolean>;
 }
@@ -35,9 +33,7 @@ export function useDocuments(): UseDocumentsResult {
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(
-            err instanceof Error ? err.message : "Failed to load documents",
-          );
+          setError(err instanceof Error ? err.message : "Failed to load documents");
           setLoading(false);
         }
       });
@@ -99,9 +95,7 @@ export function useDocument(id: string | undefined) {
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(
-            err instanceof Error ? err.message : "Failed to load document",
-          );
+          setError(err instanceof Error ? err.message : "Failed to load document");
           setLoading(false);
         }
       });

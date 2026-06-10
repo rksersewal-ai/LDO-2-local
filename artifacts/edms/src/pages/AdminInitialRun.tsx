@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router";
 import {
   Activity,
   ArrowRight,
+  ChevronRight,
   CopyCheck,
   Database,
   FileSearch,
@@ -10,21 +9,13 @@ import {
   RefreshCw,
   ShieldAlert,
 } from "lucide-react";
-import {
-  Badge,
-  Button,
-  GlassCard,
-  Input,
-  PageHeader,
-} from "../components/ui/Shared";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router";
+import type { AxiosError } from "axios";
+import { Badge, Button, GlassCard, Input, PageHeader } from "../components/ui/Shared";
 import { useToast } from "../contexts/ToastContext";
+import type { InitialRunActionResult, InitialRunSummary } from "../lib/types";
 import apiClient, { ApiClient } from "../services/ApiClient";
-import type {
-  InitialRunActionResult,
-  InitialRunJobSummary,
-  InitialRunSourceDetail,
-  InitialRunSummary,
-} from "../lib/types";
 
 type InitialRunAction =
   | "index_sources"
@@ -35,38 +26,34 @@ type InitialRunAction =
 const ACTION_ORDER: Array<{
   action: InitialRunAction;
   title: string;
-  description: string;
+  shortDesc: string;
   icon: React.ComponentType<{ className?: string }>;
   variant?: "primary" | "secondary";
 }> = [
   {
     action: "index_sources",
-    title: "Index active sources",
-    description:
-      "Walk every active file source and create EDMS records only for files not already represented when skip mode is enabled.",
+    title: "Index Sources",
+    shortDesc: "Scan file sources and index new file records.",
     icon: Layers3,
   },
   {
     action: "backfill_hashes",
-    title: "Calculate hashes",
-    description:
-      "Backfill sparse fingerprints and, when enabled, full SHA-256 hashes so later dedup decisions are based on stable content identity.",
+    title: "Calculate Hashes",
+    shortDesc: "Generate content-based sparse & SHA-256 hashes.",
     icon: Database,
     variant: "secondary",
   },
   {
     action: "refresh_deduplication",
-    title: "Refresh dedup engine",
-    description:
-      "Re-evaluate documents that still need duplicate grouping or are stuck on sparse-only groups after hashing.",
+    title: "Refresh Dedup",
+    shortDesc: "Re-group duplicates based on new file hash signatures.",
     icon: CopyCheck,
     variant: "secondary",
   },
   {
     action: "queue_pending_ocr",
-    title: "Queue OCR backlog",
-    description:
-      "Queue OCR only for documents still marked Not Started or Failed, leaving completed and already-processing items untouched.",
+    title: "Queue OCR",
+    shortDesc: "Process backlog queue for text extraction.",
     icon: FileSearch,
     variant: "secondary",
   },
@@ -92,182 +79,17 @@ function statusVariant(status: string) {
   return "warning" as const;
 }
 
-function JobTable({
-  title,
-  jobs,
-  emptyLabel,
-}: {
-  title: string;
-  jobs: InitialRunJobSummary[];
-  emptyLabel: string;
-}) {
-  return (
-    <GlassCard className="overflow-hidden">
-      <div className="flex items-center justify-between border-b border-border px-5 py-4">
-        <h2 className="text-sm font-semibold text-foreground">{title}</h2>
-        <span className="text-xs text-muted-foreground">
-          Latest {jobs.length}
-        </span>
-      </div>
-      <div className="divide-y divide-border/60">
-        {jobs.length === 0 && (
-          <div className="px-5 py-10 text-sm text-muted-foreground">
-            {emptyLabel}
-          </div>
-        )}
-        {jobs.map((job) => (
-          <div
-            key={job.id}
-            className="grid gap-3 px-5 py-4 md:grid-cols-[minmax(0,1.2fr)_auto_minmax(0,1fr)]"
-          >
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-foreground">
-                {job.source_name || "All indexed sources"}
-              </p>
-              <p className="mt-1 font-mono text-[11px] text-muted-foreground">
-                {job.id}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant={statusVariant(job.status)}>{job.status}</Badge>
-            </div>
-            <div className="text-xs text-muted-foreground">
-              <div>
-                Started: {formatDateTime(job.started_at || job.created_at)}
-              </div>
-              <div>Finished: {formatDateTime(job.completed_at)}</div>
-              {"indexed_count" in job && job.indexed_count != null && (
-                <div>
-                  Indexed {job.indexed_count} / discovered{" "}
-                  {job.discovered_count ?? 0}
-                </div>
-              )}
-              {"documents_indexed" in job && job.documents_indexed != null && (
-                <div>
-                  Indexed {job.documents_indexed} / scanned{" "}
-                  {job.documents_scanned ?? 0}
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-    </GlassCard>
-  );
-}
-
-function SourceInventoryTable({
-  sources,
-}: {
-  sources: InitialRunSourceDetail[];
-}) {
-  return (
-    <GlassCard className="overflow-hidden">
-      <div className="flex items-center justify-between border-b border-border px-5 py-4">
-        <div>
-          <h2 className="text-sm font-semibold text-foreground">
-            Active Source Inventory
-          </h2>
-          <p className="mt-1 text-xs text-muted-foreground">
-            The initial crawl discovers files from these roots and creates or
-            refreshes `IndexedSourceFileState` records.
-          </p>
-        </div>
-        <Badge variant="info">{sources.length} active sources</Badge>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="min-w-full text-left text-sm">
-          <thead className="border-b border-border/70 bg-secondary/20 text-xs uppercase tracking-[0.14em] text-muted-foreground">
-            <tr>
-              <th className="px-5 py-3 font-medium">Source</th>
-              <th className="px-5 py-3 font-medium">Tracked</th>
-              <th className="px-5 py-3 font-medium">Indexed Docs</th>
-              <th className="px-5 py-3 font-medium">Issues</th>
-              <th className="px-5 py-3 font-medium">Last Crawl</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border/60">
-            {sources.length === 0 && (
-              <tr>
-                <td
-                  colSpan={5}
-                  className="px-5 py-12 text-sm text-muted-foreground"
-                >
-                  No active indexed sources are configured yet.
-                </td>
-              </tr>
-            )}
-            {sources.map((source) => (
-              <tr key={source.id}>
-                <td className="px-5 py-4 align-top">
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">
-                      {source.name}
-                    </p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {source.source_system}
-                    </p>
-                    <p className="mt-1 font-mono text-[11px] text-muted-foreground">
-                      {source.root_path}
-                    </p>
-                  </div>
-                </td>
-                <td className="px-5 py-4 align-top">
-                  <div className="text-xs text-muted-foreground">
-                    <div>{source.tracked_files} tracked files</div>
-                    <div>{source.active_files} active</div>
-                  </div>
-                </td>
-                <td className="px-5 py-4 align-top text-xs text-muted-foreground">
-                  {source.indexed_documents}
-                </td>
-                <td className="px-5 py-4 align-top">
-                  <div className="flex flex-wrap gap-2">
-                    <Badge
-                      variant={source.missing_files > 0 ? "warning" : "success"}
-                    >
-                      Missing {source.missing_files}
-                    </Badge>
-                    <Badge
-                      variant={source.failed_files > 0 ? "danger" : "success"}
-                    >
-                      Failed {source.failed_files}
-                    </Badge>
-                  </div>
-                  {source.last_error && (
-                    <p className="mt-2 max-w-md text-xs text-amber-300">
-                      {source.last_error}
-                    </p>
-                  )}
-                </td>
-                <td className="px-5 py-4 align-top text-xs text-muted-foreground">
-                  <div>{formatDateTime(source.last_crawled_at)}</div>
-                  <div>
-                    Successful:{" "}
-                    {formatDateTime(source.last_successful_crawl_at)}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </GlassCard>
-  );
-}
-
 export default function AdminInitialRun() {
   const navigate = useNavigate();
-  const { showError, showSuccess, showInfo } = useToast();
+  const { showError, showSuccess } = useToast();
   const [summary, setSummary] = useState<InitialRunSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [runningAction, setRunningAction] = useState<InitialRunAction | null>(
-    null,
-  );
+  const [runningAction, setRunningAction] = useState<InitialRunAction | null>(null);
   const [skipIndexed, setSkipIndexed] = useState(true);
   const [forceFullHash, setForceFullHash] = useState(false);
   const [batchSize, setBatchSize] = useState("");
+  const [activeTab, setActiveTab] = useState<"sources" | "crawls" | "hashes">("sources");
 
   const fetchSummary = useCallback(async () => {
     setIsRefreshing(true);
@@ -276,9 +98,7 @@ export default function AdminInitialRun() {
       setSummary(payload);
     } catch (error) {
       const message =
-        error instanceof Error
-          ? error.message
-          : "Unable to load initial-run summary.";
+        error instanceof Error ? error.message : "Unable to load initial-run summary.";
       showError(message);
     } finally {
       setIsLoading(false);
@@ -299,48 +119,39 @@ export default function AdminInitialRun() {
     if (!summary) return null;
     return {
       index_sources: {
-        primary: `${summary.sources.active_sources} sources`,
-        secondary: `${summary.sources.tracked_files} tracked files on record`,
-        hint: skipIndexed
-          ? "Already active and indexed file states are skipped."
-          : "Every discovered file will be re-evaluated.",
+        primary: `${summary.sources.active_sources} active roots`,
+        secondary: `${summary.sources.tracked_files} tracked files`,
       },
       backfill_hashes: {
-        primary: `${summary.documents.missing_sparse_hash} sparse hash gaps`,
-        secondary: `${summary.documents.missing_full_hash} full hash gaps`,
-        hint: forceFullHash
-          ? "This run will force full SHA-256 for every targeted document."
-          : "Full hashes will follow the existing high-value policy.",
+        primary: `${summary.documents.missing_sparse_hash} sparse gaps`,
+        secondary: `${summary.documents.missing_full_hash} full gaps`,
       },
       refresh_deduplication: {
-        primary: `${summary.documents.pending_dedup} docs need dedup refresh`,
-        secondary: `${summary.documents.duplicate_groups} duplicate groups already detected`,
-        hint: "Use after indexing and hashing so group keys can settle on the newest content identity.",
+        primary: `${summary.documents.pending_dedup} docs pending`,
+        secondary: `${summary.documents.duplicate_groups} groups found`,
       },
       queue_pending_ocr: {
-        primary: `${summary.documents.pending_ocr} pending OCR docs`,
-        secondary: `${summary.documents.processing_ocr} already processing`,
-        hint: "Completed OCR jobs are left alone; only backlog documents are queued.",
+        primary: `${summary.documents.pending_ocr} pending OCR`,
+        secondary: `${summary.documents.processing_ocr} processing`,
       },
     };
-  }, [forceFullHash, skipIndexed, summary]);
+  }, [summary]);
 
   const runAction = async (action: InitialRunAction) => {
     setRunningAction(action);
     try {
-      const result: InitialRunActionResult =
-        await apiClient.triggerInitialRunAction({
-          action,
-          batch_size: resolvedBatchSize,
-          skip_indexed: skipIndexed,
-          force_full_hash: forceFullHash,
-        });
+      const result: InitialRunActionResult = await apiClient.triggerInitialRunAction({
+        action,
+        batch_size: resolvedBatchSize,
+        skip_indexed: skipIndexed,
+        force_full_hash: forceFullHash,
+      });
       showSuccess(result.message);
       await fetchSummary();
     } catch (error) {
       const message =
         error && typeof error === "object" && "isAxiosError" in error
-          ? ApiClient.getErrorMessage(error as any)
+          ? ApiClient.getErrorMessage(error as AxiosError)
           : error instanceof Error
             ? error.message
             : "Unable to launch the selected initial-run action.";
@@ -352,7 +163,7 @@ export default function AdminInitialRun() {
 
   if (isLoading && !summary) {
     return (
-      <div className="mx-auto max-w-7xl space-y-6">
+      <div className="mx-auto max-w-[1380px] space-y-6">
         <PageHeader
           title="Initial Production Run"
           subtitle="Loading source inventory and backlog state."
@@ -365,289 +176,237 @@ export default function AdminInitialRun() {
   const sources = summary?.sources;
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6">
+    <div className="mx-auto max-w-[1380px] space-y-5">
+      {/* Header */}
       <PageHeader
         title="Initial Production Run"
-        subtitle="Bootstrap indexed sources, hash inventory, deduplication, and OCR from one operator console."
+        subtitle="Bootstrap file indexing, hash calculations, deduplication, and OCR tasks."
+        breadcrumb={<span>Admin / Operations / Bootstrap</span>}
       >
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => void fetchSummary()}>
-            <RefreshCw
-              className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
-            />
+          <Button variant="secondary" size="sm" onClick={() => void fetchSummary()}>
+            <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
             Refresh
           </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => navigate("/admin/deduplication")}
-          >
-            Dedup console
+          <Button variant="secondary" size="sm" onClick={() => navigate("/admin/deduplication")}>
+            Dedup Console
           </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => navigate("/ocr")}
-          >
-            OCR monitor
+          <Button variant="secondary" size="sm" onClick={() => navigate("/ocr")}>
+            OCR Monitor
           </Button>
         </div>
       </PageHeader>
 
-      <GlassCard className="border-primary/20 bg-gradient-to-r from-card via-card to-primary/5 p-5">
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+      {/* Top Section: Operator Guide & Stats Grid */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        {/* Compact Runbook Checklist */}
+        <GlassCard className="lg:col-span-2 p-4 flex flex-col justify-between border-border/50 bg-card/40 backdrop-blur-md">
           <div>
-            <div className="mb-3 flex items-center gap-2">
-              <ShieldAlert className="h-4 w-4 text-primary" />
-              <h2 className="text-sm font-semibold text-foreground">
-                Operator Runbook
-              </h2>
+            <div className="mb-2 flex items-center gap-2">
+              <ShieldAlert className="h-4 w-4 text-primary shrink-0" />
+              <h2 className="text-sm font-semibold text-white">Bootstrap Runbook Sequence</h2>
             </div>
-            <p className="text-sm leading-6 text-muted-foreground">
-              Recommended order for a first production bootstrap: crawl active
-              sources, backfill hashes, refresh dedup groups, then queue OCR.
-              Each action is safe to repeat and will reuse the existing backlog
-              filters instead of blindly reprocessing completed work.
+            <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl mb-4">
+              Recommended sequence for bootstrap crawl: first index sources, backfill content
+              hashes, settle duplicate groups, then queue OCR backlog. Each step is safe to re-run.
             </p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {[
-                "1. Index sources",
-                "2. Hash backlog",
-                "3. Dedup refresh",
-                "4. OCR backlog",
-              ].map((step) => (
-                <span
-                  key={step}
-                  className="rounded-full border border-border/70 bg-secondary/30 px-3 py-1 text-xs text-muted-foreground"
-                >
-                  {step}
-                </span>
-              ))}
-            </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            <GlassCard className="p-4">
-              <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Source Footprint
+          <div className="grid grid-cols-4 gap-2 border border-border/30 rounded-xl p-2.5 bg-secondary/15">
+            {[
+              { num: "01", step: "Index" },
+              { num: "02", step: "Hash" },
+              { num: "03", step: "Dedup" },
+              { num: "04", step: "OCR" },
+            ].map((step, idx) => (
+              <div key={idx} className="flex items-center gap-2">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-mono text-primary/70">{step.num}</span>
+                  <span className="text-xs font-semibold text-foreground">{step.step}</span>
+                </div>
+                {idx < 3 && (
+                  <ChevronRight className="w-3.5 h-3.5 text-slate-700 ml-auto shrink-0" />
+                )}
               </div>
-              <div className="mt-2 text-2xl font-semibold text-foreground">
-                {sources?.active_sources ?? 0}
-              </div>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Active indexed sources
-              </p>
-            </GlassCard>
-            <GlassCard className="p-4">
-              <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                OCR Backlog
-              </div>
-              <div className="mt-2 text-2xl font-semibold text-foreground">
-                {documents?.pending_ocr ?? 0}
-              </div>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Pending OCR documents
-              </p>
-            </GlassCard>
-            <GlassCard className="p-4">
-              <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Hash Gaps
-              </div>
-              <div className="mt-2 text-2xl font-semibold text-foreground">
-                {documents?.missing_sparse_hash ?? 0}
-              </div>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Sparse fingerprints still missing
-              </p>
-            </GlassCard>
-            <GlassCard className="p-4">
-              <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Duplicate Review
-              </div>
-              <div className="mt-2 text-2xl font-semibold text-foreground">
-                {documents?.duplicate_groups ?? 0}
-              </div>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Duplicate groups already materialized
-              </p>
-            </GlassCard>
+            ))}
+          </div>
+        </GlassCard>
+
+        {/* Stats Summary Panel */}
+        <div className="grid grid-cols-2 gap-3">
+          <GlassCard className="p-3 border-border/50 bg-card/40 backdrop-blur-md hover:-translate-y-0.5 hover:border-primary/30 transition-all duration-200">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground block">
+              Footprint
+            </span>
+            <span className="mt-1 text-xl font-bold text-white block">
+              {sources?.active_sources ?? 0}
+            </span>
+            <span className="text-[10px] text-muted-foreground">Active Sources</span>
+          </GlassCard>
+          <GlassCard className="p-3 border-border/50 bg-card/40 backdrop-blur-md hover:-translate-y-0.5 hover:border-primary/30 transition-all duration-200">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground block">
+              OCR Gaps
+            </span>
+            <span className="mt-1 text-xl font-bold text-white block">
+              {documents?.pending_ocr ?? 0}
+            </span>
+            <span className="text-[10px] text-muted-foreground">Pending Docs</span>
+          </GlassCard>
+          <GlassCard className="p-3 border-border/50 bg-card/40 backdrop-blur-md hover:-translate-y-0.5 hover:border-primary/30 transition-all duration-200">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground block">
+              Hash Gaps
+            </span>
+            <span className="mt-1 text-xl font-bold text-white block">
+              {documents?.missing_sparse_hash ?? 0}
+            </span>
+            <span className="text-[10px] text-muted-foreground">Missing Hashes</span>
+          </GlassCard>
+          <GlassCard className="p-3 border-border/50 bg-card/40 backdrop-blur-md hover:-translate-y-0.5 hover:border-primary/30 transition-all duration-200">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground block">
+              Deduplication
+            </span>
+            <span className="mt-1 text-xl font-bold text-white block">
+              {documents?.duplicate_groups ?? 0}
+            </span>
+            <span className="text-[10px] text-muted-foreground">Duplicate Groups</span>
+          </GlassCard>
+        </div>
+      </div>
+
+      {/* Execution Toggles & Control Bar */}
+      <GlassCard className="p-3 border-border/50 bg-card/40 backdrop-blur-md flex flex-wrap items-center gap-4 justify-between">
+        <div className="flex items-center gap-2 shrink-0">
+          <Activity className="h-4 w-4 text-primary shrink-0" />
+          <h3 className="text-xs font-bold uppercase tracking-wider text-white">Crawl Options</h3>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-4 flex-1 justify-end">
+          {/* Skip Toggle */}
+          <button
+            type="button"
+            onClick={() => setSkipIndexed((v) => !v)}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/40 hover:bg-secondary/40 text-xs text-foreground/90 transition-all"
+          >
+            <div
+              className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${skipIndexed ? "bg-teal-500/20 border-primary" : "border-slate-700"}`}
+            >
+              {skipIndexed && <div className="w-1.5 h-1.5 rounded bg-primary" />}
+            </div>
+            Skip Indexed Files
+          </button>
+
+          {/* Force Hash Toggle */}
+          <button
+            type="button"
+            onClick={() => setForceFullHash((v) => !v)}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/40 hover:bg-secondary/40 text-xs text-foreground/90 transition-all"
+          >
+            <div
+              className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${forceFullHash ? "bg-teal-500/20 border-primary" : "border-slate-700"}`}
+            >
+              {forceFullHash && <div className="w-1.5 h-1.5 rounded bg-primary" />}
+            </div>
+            Force SHA-256
+          </button>
+
+          {/* Batch Size Input */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">Cap Limit:</span>
+            <Input
+              value={batchSize}
+              onChange={(e) => setBatchSize(e.target.value.replace(/[^\d]/g, ""))}
+              inputMode="numeric"
+              placeholder="No Limit"
+              className="w-24 h-8 text-xs font-mono text-center"
+            />
           </div>
         </div>
       </GlassCard>
 
-      <GlassCard className="p-5">
-        <div className="mb-4 flex items-center gap-2">
-          <Activity className="h-4 w-4 text-primary" />
-          <h2 className="text-sm font-semibold text-foreground">
-            Execution Controls
-          </h2>
-        </div>
-        <div className="grid gap-3 md:grid-cols-3">
-          <label className="rounded-2xl border border-border/70 bg-secondary/20 px-4 py-3">
-            <span className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-              Skip indexed files
-            </span>
-            <div className="mt-2 flex items-center justify-between gap-3">
-              <p className="text-sm text-foreground">
-                Ignore source files that already have an active indexed state.
-              </p>
-              <button
-                type="button"
-                onClick={() => setSkipIndexed((value) => !value)}
-                className={`inline-flex h-7 w-12 items-center rounded-full border px-1 transition-colors ${
-                  skipIndexed
-                    ? "border-primary/40 bg-primary/20"
-                    : "border-border bg-secondary/40"
-                }`}
-                aria-pressed={skipIndexed}
-              >
-                <span
-                  className={`h-5 w-5 rounded-full bg-white transition-transform ${
-                    skipIndexed ? "translate-x-5" : "translate-x-0"
-                  }`}
-                />
-              </button>
-            </div>
-          </label>
-
-          <label className="rounded-2xl border border-border/70 bg-secondary/20 px-4 py-3">
-            <span className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-              Force full SHA-256
-            </span>
-            <div className="mt-2 flex items-center justify-between gap-3">
-              <p className="text-sm text-foreground">
-                Escalate hash and dedup work to full-file hashing.
-              </p>
-              <button
-                type="button"
-                onClick={() => setForceFullHash((value) => !value)}
-                className={`inline-flex h-7 w-12 items-center rounded-full border px-1 transition-colors ${
-                  forceFullHash
-                    ? "border-primary/40 bg-primary/20"
-                    : "border-border bg-secondary/40"
-                }`}
-                aria-pressed={forceFullHash}
-              >
-                <span
-                  className={`h-5 w-5 rounded-full bg-white transition-transform ${
-                    forceFullHash ? "translate-x-5" : "translate-x-0"
-                  }`}
-                />
-              </button>
-            </div>
-          </label>
-
-          <label className="rounded-2xl border border-border/70 bg-secondary/20 px-4 py-3">
-            <span className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-              Batch cap
-            </span>
-            <div className="mt-2 flex items-center gap-3">
-              <Input
-                value={batchSize}
-                onChange={(event) =>
-                  setBatchSize(event.target.value.replace(/[^\d]/g, ""))
-                }
-                inputMode="numeric"
-                placeholder="All pending"
-                className="max-w-[180px]"
-              />
-              <p className="text-xs text-muted-foreground">
-                Leave blank to target the full current backlog.
-              </p>
-            </div>
-          </label>
-        </div>
-      </GlassCard>
-
-      <div className="grid gap-4 xl:grid-cols-2">
+      {/* 4 Action Steps Grid */}
+      <div className="grid gap-4 md:grid-cols-2">
         {ACTION_ORDER.map((item) => {
           const Icon = item.icon;
           const metrics = actionMetrics?.[item.action];
           const isBusy = runningAction === item.action;
           return (
-            <GlassCard key={item.action} className="p-5">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-start gap-3">
-                  <div className="rounded-2xl border border-primary/25 bg-primary/10 p-3">
-                    <Icon className="h-5 w-5 text-primary" />
+            <GlassCard
+              key={item.action}
+              className="p-3.5 border-border/50 bg-card/40 backdrop-blur-md flex flex-col justify-between hover:border-primary/20 transition-all duration-200"
+            >
+              <div>
+                {/* Header */}
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-teal-500/10 flex items-center justify-center border border-teal-500/20">
+                      <Icon className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-xs font-bold text-white">{item.title}</h3>
+                      <p className="text-[10px] text-muted-foreground leading-tight">
+                        {item.shortDesc}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-base font-semibold text-foreground">
-                      {item.title}
-                    </h2>
-                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                      {item.description}
-                    </p>
+                  <Badge variant={isBusy ? "processing" : "default"} className="text-[9px] px-1.5">
+                    {isBusy ? "Running" : "Idle"}
+                  </Badge>
+                </div>
+
+                {/* Info row */}
+                <div className="grid grid-cols-2 gap-2 my-3">
+                  <div className="bg-secondary/15 rounded-lg p-2 border border-border/30">
+                    <span className="text-[9px] uppercase tracking-wider text-muted-foreground block">
+                      Backlog Scope
+                    </span>
+                    <span className="text-xs font-semibold text-foreground">
+                      {metrics?.primary ?? "—"}
+                    </span>
+                  </div>
+                  <div className="bg-secondary/15 rounded-lg p-2 border border-border/30">
+                    <span className="text-[9px] uppercase tracking-wider text-muted-foreground block">
+                      Discovered state
+                    </span>
+                    <span className="text-xs text-foreground truncate block">
+                      {metrics?.secondary ?? "—"}
+                    </span>
                   </div>
                 </div>
-                <Badge variant={isBusy ? "processing" : "info"}>
-                  {isBusy ? "Running" : "Ready"}
-                </Badge>
               </div>
 
-              <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl border border-border/70 bg-secondary/20 px-4 py-3">
-                  <div className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-                    Primary backlog
-                  </div>
-                  <div className="mt-2 text-lg font-semibold text-foreground">
-                    {metrics?.primary ?? "—"}
-                  </div>
-                </div>
-                <div className="rounded-2xl border border-border/70 bg-secondary/20 px-4 py-3">
-                  <div className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-                    Operational note
-                  </div>
-                  <div className="mt-2 text-sm text-foreground">
-                    {metrics?.secondary ?? "—"}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-4 rounded-2xl border border-border/70 bg-card px-4 py-3 text-xs leading-6 text-muted-foreground">
-                {metrics?.hint}
-              </div>
-
-              <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+              {/* Action trigger */}
+              <div className="flex items-center justify-between pt-2 border-t border-border/40">
                 <Button
                   variant={item.variant ?? "primary"}
+                  size="sm"
                   onClick={() => void runAction(item.action)}
                   disabled={!!runningAction}
+                  className="h-8 text-[11px]"
                 >
-                  {isBusy && <RefreshCw className="h-4 w-4 animate-spin" />}
-                  {!isBusy && <ArrowRight className="h-4 w-4" />}
-                  {isBusy ? "Launching..." : "Run action"}
+                  {isBusy ? (
+                    <RefreshCw className="h-3 w-3 animate-spin mr-1.5" />
+                  ) : (
+                    <ArrowRight className="h-3 w-3 mr-1.5" />
+                  )}
+                  {isBusy ? "Launching..." : "Execute Step"}
                 </Button>
 
                 {item.action === "refresh_deduplication" && (
                   <button
                     type="button"
-                    className="text-xs text-primary transition-colors hover:text-primary/80"
+                    className="text-[10px] text-primary hover:underline font-medium"
                     onClick={() => navigate("/admin/deduplication")}
                   >
-                    Open dedup console
+                    Dedup console
                   </button>
                 )}
                 {item.action === "queue_pending_ocr" && (
                   <button
                     type="button"
-                    className="text-xs text-primary transition-colors hover:text-primary/80"
+                    className="text-[10px] text-primary hover:underline font-medium"
                     onClick={() => navigate("/ocr")}
                   >
-                    Open OCR monitor
-                  </button>
-                )}
-                {item.action === "index_sources" && (
-                  <button
-                    type="button"
-                    className="text-xs text-primary transition-colors hover:text-primary/80"
-                    onClick={() =>
-                      showInfo(
-                        "The source crawl will create or refresh records only for unmatched files when skip mode is enabled.",
-                      )
-                    }
-                  >
-                    How skip mode works
+                    OCR monitor
                   </button>
                 )}
               </div>
@@ -656,20 +415,168 @@ export default function AdminInitialRun() {
         })}
       </div>
 
-      <SourceInventoryTable sources={summary?.active_source_details ?? []} />
+      {/* Tabs Layout for Inventory & Job Logs */}
+      <GlassCard className="p-3 border-border/50 bg-card/40 backdrop-blur-md">
+        {/* Tabs selector */}
+        <div className="flex border-b border-border/40 mb-3 pb-1 gap-2">
+          {[
+            { id: "sources", label: "Active Sources" },
+            { id: "crawls", label: "Crawl Logs" },
+            { id: "hashes", label: "Hash Logs" },
+          ].map((tab) => (
+            <button
+              type="button"
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as "sources" | "crawls" | "hashes")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                activeTab === tab.id
+                  ? "bg-teal-500/15 border border-teal-500/25 text-primary"
+                  : "text-muted-foreground hover:text-foreground/90 hover:bg-secondary/40"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
 
-      <div className="grid gap-4 xl:grid-cols-2">
-        <JobTable
-          title="Recent Crawl Jobs"
-          jobs={summary?.latest_jobs.crawl ?? []}
-          emptyLabel="No crawl jobs have been created yet."
-        />
-        <JobTable
-          title="Recent Hash Backfill Jobs"
-          jobs={summary?.latest_jobs.hash_backfill ?? []}
-          emptyLabel="No hash backfill jobs have been created yet."
-        />
-      </div>
+        {/* Tab 1: Active Source Inventory */}
+        {activeTab === "sources" && (
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-left text-xs">
+              <thead className="border-b border-border/40 text-[10px] uppercase tracking-wider text-muted-foreground bg-secondary/10">
+                <tr>
+                  <th className="px-3 py-2">Source / System</th>
+                  <th className="px-3 py-2">Path</th>
+                  <th className="px-3 py-2">Files Tracked</th>
+                  <th className="px-3 py-2">Indexed</th>
+                  <th className="px-3 py-2">Issues (Missing / Failed)</th>
+                  <th className="px-3 py-2">Last Crawl</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/20 text-[11px] text-foreground/90">
+                {(!summary?.active_source_details ||
+                  summary.active_source_details.length === 0) && (
+                  <tr>
+                    <td colSpan={6} className="px-3 py-6 text-center text-muted-foreground">
+                      No active indexed sources.
+                    </td>
+                  </tr>
+                )}
+                {summary?.active_source_details?.map((source) => (
+                  <tr key={source.id} className="hover:bg-secondary/10">
+                    <td className="px-3 py-2.5">
+                      <p className="font-semibold text-white">{source.name}</p>
+                      <p className="text-[10px] text-muted-foreground">{source.source_system}</p>
+                    </td>
+                    <td className="px-3 py-2.5 font-mono text-[10px] text-muted-foreground">
+                      {source.root_path}
+                    </td>
+                    <td className="px-3 py-2.5 font-semibold text-white">
+                      {source.tracked_files}{" "}
+                      <span className="text-muted-foreground font-normal">
+                        ({source.active_files} active)
+                      </span>
+                    </td>
+                    <td className="px-3 py-2.5 font-mono text-muted-foreground">
+                      {source.indexed_documents}
+                    </td>
+                    <td className="px-3 py-2.5">
+                      <div className="flex items-center gap-1">
+                        <Badge
+                          variant={source.missing_files > 0 ? "warning" : "success"}
+                          className="text-[9px] px-1 py-0 scale-90"
+                        >
+                          M: {source.missing_files}
+                        </Badge>
+                        <Badge
+                          variant={source.failed_files > 0 ? "danger" : "success"}
+                          className="text-[9px] px-1 py-0 scale-90"
+                        >
+                          F: {source.failed_files}
+                        </Badge>
+                      </div>
+                    </td>
+                    <td className="px-3 py-2.5 text-muted-foreground text-[10px]">
+                      {formatDateTime(source.last_crawled_at)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Tab 2: Crawl Jobs */}
+        {activeTab === "crawls" && (
+          <div className="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar">
+            {(!summary?.latest_jobs?.crawl || summary.latest_jobs.crawl.length === 0) && (
+              <p className="text-xs text-muted-foreground p-3">No recent crawl jobs.</p>
+            )}
+            {summary?.latest_jobs?.crawl?.map((job) => (
+              <div
+                key={job.id}
+                className="flex items-center justify-between p-2.5 rounded-lg bg-secondary/10 border border-border/30 text-xs"
+              >
+                <div className="min-w-0">
+                  <p className="font-semibold text-white">
+                    {job.source_name || "All active roots"}
+                  </p>
+                  <p className="font-mono text-[9px] text-muted-foreground mt-0.5">{job.id}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Badge variant={statusVariant(job.status)} className="text-[9px]">
+                    {job.status}
+                  </Badge>
+                  <div className="text-right text-[10px] text-muted-foreground leading-tight">
+                    <div>Started: {formatDateTime(job.started_at || job.created_at)}</div>
+                    {"indexed_count" in job && (
+                      <div className="text-primary mt-0.5">
+                        Indexed: {job.indexed_count} / discovered: {job.discovered_count}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Tab 3: Hash Backfill Jobs */}
+        {activeTab === "hashes" && (
+          <div className="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar">
+            {(!summary?.latest_jobs?.hash_backfill ||
+              summary.latest_jobs.hash_backfill.length === 0) && (
+              <p className="text-xs text-muted-foreground p-3">No recent hash backfill jobs.</p>
+            )}
+            {summary?.latest_jobs?.hash_backfill?.map((job) => (
+              <div
+                key={job.id}
+                className="flex items-center justify-between p-2.5 rounded-lg bg-secondary/10 border border-border/30 text-xs"
+              >
+                <div className="min-w-0">
+                  <p className="font-semibold text-white">
+                    {job.source_name || "Database Inventory"}
+                  </p>
+                  <p className="font-mono text-[9px] text-muted-foreground mt-0.5">{job.id}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Badge variant={statusVariant(job.status)} className="text-[9px]">
+                    {job.status}
+                  </Badge>
+                  <div className="text-right text-[10px] text-muted-foreground leading-tight">
+                    <div>Started: {formatDateTime(job.started_at || job.created_at)}</div>
+                    {"documents_indexed" in job && (
+                      <div className="text-primary mt-0.5">
+                        Indexed: {job.documents_indexed} / scanned: {job.documents_scanned}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </GlassCard>
     </div>
   );
 }

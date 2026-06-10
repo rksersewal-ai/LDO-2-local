@@ -4,9 +4,7 @@ export interface AppNotificationRouteTarget {
   target?: string | null;
 }
 
-export function resolveNotificationPath(
-  notification: AppNotificationRouteTarget,
-) {
+export function resolveNotificationPath(notification: AppNotificationRouteTarget) {
   if (notification.target) {
     return notification.target;
   }
@@ -45,9 +43,7 @@ export function resolveNotificationPath(
   }
 }
 
-export function resolveNotificationActionLabel(
-  notification: AppNotificationRouteTarget,
-) {
+export function resolveNotificationActionLabel(notification: AppNotificationRouteTarget) {
   switch (notification.type) {
     case "approval":
       return "Open approval";

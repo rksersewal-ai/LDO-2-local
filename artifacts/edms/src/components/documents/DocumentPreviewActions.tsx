@@ -1,12 +1,9 @@
-import { Eye, ExternalLink } from "lucide-react";
+import { ExternalLink, Eye } from "lucide-react";
 import { useNavigate } from "react-router";
-import { Button } from "../ui/Shared";
 import { resolveDocumentPreviewPath } from "../../lib/documentPreview";
+import { Button } from "../ui/Shared";
 
-export function getDocumentContextAttributes(
-  documentId: string,
-  title?: string,
-) {
+export function getDocumentContextAttributes(documentId: string, title?: string) {
   return {
     "data-document-id": documentId,
     "data-document-title": title ?? documentId,

@@ -1,8 +1,7 @@
-import { useMemo, useState } from "react";
 import { Check, ChevronsUpDown, Hash, X } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useMemo, useState } from "react";
 import type { PLNumber } from "@/lib/types";
-import { Badge } from "./Shared";
+import { cn } from "@/lib/utils";
 import { Button } from "./button";
 import {
   Command,
@@ -13,6 +12,7 @@ import {
   CommandList,
 } from "./command";
 import { Popover, PopoverContent, PopoverTrigger } from "./popover";
+import { Badge } from "./Shared";
 
 function getStatusVariant(status: PLNumber["status"]) {
   if (status === "ACTIVE") return "success";
@@ -52,8 +52,7 @@ export function PLNumberMultiSelect({
   );
 
   const selectedItems = useMemo(
-    () =>
-      sortedItems.filter((item) => normalizedValues.includes(item.plNumber)),
+    () => sortedItems.filter((item) => normalizedValues.includes(item.plNumber)),
     [normalizedValues, sortedItems],
   );
 
@@ -98,9 +97,7 @@ export function PLNumberMultiSelect({
             />
             <CommandList className="max-h-[320px]">
               {loading && (
-                <div className="px-4 py-4 text-sm text-muted-foreground">
-                  Loading PL records...
-                </div>
+                <div className="px-4 py-4 text-sm text-muted-foreground">Loading PL records...</div>
               )}
               {!loading && (
                 <>
@@ -136,19 +133,13 @@ export function PLNumberMultiSelect({
                               <span className="font-mono text-xs text-primary/90">
                                 {pl.plNumber}
                               </span>
-                              <Badge
-                                size="sm"
-                                variant={getStatusVariant(pl.status)}
-                              >
+                              <Badge size="sm" variant={getStatusVariant(pl.status)}>
                                 {pl.status}
                               </Badge>
                             </div>
-                            <p className="truncate text-sm text-foreground">
-                              {pl.name}
-                            </p>
+                            <p className="truncate text-sm text-foreground">{pl.name}</p>
                             <p className="truncate text-[11px] text-muted-foreground">
-                              {pl.category} · {pl.controllingAgency} ·{" "}
-                              {pl.description}
+                              {pl.category} · {pl.controllingAgency} · {pl.description}
                             </p>
                           </div>
                         </CommandItem>
@@ -162,9 +153,7 @@ export function PLNumberMultiSelect({
         </PopoverContent>
       </Popover>
 
-      {helperText && (
-        <p className="text-[11px] text-muted-foreground">{helperText}</p>
-      )}
+      {helperText && <p className="text-[11px] text-muted-foreground">{helperText}</p>}
 
       {selectedItems.length > 0 && (
         <div className="flex flex-wrap gap-2 rounded-2xl border border-teal-400/14 bg-teal-500/[0.05] px-3 py-3">

@@ -2,8 +2,9 @@
  * ConfirmDialog — reusable confirmation dialog for destructive actions.
  * Standardizes the destructive action pattern across all pages.
  */
-import React from "react";
+
 import { AlertTriangle } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,7 +15,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "./alert-dialog";
-import { cn } from "@/lib/utils";
 
 export interface ConfirmDialogProps {
   open: boolean;
@@ -47,17 +47,13 @@ export function ConfirmDialog({
               <div
                 className={cn(
                   "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full",
-                  variant === "destructive"
-                    ? "bg-destructive/10"
-                    : "bg-amber-500/10",
+                  variant === "destructive" ? "bg-destructive/10" : "bg-amber-500/10",
                 )}
               >
                 <AlertTriangle
                   className={cn(
                     "h-5 w-5",
-                    variant === "destructive"
-                      ? "text-destructive"
-                      : "text-amber-500",
+                    variant === "destructive" ? "text-destructive" : "text-amber-500",
                   )}
                 />
               </div>
@@ -65,9 +61,7 @@ export function ConfirmDialog({
             <div>
               <AlertDialogTitle>{title}</AlertDialogTitle>
               {description && (
-                <AlertDialogDescription className="mt-1">
-                  {description}
-                </AlertDialogDescription>
+                <AlertDialogDescription className="mt-1">{description}</AlertDialogDescription>
               )}
             </div>
           </div>
@@ -79,8 +73,7 @@ export function ConfirmDialog({
             className={cn(
               variant === "destructive" &&
                 "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-              variant === "warning" &&
-                "bg-amber-500 text-white hover:bg-amber-600",
+              variant === "warning" && "bg-amber-500 text-white hover:bg-amber-600",
             )}
           >
             {confirmLabel}

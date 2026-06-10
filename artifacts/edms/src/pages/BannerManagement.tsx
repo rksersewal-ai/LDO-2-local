@@ -1,18 +1,45 @@
+import { AlertCircle, Edit3, Eye, Megaphone, Plus, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router";
-import { GlassCard, Badge, Button, Input } from "../components/ui/Shared";
-import { DatePicker } from "../components/ui/DatePicker";
-import { BannerService, type BannerRecord } from "../services/BannerService";
-import {
-  Megaphone,
-  Plus,
-  Edit3,
-  Trash2,
-  Eye,
-  X,
-  AlertCircle,
-} from "lucide-react";
+import { type NavigateFunction, useNavigate } from "react-router";
 import { toast } from "sonner";
+import { DatePicker } from "../components/ui/DatePicker";
+import { Badge, Button, GlassCard, Input } from "../components/ui/Shared";
+import { type BannerRecord, BannerService } from "../services/BannerService";
+
+function normalizeBannerLink(raw: string) {
+  const trimmed = raw.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+
+  if (trimmed.startsWith("/")) {
+    return trimmed;
+  }
+
+  if (/^[A-Za-z0-9][A-Za-z0-9/_?&=%.-]*$/.test(trimmed)) {
+    return `/${trimmed}`;
+  }
+
+  throw new Error("Use an internal path like /documents or a full https:// URL.");
+}
+
+function openBannerLink(link: string, navigate: NavigateFunction) {
+  const normalized = normalizeBannerLink(link);
+  if (!normalized) {
+    return;
+  }
+
+  if (/^https?:\/\//i.test(normalized)) {
+    window.open(normalized, "_blank", "noopener,noreferrer");
+    return;
+  }
+
+  navigate(normalized);
+}
 
 export default function BannerManagement() {
   const navigate = useNavigate();
@@ -26,10 +53,7 @@ export default function BannerManagement() {
   const [newValidTo, setNewValidTo] = useState("");
 
   const activeBanners = useMemo(
-    () =>
-      banners
-        .filter((banner) => banner.active)
-        .sort((left, right) => left.order - right.order),
+    () => banners.filter((banner) => banner.active).sort((left, right) => left.order - right.order),
     [banners],
   );
 
@@ -54,9 +78,7 @@ export default function BannerManagement() {
       return;
     }
     setBanners(await BannerService.getAll());
-    toast.success(
-      `${updated.title} ${updated.active ? "activated" : "deactivated"}`,
-    );
+    toast.success(`${updated.title} ${updated.active ? "activated" : "deactivated"}`);
   };
 
   const deleteBanner = async (id: string) => {
@@ -75,10 +97,18 @@ export default function BannerManagement() {
   const handleCreate = async () => {
     if (!newTitle || !newMessage) return;
 
+    let normalizedLink: string | null;
+    try {
+      normalizedLink = normalizeBannerLink(newLink);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Announcement link is invalid");
+      return;
+    }
+
     const payload = {
       title: newTitle,
       message: newMessage,
-      link: newLink.trim() || null,
+      link: normalizedLink,
       active: true,
       validFrom: newValidFrom || new Date().toISOString().split("T")[0],
       validTo: newValidTo,
@@ -104,9 +134,7 @@ export default function BannerManagement() {
     <div className="space-y-6 max-w-5xl mx-auto">
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground mb-2">
-            Announcement Management
-          </h1>
+          <h1 className="text-2xl font-semibold text-foreground mb-2">Announcement Management</h1>
           <p className="text-muted-foreground text-sm">
             Create and manage running banner announcements visible to all users.
           </p>
@@ -126,7 +154,7 @@ export default function BannerManagement() {
         </Button>
       </div>
 
-      <GlassCard className="p-4">
+      <GlassCard className="p-3.5 border-border/50 bg-card/40 backdrop-blur-md hover:-translate-y-0.5 hover:border-primary/30 hover:bg-secondary/40 transition-all duration-200">
         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">
           Live Preview
         </h3>
@@ -137,15 +165,12 @@ export default function BannerManagement() {
               <div className="flex gap-8 animate-pulse">
                 {activeBanners.map((b) => (
                   <span key={b.id}>
-                    <span className="font-semibold">{b.title}:</span>{" "}
-                    {b.message}
+                    <span className="font-semibold">{b.title}:</span> {b.message}
                   </span>
                 ))}
               </div>
             ) : (
-              <span className="text-primary/90/50">
-                No active announcements
-              </span>
+              <span className="text-primary/90/50">No active announcements</span>
             )}
           </div>
         </div>
@@ -155,26 +180,20 @@ export default function BannerManagement() {
         {banners.map((banner) => (
           <GlassCard
             key={banner.id}
-            className={`p-4 ${!banner.active ? "opacity-60" : ""}`}
+            className={`p-3.5 border-border/50 bg-card/40 backdrop-blur-md hover:-translate-y-0.5 hover:border-primary/30 hover:bg-secondary/40 transition-all duration-200 ${!banner.active ? "opacity-60" : ""}`}
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 mb-1">
                   <Megaphone className="w-4 h-4 text-amber-400 shrink-0" />
-                  <span className="text-sm font-semibold text-foreground">
-                    {banner.title}
-                  </span>
+                  <span className="text-sm font-semibold text-foreground">{banner.title}</span>
                   <Badge variant={banner.active ? "success" : "default"}>
                     {banner.active ? "Active" : "Inactive"}
                   </Badge>
-                  <span className="font-mono text-xs text-primary">
-                    {banner.id}
-                  </span>
+                  <span className="font-mono text-xs text-primary">{banner.id}</span>
                 </div>
-                <p className="text-sm text-muted-foreground pl-7">
-                  {banner.message}
-                </p>
-                <div className="flex gap-4 text-xs text-slate-600 mt-1 pl-7">
+                <p className="text-sm text-muted-foreground pl-7">{banner.message}</p>
+                <div className="flex gap-4 text-xs text-muted-foreground mt-1 pl-7">
                   <span>From: {banner.validFrom}</span>
                   {banner.validTo && <span>To: {banner.validTo}</span>}
                   {banner.link && <span>Link: {banner.link}</span>}
@@ -183,7 +202,16 @@ export default function BannerManagement() {
               <div className="flex items-center gap-2">
                 {banner.link ? (
                   <button
-                    onClick={() => navigate(banner.link!)}
+                    type="button"
+                    onClick={() => {
+                      try {
+                        openBannerLink(banner.link!, navigate);
+                      } catch (error) {
+                        toast.error(
+                          error instanceof Error ? error.message : "Announcement link is invalid",
+                        );
+                      }
+                    }}
                     className="p-1.5 rounded-lg bg-secondary/50 text-muted-foreground hover:text-primary/90 transition-colors"
                     title="Open banner link"
                   >
@@ -191,6 +219,7 @@ export default function BannerManagement() {
                   </button>
                 ) : null}
                 <button
+                  type="button"
                   onClick={() => toggleActive(banner.id)}
                   className={`px-3 py-1 rounded-lg text-xs font-medium border transition-colors ${
                     banner.active
@@ -201,6 +230,7 @@ export default function BannerManagement() {
                   {banner.active ? "Deactivate" : "Activate"}
                 </button>
                 <button
+                  type="button"
                   onClick={() => {
                     setEditBanner(banner);
                     setNewTitle(banner.title);
@@ -215,6 +245,7 @@ export default function BannerManagement() {
                   <Edit3 className="w-4 h-4" />
                 </button>
                 <button
+                  type="button"
                   onClick={() => deleteBanner(banner.id)}
                   className="p-1.5 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition-colors"
                 >
@@ -228,36 +259,33 @@ export default function BannerManagement() {
 
       {showForm && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <GlassCard className="p-6 w-full max-w-md">
+          <GlassCard className="p-3.5 border-border/50 bg-card/40 backdrop-blur-md w-full max-w-md">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-white">
+              <h2 className="text-lg font-bold text-foreground">
                 {editBanner ? "Edit Announcement" : "New Announcement"}
               </h2>
               <button
+                type="button"
                 onClick={resetForm}
-                className="text-muted-foreground hover:text-white"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="space-y-4">
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">
-                  Title
-                </label>
+                <span className="text-xs text-muted-foreground mb-1 block">Title</span>
                 <Input
-                  className="w-full"
+                  className="w-full h-9"
                   placeholder="e.g. System Maintenance"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                 />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">
-                  Message
-                </label>
+                <span className="text-xs text-muted-foreground mb-1 block">Message</span>{" "}
                 <textarea
-                  className="w-full bg-slate-950/50 border border-teal-500/20 text-foreground text-sm rounded-xl px-4 py-2 focus:outline-none focus:border-teal-400/50 resize-none placeholder:text-muted-foreground"
+                  className="w-full bg-slate-950/50 border border-border/50 text-foreground text-sm rounded-xl px-4 py-2 focus:outline-none focus:border-teal-400/50 resize-none placeholder:text-muted-foreground"
                   rows={3}
                   placeholder="Announcement message visible to all users..."
                   value={newMessage}
@@ -265,11 +293,9 @@ export default function BannerManagement() {
                 />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">
-                  Optional Link
-                </label>
+                <span className="text-xs text-muted-foreground mb-1 block">Optional Link</span>
                 <Input
-                  className="w-full"
+                  className="w-full h-9"
                   placeholder="e.g. /documents or /bom"
                   value={newLink}
                   onChange={(e) => setNewLink(e.target.value)}
@@ -277,9 +303,7 @@ export default function BannerManagement() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">
-                    Valid From
-                  </label>
+                  <span className="text-xs text-muted-foreground mb-1 block">Valid From</span>
                   <DatePicker
                     value={newValidFrom}
                     onChange={setNewValidFrom}
@@ -287,14 +311,8 @@ export default function BannerManagement() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">
-                    Valid To
-                  </label>
-                  <DatePicker
-                    value={newValidTo}
-                    onChange={setNewValidTo}
-                    placeholder="To date"
-                  />
+                  <span className="text-xs text-muted-foreground mb-1 block">Valid To</span>
+                  <DatePicker value={newValidTo} onChange={setNewValidTo} placeholder="To date" />
                 </div>
               </div>
             </div>

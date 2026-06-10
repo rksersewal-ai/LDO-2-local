@@ -1,11 +1,11 @@
 import {
   createContext,
+  type ReactNode,
+  useCallback,
   useContext,
   useEffect,
-  useState,
-  useCallback,
   useMemo,
-  ReactNode,
+  useState,
 } from "react";
 import { PreferencesService } from "../services/PreferencesService";
 
@@ -31,13 +31,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const root = document.documentElement;
-    if (theme === "light") {
-      root.classList.add("light-theme");
-      root.classList.remove("dark");
-    } else {
-      root.classList.remove("light-theme");
-      root.classList.add("dark");
-    }
+    root.classList.toggle("dark", theme === "dark");
     PreferencesService.set({ theme });
   }, [theme]);
 
@@ -47,14 +41,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     [],
   );
 
-  const value = useMemo(
-    () => ({ theme, toggleTheme, setTheme }),
-    [theme, toggleTheme, setTheme],
-  );
+  const value = useMemo(() => ({ theme, toggleTheme, setTheme }), [theme, toggleTheme, setTheme]);
 
-  return (
-    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
 export function useTheme() {

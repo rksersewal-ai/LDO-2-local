@@ -1,13 +1,13 @@
-import apiClient from "./ApiClient";
 import {
-  DUPLICATE_GROUPS,
   type DedupDecision,
   type DedupDecisionLogEntry,
   type DedupMode,
+  DUPLICATE_GROUPS,
   type DuplicateCandidateDocument,
   type DuplicateGroup,
   type GroupStatus,
 } from "../lib/deduplicationMock";
+import apiClient from "./ApiClient";
 
 type BackendDocument = {
   id: string;
@@ -88,8 +88,7 @@ function mapCategoryToCollection(category?: string | null) {
 
 function mapSourceSystem(value?: string | null) {
   const normalized = (value ?? "").toUpperCase();
-  if (normalized === "FILE_SHARE" || normalized === "NETWORK_SHARE")
-    return "File share";
+  if (normalized === "FILE_SHARE" || normalized === "NETWORK_SHARE") return "File share";
   if (normalized === "SCANNER") return "Scanner";
   if (normalized === "EMAIL") return "Email";
   if (normalized === "IMPORT") return "Import";
@@ -119,15 +118,12 @@ function getFingerprintState(
 function getPatternHits(document: BackendDocument, key: string) {
   const patterns =
     document.search_metadata && typeof document.search_metadata === "object"
-      ? (document.search_metadata as { patterns?: Record<string, unknown> })
-          .patterns
+      ? (document.search_metadata as { patterns?: Record<string, unknown> }).patterns
       : undefined;
   return asArray(patterns?.[key]);
 }
 
-function mapDocumentToCandidate(
-  document: BackendDocument,
-): DuplicateCandidateDocument {
+function mapDocumentToCandidate(document: BackendDocument): DuplicateCandidateDocument {
   const drawingNumbers = getPatternHits(document, "drawing_numbers");
   const partNumbers = getPatternHits(document, "pl_numbers");
   const uploadDate =
@@ -171,15 +167,13 @@ function pickSuggestedMaster(documents: BackendDocument[]) {
     const leftScore = left.duplicate_status === "MASTER" ? 1 : 0;
     const rightScore = right.duplicate_status === "MASTER" ? 1 : 0;
     if (leftScore !== rightScore) return rightScore - leftScore;
-    return String(
-      right.source_modified_at ?? right.updated_at ?? "",
-    ).localeCompare(String(left.source_modified_at ?? left.updated_at ?? ""));
+    return String(right.source_modified_at ?? right.updated_at ?? "").localeCompare(
+      String(left.source_modified_at ?? left.updated_at ?? ""),
+    );
   })[0];
 }
 
-function buildDecisionLog(
-  documents: BackendDocument[],
-): DedupDecisionLogEntry[] {
+function buildDecisionLog(documents: BackendDocument[]): DedupDecisionLogEntry[] {
   const logs = documents.flatMap((document) => {
     const entries: DedupDecisionLogEntry[] = [];
     if (document.hash_indexed_at) {
@@ -201,9 +195,7 @@ function buildDecisionLog(
     return entries;
   });
 
-  return logs
-    .sort((left, right) => String(right.at).localeCompare(String(left.at)))
-    .slice(0, 5);
+  return logs.sort((left, right) => String(right.at).localeCompare(String(left.at))).slice(0, 5);
 }
 
 function deriveGroupStatus(
@@ -211,8 +203,7 @@ function deriveGroupStatus(
   candidates: DuplicateCandidateDocument[],
 ): GroupStatus {
   if (groupKey.startsWith("full:")) return "exact";
-  if (candidates.some((document) => document.fingerprintState === "missing"))
-    return "pending";
+  if (candidates.some((document) => document.fingerprintState === "missing")) return "pending";
   return "probable";
 }
 
@@ -222,9 +213,7 @@ function deriveRisks(
   status: GroupStatus,
 ) {
   const risks: string[] = [];
-  const revisions = new Set(
-    documents.map((document) => document.revision ?? 1),
-  );
+  const revisions = new Set(documents.map((document) => document.revision ?? 1));
   if (revisions.size > 1) {
     risks.push(
       "Multiple revisions are present in the same duplicate family; verify that release lineage remains intact.",
@@ -271,16 +260,12 @@ function buildGroupFromDocuments(
     repository: "LDO Repository",
     collection,
     plant: "All plants",
-    classSummary: Array.from(
-      new Set(candidates.map((candidate) => candidate.className)),
-    ),
+    classSummary: Array.from(new Set(candidates.map((candidate) => candidate.className))),
     dateRange: {
       start: dates[0] ?? "",
       end: dates[dates.length - 1] ?? "",
     },
-    documents: candidates.sort((left, right) =>
-      right.uploadDate.localeCompare(left.uploadDate),
-    ),
+    documents: candidates.sort((left, right) => right.uploadDate.localeCompare(left.uploadDate)),
     status,
     potentialSavingsBytes: Math.max(
       candidates.reduce((sum, candidate) => sum + candidate.fileSizeBytes, 0) -
@@ -299,15 +284,8 @@ function buildGroupFromDocuments(
   };
 }
 
-function mapBackendGroup(
-  group: BackendDuplicateGroup,
-  index: number,
-): DuplicateGroup {
-  const base = buildGroupFromDocuments(
-    group.group_key,
-    group.documents ?? [],
-    index,
-  );
+function mapBackendGroup(group: BackendDuplicateGroup, index: number): DuplicateGroup {
+  const base = buildGroupFromDocuments(group.group_key, group.documents ?? [], index);
   const categories =
     Array.isArray(group.categories) && group.categories.length > 0
       ? group.categories.map(toLabel)
@@ -321,17 +299,13 @@ function mapBackendGroup(
     ...base,
     id: group.group_key,
     classSummary: categories,
-    potentialSavingsBytes: Number(
-      group.potential_savings_bytes ?? base.potentialSavingsBytes,
-    ),
+    potentialSavingsBytes: Number(group.potential_savings_bytes ?? base.potentialSavingsBytes),
     suggestedMasterId: group.master_document_id ?? base.suggestedMasterId,
     notes:
       group.decision_status && group.decision_status !== "PENDING"
         ? `${base.notes} Current decision state: ${group.decision_status.toLowerCase()}.`
         : base.notes,
-    risks: sources
-      ? [...base.risks, `Sources involved: ${sources}.`]
-      : base.risks,
+    risks: sources ? [...base.risks, `Sources involved: ${sources}.`] : base.risks,
     approvedAssertions: Array.isArray(group.approved_assertions)
       ? group.approved_assertions
           .filter((item) => item.field_key)
@@ -388,21 +362,17 @@ function buildGroups(documents: BackendDocument[]) {
   return Array.from(grouped.entries())
     .filter(([, docs]) => docs.length > 1)
     .sort((left, right) => right[1].length - left[1].length)
-    .map(([groupKey, docs], index) =>
-      buildGroupFromDocuments(groupKey, docs, index),
-    );
+    .map(([groupKey, docs], index) => buildGroupFromDocuments(groupKey, docs, index));
 }
 
 export const DeduplicationService = {
-  async getCandidateGroups(
-    signal?: AbortSignal,
-  ): Promise<DeduplicationLoadResult> {
+  async getCandidateGroups(signal?: AbortSignal): Promise<DeduplicationLoadResult> {
     try {
       const backendGroups = await apiClient.getDeduplicationGroups(undefined, {
         signal,
       });
-      const groups = (backendGroups as unknown as BackendDuplicateGroup[]).map(
-        (group, index) => mapBackendGroup(group, index),
+      const groups = (backendGroups as unknown as BackendDuplicateGroup[]).map((group, index) =>
+        mapBackendGroup(group, index),
       );
       if (groups.length > 0) {
         return {

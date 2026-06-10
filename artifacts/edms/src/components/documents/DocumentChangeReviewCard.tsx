@@ -1,11 +1,9 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { useNavigate } from "react-router";
 import {
   AlertTriangle,
   ChevronDown,
   ChevronUp,
-  Eye,
   ExternalLink,
+  Eye,
   FileDiff,
   GitCompareArrows,
   Loader2,
@@ -13,12 +11,13 @@ import {
   ScanSearch,
   ShieldCheck,
 } from "lucide-react";
-import { Badge, Button } from "../ui/Shared";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "../ui/collapsible";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router";
+import { resolveDocumentPreviewPath } from "../../lib/documentPreview";
+import type { DocumentMetadataAssertion, DocumentOcrEntity } from "../../lib/types";
+import apiClient from "../../services/ApiClient";
+import type { DocumentChangeAlert } from "../../services/DocumentChangeAlertService";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,13 +25,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import apiClient from "../../services/ApiClient";
-import { resolveDocumentPreviewPath } from "../../lib/documentPreview";
-import type {
-  DocumentMetadataAssertion,
-  DocumentOcrEntity,
-} from "../../lib/types";
-import type { DocumentChangeAlert } from "../../services/DocumentChangeAlertService";
+import { Badge, Button } from "../ui/Shared";
 
 type DeltaState = "added" | "removed" | "changed" | "same";
 
@@ -54,9 +47,7 @@ interface DocumentChangeReviewCardProps {
 }
 
 function humanizeToken(value: string) {
-  return value
-    .replace(/[_-]+/g, " ")
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+  return value.replace(/[_-]+/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 function normalizeValue(value?: string | null) {
@@ -74,9 +65,7 @@ function groupAssertions(assertions: DocumentMetadataAssertion[]) {
     .filter((assertion) => assertion.status === "APPROVED")
     .reduce<Record<string, string[]>>((accumulator, assertion) => {
       const key = normalizeValue(assertion.field_key);
-      const value = normalizeValue(
-        assertion.normalized_value || assertion.value,
-      );
+      const value = normalizeValue(assertion.normalized_value || assertion.value);
       if (!key || !value) return accumulator;
       accumulator[key] = uniqueSorted([...(accumulator[key] ?? []), value]);
       return accumulator;
@@ -88,9 +77,7 @@ function groupEntities(entities: DocumentOcrEntity[]) {
     .filter((entity) => entity.review_status !== "REJECTED")
     .reduce<Record<string, string[]>>((accumulator, entity) => {
       const key = normalizeValue(entity.entity_type);
-      const value = normalizeValue(
-        entity.normalized_value || entity.entity_value,
-      );
+      const value = normalizeValue(entity.normalized_value || entity.entity_value);
       if (!key || !value) return accumulator;
       accumulator[key] = uniqueSorted([...(accumulator[key] ?? []), value]);
       return accumulator;
@@ -98,19 +85,14 @@ function groupEntities(entities: DocumentOcrEntity[]) {
 }
 
 function areListsEqual(left: string[], right: string[]) {
-  return (
-    left.length === right.length &&
-    left.every((value, index) => value === right[index])
-  );
+  return left.length === right.length && left.every((value, index) => value === right[index]);
 }
 
 function buildDeltaRows(
   latestMap: Record<string, string[]>,
   previousMap: Record<string, string[]>,
 ) {
-  const keys = Array.from(
-    new Set([...Object.keys(previousMap), ...Object.keys(latestMap)]),
-  );
+  const keys = Array.from(new Set([...Object.keys(previousMap), ...Object.keys(latestMap)]));
   const rank: Record<DeltaState, number> = {
     changed: 0,
     added: 1,
@@ -137,9 +119,7 @@ function buildDeltaRows(
     });
 }
 
-function stateBadgeVariant(
-  state: DeltaState,
-): "success" | "warning" | "danger" | "default" {
+function stateBadgeVariant(state: DeltaState): "success" | "warning" | "danger" | "default" {
   if (state === "added") return "success";
   if (state === "changed") return "warning";
   if (state === "removed") return "danger";
@@ -199,17 +179,13 @@ function DeltaTable({
               <p className="mb-1 text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
                 Previous
               </p>
-              <p className="text-sm text-foreground/90">
-                {formatValues(row.previousValues)}
-              </p>
+              <p className="text-sm text-foreground/90">{formatValues(row.previousValues)}</p>
             </div>
             <div>
               <p className="mb-1 text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
                 Latest
               </p>
-              <p className="text-sm text-foreground">
-                {formatValues(row.latestValues)}
-              </p>
+              <p className="text-sm text-foreground">{formatValues(row.latestValues)}</p>
             </div>
             <div className="flex items-start justify-start md:justify-end">
               <Badge variant={stateBadgeVariant(row.state)} size="sm">
@@ -236,16 +212,10 @@ export function DocumentChangeReviewCard({
   const [open, setOpen] = useState(defaultOpen);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [latestAssertions, setLatestAssertions] = useState<
-    DocumentMetadataAssertion[]
-  >([]);
+  const [latestAssertions, setLatestAssertions] = useState<DocumentMetadataAssertion[]>([]);
   const [latestEntities, setLatestEntities] = useState<DocumentOcrEntity[]>([]);
-  const [previousAssertions, setPreviousAssertions] = useState<
-    DocumentMetadataAssertion[]
-  >([]);
-  const [previousEntities, setPreviousEntities] = useState<DocumentOcrEntity[]>(
-    [],
-  );
+  const [previousAssertions, setPreviousAssertions] = useState<DocumentMetadataAssertion[]>([]);
+  const [previousEntities, setPreviousEntities] = useState<DocumentOcrEntity[]>([]);
 
   useEffect(() => {
     if (!open) return;
@@ -271,10 +241,7 @@ export function DocumentChangeReviewCard({
             signal: controller.signal,
           }),
         ])
-      : Promise.resolve<[DocumentMetadataAssertion[], DocumentOcrEntity[]]>([
-          [],
-          [],
-        ]);
+      : Promise.resolve<[DocumentMetadataAssertion[], DocumentOcrEntity[]]>([[], []]);
 
     Promise.all([latestRequests, previousRequests])
       .then(
@@ -290,10 +257,7 @@ export function DocumentChangeReviewCard({
       )
       .catch((loadError) => {
         if (controller.signal.aborted) return;
-        console.error(
-          "[DocumentChangeReviewCard] Failed to load comparison evidence",
-          loadError,
-        );
+        console.error("[DocumentChangeReviewCard] Failed to load comparison evidence", loadError);
         setError("Could not load metadata evidence for this change.");
       })
       .finally(() => {
@@ -306,34 +270,20 @@ export function DocumentChangeReviewCard({
   }, [alert.documentId, alert.previousDocumentId, open]);
 
   const assertionRows = useMemo(
-    () =>
-      buildDeltaRows(
-        groupAssertions(latestAssertions),
-        groupAssertions(previousAssertions),
-      ),
+    () => buildDeltaRows(groupAssertions(latestAssertions), groupAssertions(previousAssertions)),
     [latestAssertions, previousAssertions],
   );
   const entityRows = useMemo(
-    () =>
-      buildDeltaRows(
-        groupEntities(latestEntities),
-        groupEntities(previousEntities),
-      ),
+    () => buildDeltaRows(groupEntities(latestEntities), groupEntities(previousEntities)),
     [latestEntities, previousEntities],
   );
 
-  const latestChangedCount = assertionRows.filter(
-    (row) => row.state !== "same",
-  ).length;
-  const entityChangedCount = entityRows.filter(
-    (row) => row.state !== "same",
-  ).length;
+  const latestChangedCount = assertionRows.filter((row) => row.state !== "same").length;
+  const entityChangedCount = entityRows.filter((row) => row.state !== "same").length;
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <div
-        className={`rounded-2xl border border-amber-500/20 bg-amber-500/6 ${className}`}
-      >
+      <div className={`rounded-2xl border border-amber-500/20 bg-amber-500/6 ${className}`}>
         <div className="flex flex-col gap-4 px-4 py-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
             <div className="min-w-0">
@@ -357,18 +307,12 @@ export function DocumentChangeReviewCard({
                   {alert.status}
                 </Badge>
                 {alert.documentFamilyKey && (
-                  <Badge
-                    variant="info"
-                    size="sm"
-                    className="max-w-full truncate"
-                  >
+                  <Badge variant="info" size="sm" className="max-w-full truncate">
                     Family {alert.documentFamilyKey}
                   </Badge>
                 )}
               </div>
-              <p className="mt-2 text-sm text-foreground">
-                {alert.documentName}
-              </p>
+              <p className="mt-2 text-sm text-foreground">{alert.documentName}</p>
               <p className="mt-1 text-xs text-amber-200">{alert.message}</p>
               <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
                 <span>Latest rev {alert.revision || "N/A"}</span>
@@ -387,9 +331,7 @@ export function DocumentChangeReviewCard({
               <Button
                 size="sm"
                 variant="secondary"
-                onClick={() =>
-                  navigate(resolveDocumentPreviewPath(alert.documentId))
-                }
+                onClick={() => navigate(resolveDocumentPreviewPath(alert.documentId))}
               >
                 <Eye className="h-3.5 w-3.5" />
                 Preview latest
@@ -400,7 +342,9 @@ export function DocumentChangeReviewCard({
                   variant="secondary"
                   onClick={() =>
                     navigate(
-                      resolveDocumentPreviewPath(alert.previousDocumentId!),
+                      alert.previousDocumentId
+                        ? resolveDocumentPreviewPath(alert.previousDocumentId)
+                        : "/",
                     )
                   }
                 >
@@ -463,18 +407,14 @@ export function DocumentChangeReviewCard({
             alert.bypassReason ||
             alert.resolvedAt) && (
             <div className="rounded-xl border border-amber-500/15 bg-slate-950/35 px-3 py-3 text-sm">
-              {alert.changeSummary && (
-                <p className="text-foreground/90">{alert.changeSummary}</p>
-              )}
+              {alert.changeSummary && <p className="text-foreground/90">{alert.changeSummary}</p>}
               {alert.resolutionNotes && (
                 <p className="mt-2 text-xs text-muted-foreground">
                   Resolution notes: {alert.resolutionNotes}
                 </p>
               )}
               {alert.bypassReason && (
-                <p className="mt-1 text-xs text-rose-200">
-                  Bypass reason: {alert.bypassReason}
-                </p>
+                <p className="mt-1 text-xs text-rose-200">Bypass reason: {alert.bypassReason}</p>
               )}
               {alert.resolvedAt && (
                 <p className="mt-1 text-xs text-muted-foreground">
@@ -503,12 +443,8 @@ export function DocumentChangeReviewCard({
                     <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                       Latest document
                     </p>
-                    <p className="mt-2 text-sm font-semibold text-white">
-                      {alert.documentName}
-                    </p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {alert.documentId}
-                    </p>
+                    <p className="mt-2 text-sm font-semibold text-white">{alert.documentName}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{alert.documentId}</p>
                     {alert.documentStatus && (
                       <p className="mt-2 text-xs text-muted-foreground">
                         Status: {alert.documentStatus}
@@ -520,8 +456,7 @@ export function DocumentChangeReviewCard({
                       Previous document
                     </p>
                     <p className="mt-2 text-sm font-semibold text-white">
-                      {alert.previousDocumentName ||
-                        "No previous linked document"}
+                      {alert.previousDocumentName || "No previous linked document"}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       {alert.previousDocumentId || "—"}
@@ -536,9 +471,7 @@ export function DocumentChangeReviewCard({
                     <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                       Approved assertion delta
                     </p>
-                    <p className="mt-2 text-2xl font-semibold text-white">
-                      {latestChangedCount}
-                    </p>
+                    <p className="mt-2 text-2xl font-semibold text-white">{latestChangedCount}</p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       Changed or newly governed metadata fields.
                     </p>
@@ -547,9 +480,7 @@ export function DocumentChangeReviewCard({
                     <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                       Extracted entity delta
                     </p>
-                    <p className="mt-2 text-2xl font-semibold text-white">
-                      {entityChangedCount}
-                    </p>
+                    <p className="mt-2 text-2xl font-semibold text-white">{entityChangedCount}</p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       Changed OCR/entity groups across revisions.
                     </p>

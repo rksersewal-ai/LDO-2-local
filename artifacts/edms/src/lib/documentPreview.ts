@@ -1,9 +1,6 @@
 import type { AppInboxItem } from "./types";
 
-function readPayloadValue(
-  payload: Record<string, unknown> | undefined,
-  key: string,
-) {
+function readPayloadValue(payload: Record<string, unknown> | undefined, key: string) {
   const value = payload?.[key];
   return typeof value === "string" && value.trim() ? value : null;
 }
@@ -12,9 +9,7 @@ export function resolveDocumentPreviewPath(documentId: string) {
   return `/documents/${encodeURIComponent(documentId)}/preview`;
 }
 
-export function resolveNotificationPreviewDocumentId(
-  notification: AppInboxItem,
-) {
+export function resolveNotificationPreviewDocumentId(notification: AppInboxItem) {
   const payload = notification.payload as Record<string, unknown> | undefined;
 
   const directKeys = [

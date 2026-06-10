@@ -20,8 +20,8 @@
  */
 
 import { ErrorBoundary } from "./ErrorBoundary";
-import { LoadingState } from "./LoadingState";
 import { ErrorState } from "./ErrorState";
+import { LoadingState } from "./LoadingState";
 
 interface TableSafeWrapperProps {
   children: React.ReactNode;
@@ -64,11 +64,10 @@ export function TableSafeWrapper({
         ) : itemCount === 0 ? (
           <div className="h-full flex items-center justify-center">
             <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-3">
-                {emptyMessage}
-              </p>
+              <p className="text-sm text-muted-foreground mb-3">{emptyMessage}</p>
               {onRetry && (
                 <button
+                  type="button"
                   onClick={onRetry}
                   className="text-xs text-primary hover:text-primary/90 transition-colors"
                 >

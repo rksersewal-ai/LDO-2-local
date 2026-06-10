@@ -7,7 +7,7 @@
  * - Concurrency limiter: prevent request floods (bulk operations)
  */
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
  * Debounce Hook: Delay expensive operations until user stops changing input
@@ -75,28 +75,28 @@ export function useThrottle<T>(value: T, intervalMs: number = 200): T {
  *     performSearch(query);
  *   }, 300, []);
  */
-export function useDebouncedCallback<T extends (...args: any[]) => void>(
+export function useDebouncedCallback<T extends (...args: unknown[]) => void>(
   callback: T,
   delayMs: number = 300,
   deps: React.DependencyList = [],
-): T {
+ ): T {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
+ 
   useEffect(() => {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, []);
-
+ 
   return useCallback(
-    (...args: any[]) => {
+    (...args: unknown[]) => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       timeoutRef.current = setTimeout(() => {
         callback(...args);
       }, delayMs);
     },
     [callback, delayMs, ...deps],
-  ) as T;
+  ) as unknown as T;
 }
 
 /**
@@ -107,7 +107,7 @@ export function useDebouncedCallback<T extends (...args: any[]) => void>(
  *     recalculateLayout();
  *   }, 100, []);
  */
-export function useThrottledCallback<T extends (...args: any[]) => void>(
+export function useThrottledCallback<T extends (...args: unknown[]) => void>(
   callback: T,
   intervalMs: number = 200,
   deps: React.DependencyList = [],
@@ -122,7 +122,7 @@ export function useThrottledCallback<T extends (...args: any[]) => void>(
   }, []);
 
   return useCallback(
-    (...args: any[]) => {
+    (...args: unknown[]) => {
       const now = Date.now();
       const timeSinceLastCall = now - lastCalledRef.current;
 
@@ -138,7 +138,7 @@ export function useThrottledCallback<T extends (...args: any[]) => void>(
       }
     },
     [callback, intervalMs, ...deps],
-  ) as T;
+  ) as unknown as T;
 }
 
 /**

@@ -52,21 +52,11 @@ export const OcrStatusSchema = z.enum([
   "NOT_REQUIRED",
 ]);
 
-export const WorkRecordStatusSchema = z.enum([
-  "OPEN",
-  "SUBMITTED",
-  "VERIFIED",
-  "CLOSED",
-]);
+export const WorkRecordStatusSchema = z.enum(["OPEN", "SUBMITTED", "VERIFIED", "CLOSED"]);
 
 export const PLStatusSchema = z.enum(["ACTIVE", "UNDER_REVIEW", "OBSOLETE"]);
 
-export const SafetyClassificationSchema = z.enum([
-  "LOW",
-  "MEDIUM",
-  "HIGH",
-  "CRITICAL",
-]);
+export const SafetyClassificationSchema = z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]);
 
 export const WorkCategorySchema = z.enum([
   "GENERAL",
@@ -82,20 +72,9 @@ export const WorkCategorySchema = z.enum([
   "INSPECTION",
 ]);
 
-export const InspectionCategorySchema = z.enum([
-  "CAT-A",
-  "CAT-B",
-  "CAT-C",
-  "CAT-D",
-]);
+export const InspectionCategorySchema = z.enum(["CAT-A", "CAT-B", "CAT-C", "CAT-D"]);
 
-export const UserRoleSchema = z.enum([
-  "admin",
-  "supervisor",
-  "engineer",
-  "reviewer",
-  "viewer",
-]);
+export const UserRoleSchema = z.enum(["admin", "supervisor", "engineer", "reviewer", "viewer"]);
 
 // ─────────────────────────────────────────────────────────────────────────
 // Core Entity Schemas
@@ -206,9 +185,7 @@ export const UserSchema = z.object({
 /**
  * Standard paginated list response format
  */
-export const PaginatedResponseSchema = <T extends z.ZodTypeAny>(
-  itemSchema: T,
-) =>
+export const PaginatedResponseSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
   z.object({
     results: z.array(itemSchema),
     total: z.number(),
@@ -258,16 +235,12 @@ export const ErrorResponseSchema = z.object({
 // Specific API Response Validators
 // ─────────────────────────────────────────────────────────────────────────
 
-export const DocumentListResponseSchema =
-  PaginatedResponseSchema(DocumentSchema);
+export const DocumentListResponseSchema = PaginatedResponseSchema(DocumentSchema);
 export const DocumentItemResponseSchema = ItemResponseSchema(DocumentSchema);
-export const PLNumberListResponseSchema =
-  PaginatedResponseSchema(PLNumberSchema);
+export const PLNumberListResponseSchema = PaginatedResponseSchema(PLNumberSchema);
 export const PLNumberItemResponseSchema = ItemResponseSchema(PLNumberSchema);
-export const WorkRecordListResponseSchema =
-  PaginatedResponseSchema(WorkRecordSchema);
-export const WorkRecordItemResponseSchema =
-  ItemResponseSchema(WorkRecordSchema);
+export const WorkRecordListResponseSchema = PaginatedResponseSchema(WorkRecordSchema);
+export const WorkRecordItemResponseSchema = ItemResponseSchema(WorkRecordSchema);
 export const UserListResponseSchema = PaginatedResponseSchema(UserSchema);
 export const UserItemResponseSchema = ItemResponseSchema(UserSchema);
 
@@ -305,9 +278,7 @@ export function safeValidate<T>(
  * Useful for reusable validators
  */
 export function createValidator<T>(schema: z.ZodSchema<T>, name: string) {
-  return (
-    data: unknown,
-  ): { success: true; data: T } | { success: false; error: z.ZodError } => {
+  return (data: unknown): { success: true; data: T } | { success: false; error: z.ZodError } => {
     return safeValidate(schema, data, name);
   };
 }
@@ -317,32 +288,17 @@ export function createValidator<T>(schema: z.ZodSchema<T>, name: string) {
 // ─────────────────────────────────────────────────────────────────────────
 
 export const validateDocument = createValidator(DocumentSchema, "Document");
-export const validateDocumentList = createValidator(
-  DocumentListResponseSchema,
-  "DocumentList",
-);
+export const validateDocumentList = createValidator(DocumentListResponseSchema, "DocumentList");
 export const validatePLNumber = createValidator(PLNumberSchema, "PLNumber");
-export const validatePLNumberList = createValidator(
-  PLNumberListResponseSchema,
-  "PLNumberList",
-);
-export const validateWorkRecord = createValidator(
-  WorkRecordSchema,
-  "WorkRecord",
-);
+export const validatePLNumberList = createValidator(PLNumberListResponseSchema, "PLNumberList");
+export const validateWorkRecord = createValidator(WorkRecordSchema, "WorkRecord");
 export const validateWorkRecordList = createValidator(
   WorkRecordListResponseSchema,
   "WorkRecordList",
 );
 export const validateUser = createValidator(UserSchema, "User");
-export const validateUserList = createValidator(
-  UserListResponseSchema,
-  "UserList",
-);
-export const validateAuthResponse = createValidator(
-  AuthResponseSchema,
-  "AuthResponse",
-);
+export const validateUserList = createValidator(UserListResponseSchema, "UserList");
+export const validateAuthResponse = createValidator(AuthResponseSchema, "AuthResponse");
 
 // ─────────────────────────────────────────────────────────────────────────
 // Type Exports (for TypeScript inference)
@@ -354,8 +310,6 @@ export type ValidatedWorkRecord = z.infer<typeof WorkRecordSchema>;
 export type ValidatedUser = z.infer<typeof UserSchema>;
 export type ValidatedDocumentList = z.infer<typeof DocumentListResponseSchema>;
 export type ValidatedPLNumberList = z.infer<typeof PLNumberListResponseSchema>;
-export type ValidatedWorkRecordList = z.infer<
-  typeof WorkRecordListResponseSchema
->;
+export type ValidatedWorkRecordList = z.infer<typeof WorkRecordListResponseSchema>;
 export type ValidatedUserList = z.infer<typeof UserListResponseSchema>;
 export type ValidatedAuthResponse = z.infer<typeof AuthResponseSchema>;

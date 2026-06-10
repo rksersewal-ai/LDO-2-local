@@ -1,39 +1,24 @@
-import { useCallback, useEffect, useState } from "react";
-import { GlassCard, Badge, Button } from "../components/ui/Shared";
-import { MOCK_OCR_JOBS } from "../lib/mockExtended";
 import {
-  ServerCog,
-  RefreshCw,
-  FileText,
-  X,
+  AlertCircle,
   CheckCircle,
   Clock,
-  XCircle,
+  RefreshCw,
+  ServerCog,
   SkipForward,
-  AlertCircle,
+  X,
+  XCircle,
 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
+import { Badge, Button, GlassCard } from "../components/ui/Shared";
+import { MOCK_OCR_JOBS } from "../lib/mockExtended";
 import apiClient from "../services/ApiClient";
-
-interface OcrJobRecord {
-  id: string;
-  document: string;
-  filename: string;
-  status: string;
-  confidence: number | null;
-  pages: number;
-  startTime: string | null;
-  endTime: string | null;
-  extractedRefs: number;
-  failureReason?: string;
-}
+import { type OcrJobRecord, OcrJobService } from "../services/OcrJobService";
 
 const statusIcon = (s: string) => {
-  if (s === "Completed")
-    return <CheckCircle className="w-4 h-4 text-primary" />;
-  if (s === "Processing")
-    return <Clock className="w-4 h-4 text-blue-400 animate-pulse" />;
+  if (s === "Completed") return <CheckCircle className="w-4 h-4 text-primary" />;
+  if (s === "Processing") return <Clock className="w-4 h-4 text-blue-400 animate-pulse" />;
   if (s === "Failed") return <XCircle className="w-4 h-4 text-rose-500" />;
   return <SkipForward className="w-4 h-4 text-muted-foreground" />;
 };
@@ -57,12 +42,7 @@ export default function OCRMonitor() {
     (job: any): OcrJobRecord => ({
       id: String(job.id),
       document: String(job.document_id || job.document || ""),
-      filename: String(
-        job.document_name ||
-          job.filename ||
-          job.document_id ||
-          "Unknown document",
-      ),
+      filename: String(job.document_name || job.filename || job.document_id || "Unknown document"),
       status: String(job.status || "Queued"),
       confidence:
         typeof job.confidence === "number"
@@ -88,10 +68,13 @@ export default function OCRMonitor() {
       setJobs(response.items.map(mapJob));
     } catch (error) {
       console.warn("Falling back to mock OCR jobs", error);
+      const fallbackSource = await OcrJobService.getAll();
       const fallback =
-        filter === "All"
-          ? [...MOCK_OCR_JOBS]
-          : MOCK_OCR_JOBS.filter((job) => job.status === filter);
+        fallbackSource.length > 0
+          ? fallbackSource
+          : filter === "All"
+            ? [...MOCK_OCR_JOBS]
+            : MOCK_OCR_JOBS.filter((job) => job.status === filter);
       setJobs(fallback);
     } finally {
       setIsRefreshing(false);
@@ -99,8 +82,7 @@ export default function OCRMonitor() {
     }
   }, [filter, mapJob]);
 
-  const filtered =
-    filter === "All" ? jobs : jobs.filter((j) => j.status === filter);
+  const filtered = filter === "All" ? jobs : jobs.filter((j) => j.status === filter);
   const completed = jobs.filter((j) => j.status === "Completed").length;
   const failed = jobs.filter((j) => j.status === "Failed").length;
   const processing = jobs.filter((j) => j.status === "Processing").length;
@@ -149,9 +131,23 @@ export default function OCRMonitor() {
         await fetchJobs();
       })
       .catch((error: any) => {
-        const message =
-          error?.response?.data?.detail || "Unable to restart OCR job.";
-        toast.error(message);
+        const message = error?.response?.data?.detail;
+        if (message) {
+          toast.error(message);
+          return;
+        }
+
+        void OcrJobService.queueRetry(target.document)
+          .then(async (fallbackJob) => {
+            toast.success("OCR job re-queued locally", {
+              description: `Document ${target.document} is now processing as ${fallbackJob.id}.`,
+            });
+            updateSelectedJob(fallbackJob);
+            await fetchJobs();
+          })
+          .catch(() => {
+            toast.error("Unable to restart OCR job.");
+          });
       })
       .finally(() => setRetryingJobId(null));
   };
@@ -166,9 +162,7 @@ export default function OCRMonitor() {
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto">
       <div>
-        <h1 className="text-2xl font-semibold text-foreground mb-2">
-          OCR Monitor
-        </h1>
+        <h1 className="text-2xl font-semibold text-foreground mb-2">OCR Monitor</h1>
         <p className="text-muted-foreground text-sm">
           Pipeline monitoring, job tracking, and extraction oversight.
         </p>
@@ -197,10 +191,11 @@ export default function OCRMonitor() {
             color: "text-foreground/90 bg-slate-700/30",
           },
         ].map((s) => (
-          <GlassCard key={s.label} className="p-4 flex items-center gap-3">
-            <div
-              className={`w-10 h-10 rounded-full ${s.color} flex items-center justify-center`}
-            >
+          <GlassCard
+            key={s.label}
+            className="p-3.5 border-border/50 bg-card/40 backdrop-blur-md flex items-center gap-3 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-secondary/40 transition-all duration-200"
+          >
+            <div className={`w-10 h-10 rounded-full ${s.color} flex items-center justify-center`}>
               <ServerCog className="w-5 h-5" />
             </div>
             <div>
@@ -211,37 +206,31 @@ export default function OCRMonitor() {
         ))}
       </div>
 
-      <div
-        className={`grid gap-6 ${selectedJob ? "grid-cols-1 lg:grid-cols-2" : "grid-cols-1"}`}
-      >
-        <GlassCard className="p-4">
+      <div className={`grid gap-6 ${selectedJob ? "grid-cols-1 lg:grid-cols-2" : "grid-cols-1"}`}>
+        <GlassCard className="p-3.5 border-border/50 bg-card/40 backdrop-blur-md">
           <div className="flex flex-wrap items-center gap-3 mb-4">
             <div className="flex gap-2">
-              {["All", "Completed", "Processing", "Failed", "Skipped"].map(
-                (s) => (
-                  <button
-                    key={s}
-                    onClick={() => setFilter(s)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
-                      filter === s
-                        ? "bg-teal-500/20 border-teal-500/40 text-primary/90"
-                        : "bg-secondary/50 border-border text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {s}
-                  </button>
-                ),
-              )}
+              {["All", "Completed", "Processing", "Failed", "Skipped"].map((s) => (
+                <button
+                  type="button"
+                  key={s}
+                  onClick={() => setFilter(s)}
+                  className={`px-3 h-9 rounded-md text-xs font-medium border transition-colors ${
+                    filter === s
+                      ? "bg-teal-500/20 border-teal-500/40 text-primary/90"
+                      : "bg-secondary/50 border-border text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
             </div>
             <Button
               variant="secondary"
-              className="ml-auto"
+              className="ml-auto h-9"
               onClick={() => void handleRefresh()}
             >
-              <RefreshCw
-                className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`}
-              />{" "}
-              Refresh
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} /> Refresh
             </Button>
           </div>
 
@@ -261,10 +250,7 @@ export default function OCRMonitor() {
               <tbody className="divide-y divide-slate-800/30">
                 {!loading && filtered.length === 0 && (
                   <tr>
-                    <td
-                      colSpan={7}
-                      className="py-8 text-center text-sm text-muted-foreground"
-                    >
+                    <td colSpan={7} className="py-8 text-center text-sm text-muted-foreground">
                       No OCR jobs match the current filter.
                     </td>
                   </tr>
@@ -275,21 +261,13 @@ export default function OCRMonitor() {
                     className={`hover:bg-secondary/30 cursor-pointer transition-colors group ${selectedJob?.id === job.id ? "bg-secondary/30" : ""}`}
                     onClick={() => updateSelectedJob(job)}
                   >
-                    <td className="py-3 pl-4 font-mono text-xs text-primary">
-                      {job.id}
-                    </td>
-                    <td className="py-3 font-mono text-xs text-blue-400">
-                      {job.document}
-                    </td>
-                    <td className="py-3 text-foreground/90 text-xs">
-                      {job.filename}
-                    </td>
+                    <td className="py-3 pl-4 font-mono text-xs text-primary">{job.id}</td>
+                    <td className="py-3 font-mono text-xs text-blue-400">{job.document}</td>
+                    <td className="py-3 text-foreground/90 text-xs">{job.filename}</td>
                     <td className="py-3">
                       <div className="flex items-center gap-2">
                         {statusIcon(job.status)}
-                        <Badge variant={statusVariant(job.status)}>
-                          {job.status}
-                        </Badge>
+                        <Badge variant={statusVariant(job.status)}>{job.status}</Badge>
                       </div>
                     </td>
                     <td className="py-3">
@@ -301,20 +279,14 @@ export default function OCRMonitor() {
                               style={{ width: `${job.confidence}%` }}
                             />
                           </div>
-                          <span className="text-xs text-foreground/90">
-                            {job.confidence}%
-                          </span>
+                          <span className="text-xs text-foreground/90">{job.confidence}%</span>
                         </div>
                       ) : (
                         <span className="text-xs text-slate-600">—</span>
                       )}
                     </td>
-                    <td className="py-3 text-muted-foreground text-xs">
-                      {job.pages}
-                    </td>
-                    <td className="py-3 text-muted-foreground text-xs">
-                      {job.startTime ?? "—"}
-                    </td>
+                    <td className="py-3 text-muted-foreground text-xs">{job.pages}</td>
+                    <td className="py-3 text-muted-foreground text-xs">{job.startTime ?? "—"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -323,10 +295,11 @@ export default function OCRMonitor() {
         </GlassCard>
 
         {selectedJob && (
-          <GlassCard className="p-6 self-start">
+          <GlassCard className="p-3.5 border-border/50 bg-card/40 backdrop-blur-md self-start">
             <div className="flex items-start justify-between mb-4">
               <h2 className="text-lg font-bold text-white">Job Detail</h2>
               <button
+                type="button"
                 onClick={() => updateSelectedJob(null)}
                 className="text-muted-foreground hover:text-white transition-colors"
               >
@@ -349,9 +322,7 @@ export default function OCRMonitor() {
               ].map((f) => (
                 <div key={f.label} className="flex justify-between text-sm">
                   <span className="text-muted-foreground">{f.label}</span>
-                  <span className="text-foreground font-mono text-xs font-medium">
-                    {f.value}
-                  </span>
+                  <span className="text-foreground font-mono text-xs font-medium">{f.value}</span>
                 </div>
               ))}
             </div>
@@ -359,9 +330,7 @@ export default function OCRMonitor() {
               <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl mb-4">
                 <div className="flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 text-rose-400 mt-0.5" />
-                  <p className="text-xs text-rose-300">
-                    {selectedJob.failureReason}
-                  </p>
+                  <p className="text-xs text-rose-300">{selectedJob.failureReason}</p>
                 </div>
               </div>
             )}

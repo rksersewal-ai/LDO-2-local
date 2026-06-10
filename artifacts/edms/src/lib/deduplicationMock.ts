@@ -1,10 +1,7 @@
 export type DedupMode = "metadata" | "fingerprint";
 export type GroupStatus = "exact" | "probable" | "pending";
 export type FingerprintState = "present" | "missing" | "full";
-export type DedupDecision =
-  | "hide_duplicates"
-  | "merge_metadata"
-  | "ignore_for_now";
+export type DedupDecision = "hide_duplicates" | "merge_metadata" | "ignore_for_now";
 
 export interface DedupReferenceSummary {
   erp: number;
@@ -81,12 +78,7 @@ export const DEDUP_CLASS_OPTIONS = [
   "Test Reports",
 ] as const;
 
-export const DEDUP_SOURCE_SYSTEM_OPTIONS = [
-  "File share",
-  "Import",
-  "Scanner",
-  "Email",
-] as const;
+export const DEDUP_SOURCE_SYSTEM_OPTIONS = ["File share", "Import", "Scanner", "Email"] as const;
 
 export const DEDUP_OWNER_OPTIONS = [
   "A. Rao",
@@ -232,8 +224,7 @@ export const DUPLICATE_GROUPS: DuplicateGroup[] = [
         className: "Vendor docs",
         type: "PDF",
         fileSizeBytes: 6291456,
-        metadataKey:
-          "38130000|Vendor Qualification Pack – Axle Bearing Supplier|A.1|6291456",
+        metadataKey: "38130000|Vendor Qualification Pack – Axle Bearing Supplier|A.1|6291456",
         fingerprintState: "present",
         uploadDate: "2026-03-03",
         uploader: "M. Khanna",
@@ -253,8 +244,7 @@ export const DUPLICATE_GROUPS: DuplicateGroup[] = [
         className: "Vendor docs",
         type: "PDF",
         fileSizeBytes: 6324224,
-        metadataKey:
-          "38130000|Vendor Qualification Pack – Axle Bearing Supplier|A.1|6324224",
+        metadataKey: "38130000|Vendor Qualification Pack – Axle Bearing Supplier|A.1|6324224",
         fingerprintState: "missing",
         uploadDate: "2026-02-26",
         uploader: "P. Sen",
@@ -274,8 +264,7 @@ export const DUPLICATE_GROUPS: DuplicateGroup[] = [
         className: "Certificates",
         type: "PDF",
         fileSizeBytes: 6299648,
-        metadataKey:
-          "38130000|Vendor Qualification Pack – Axle Bearing Supplier|A.1|6299648",
+        metadataKey: "38130000|Vendor Qualification Pack – Axle Bearing Supplier|A.1|6299648",
         fingerprintState: "missing",
         uploadDate: "2025-11-05",
         uploader: "A. Rao",
@@ -324,8 +313,7 @@ export const DUPLICATE_GROUPS: DuplicateGroup[] = [
         className: "Specifications",
         type: "PDF",
         fileSizeBytes: 9502720,
-        metadataKey:
-          "38140000|HV Control Cabinet Interface Specification|B.3|9502720",
+        metadataKey: "38140000|HV Control Cabinet Interface Specification|B.3|9502720",
         fingerprintState: "present",
         uploadDate: "2026-02-01",
         uploader: "A. Rao",
@@ -345,8 +333,7 @@ export const DUPLICATE_GROUPS: DuplicateGroup[] = [
         className: "Specifications",
         type: "PDF",
         fileSizeBytes: 9502720,
-        metadataKey:
-          "38140000|HV Control Cabinet Interface Specification|B.4|9502720",
+        metadataKey: "38140000|HV Control Cabinet Interface Specification|B.4|9502720",
         fingerprintState: "full",
         uploadDate: "2026-03-19",
         uploader: "P. Sen",
@@ -395,8 +382,7 @@ export const DUPLICATE_GROUPS: DuplicateGroup[] = [
         className: "Procedures",
         type: "PDF",
         fileSizeBytes: 6946816,
-        metadataKey:
-          "38150000|Door Controller Commissioning Procedure|C.0|6946816",
+        metadataKey: "38150000|Door Controller Commissioning Procedure|C.0|6946816",
         fingerprintState: "full",
         uploadDate: "2026-03-08",
         uploader: "A. Rao",
@@ -416,8 +402,7 @@ export const DUPLICATE_GROUPS: DuplicateGroup[] = [
         className: "Procedures",
         type: "PDF",
         fileSizeBytes: 6946816,
-        metadataKey:
-          "38150000|Door Controller Commissioning Procedure|C.0|6946816",
+        metadataKey: "38150000|Door Controller Commissioning Procedure|C.0|6946816",
         fingerprintState: "present",
         uploadDate: "2026-02-23",
         uploader: "M. Khanna",
@@ -437,8 +422,7 @@ export const DUPLICATE_GROUPS: DuplicateGroup[] = [
         className: "Procedures",
         type: "PDF",
         fileSizeBytes: 6946816,
-        metadataKey:
-          "38150000|Door Controller Commissioning Procedure|C.0|6946816",
+        metadataKey: "38150000|Door Controller Commissioning Procedure|C.0|6946816",
         fingerprintState: "present",
         uploadDate: "2025-09-11",
         uploader: "P. Sen",

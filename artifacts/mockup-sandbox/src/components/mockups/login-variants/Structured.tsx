@@ -1,15 +1,15 @@
-import { useState } from "react";
 import {
-  Shield,
-  Loader2,
   AlertCircle,
-  Eye,
-  EyeOff,
-  Lock,
-  Clock,
   ChevronDown,
   ChevronUp,
+  Clock,
+  Eye,
+  EyeOff,
+  Loader2,
+  Lock,
+  Shield,
 } from "lucide-react";
+import { useState } from "react";
 
 export function Structured() {
   const [username, setUsername] = useState("");
@@ -60,9 +60,7 @@ export function Structured() {
             <span className="text-white font-bold text-2xl">L2</span>
           </div>
           <h1 className="text-3xl font-bold text-white mb-1">LDO-2 EDMS</h1>
-          <p className="text-slate-400 text-sm">
-            Enterprise Document Management System
-          </p>
+          <p className="text-slate-400 text-sm">Enterprise Document Management System</p>
         </div>
 
         <div className="bg-slate-900/50 backdrop-blur-2xl border border-slate-800/70 rounded-2xl p-8 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.8)] relative overflow-hidden">
@@ -71,9 +69,7 @@ export function Structured() {
 
           <div className="flex items-center gap-2 mb-6">
             <Shield className="w-5 h-5 text-teal-400" />
-            <h2 className="text-lg font-semibold text-slate-100">
-              Secure Sign In
-            </h2>
+            <h2 className="text-lg font-semibold text-slate-100">Secure Sign In</h2>
           </div>
 
           {sessionExpired && (
@@ -126,11 +122,7 @@ export function Structured() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300 transition-colors"
                 >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
@@ -141,8 +133,7 @@ export function Structured() {
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin text-slate-950" />{" "}
-                  Authenticating…
+                  <Loader2 className="w-4 h-4 animate-spin text-slate-950" /> Authenticating…
                 </>
               ) : (
                 <>
@@ -155,6 +146,7 @@ export function Structured() {
 
         <div className="mt-6 flex flex-col items-center">
           <button
+            type="button"
             onClick={() => setShowCreds(!showCreds)}
             className="flex items-center gap-1.5 text-[10px] font-mono tracking-widest uppercase text-slate-600 hover:text-slate-400 transition-colors mb-4"
           >
@@ -176,6 +168,7 @@ export function Structured() {
                   { u: "s.patel", p: "ldo2pass", r: "Supervisor" },
                 ].map((c) => (
                   <button
+                    type="button"
                     key={c.u}
                     onClick={() => {
                       setUsername(c.u);

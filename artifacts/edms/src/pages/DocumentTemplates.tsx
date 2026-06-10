@@ -1,31 +1,25 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router";
 import {
+  ArrowRight,
   BookOpen,
   FileText,
-  Search,
   Plus,
+  Search,
   Star,
   StarOff,
-  ArrowRight,
   Tag,
-  X,
   Trash2,
+  X,
 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import {
-  GlassCard,
-  Button,
-  Input,
-  PageHeader,
-  Select,
-} from "../components/ui/Shared";
 import { DatePicker } from "../components/ui/DatePicker";
+import { Button, GlassCard, Input, PageHeader, Select } from "../components/ui/Shared";
 import { Switch } from "../components/ui/switch";
 import {
-  DocumentTemplateService,
   type DocumentTemplate,
   type DocumentTemplateField,
+  DocumentTemplateService,
 } from "../services/DocumentTemplateService";
 
 interface EditableField extends DocumentTemplateField {
@@ -43,13 +37,7 @@ interface TemplateDraftState {
   formValues: Record<string, string>;
 }
 
-const CATEGORY_SEED = [
-  "Engineering",
-  "Maintenance",
-  "Quality",
-  "Cases",
-  "General",
-];
+const CATEGORY_SEED = ["Engineering", "Maintenance", "Quality", "Cases", "General"];
 
 function createEmptyField(): EditableField {
   return {
@@ -94,14 +82,11 @@ export default function DocumentTemplates() {
   const [templates, setTemplates] = useState<DocumentTemplate[]>([]);
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
-  const [previewTemplate, setPreviewTemplate] =
-    useState<DocumentTemplate | null>(null);
+  const [previewTemplate, setPreviewTemplate] = useState<DocumentTemplate | null>(null);
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [showForm, setShowForm] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [draftTemplate, setDraftTemplate] = useState(
-    createEmptyTemplateDraft(),
-  );
+  const [draftTemplate, setDraftTemplate] = useState(createEmptyTemplateDraft());
 
   useEffect(() => {
     void loadTemplates();
@@ -110,12 +95,7 @@ export default function DocumentTemplates() {
   const categories = useMemo(
     () => [
       "All",
-      ...Array.from(
-        new Set([
-          ...CATEGORY_SEED,
-          ...templates.map((template) => template.category),
-        ]),
-      ),
+      ...Array.from(new Set([...CATEGORY_SEED, ...templates.map((template) => template.category)])),
     ],
     [templates],
   );
@@ -124,15 +104,12 @@ export default function DocumentTemplates() {
     () =>
       templates.filter((template) => {
         const normalizedQuery = query.trim().toLowerCase();
-        const matchesCategory =
-          activeCategory === "All" || template.category === activeCategory;
+        const matchesCategory = activeCategory === "All" || template.category === activeCategory;
         const matchesQuery =
           !normalizedQuery ||
           template.name.toLowerCase().includes(normalizedQuery) ||
           template.description.toLowerCase().includes(normalizedQuery) ||
-          template.tags.some((tag) =>
-            tag.toLowerCase().includes(normalizedQuery),
-          );
+          template.tags.some((tag) => tag.toLowerCase().includes(normalizedQuery));
         return matchesCategory && matchesQuery;
       }),
     [activeCategory, query, templates],
@@ -186,8 +163,7 @@ export default function DocumentTemplates() {
     };
 
     toast.success(`Template "${previewTemplate.name}" prepared`, {
-      description:
-        "Continue in document ingest to upload the real file and finalize metadata.",
+      description: "Continue in document ingest to upload the real file and finalize metadata.",
     });
 
     setShowForm(false);
@@ -262,14 +238,10 @@ export default function DocumentTemplates() {
     }
 
     const invalidSelectField = sanitizedFields.find(
-      (field) =>
-        field.type === "select" &&
-        (!field.options || field.options.length === 0),
+      (field) => field.type === "select" && (!field.options || field.options.length === 0),
     );
     if (invalidSelectField) {
-      toast.error(
-        `Select field "${invalidSelectField.label}" needs at least one option.`,
-      );
+      toast.error(`Select field "${invalidSelectField.label}" needs at least one option.`);
       return;
     }
 
@@ -310,15 +282,16 @@ export default function DocumentTemplates() {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search templates..."
-            className="pl-9"
+            className="pl-9 h-9"
           />
         </div>
         <div className="flex gap-2 flex-wrap">
           {categories.map((category) => (
             <button
+              type="button"
               key={category}
               onClick={() => setActiveCategory(category)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${activeCategory === category ? "bg-teal-500/20 text-primary/90 border border-teal-500/30" : "bg-secondary/50 text-muted-foreground border border-white/6 hover:border-white/12"}`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${activeCategory === category ? "bg-teal-500/20 text-primary/90 border border-teal-500/30" : "bg-secondary/50 text-muted-foreground border border-border/50 hover:border-primary/30 hover:bg-secondary/70"}`}
             >
               {category}
             </button>
@@ -332,31 +305,28 @@ export default function DocumentTemplates() {
           onClick={() => setShowCreateModal(false)}
         >
           <GlassCard
-            className="w-full max-w-3xl p-6 relative max-h-[90vh] overflow-y-auto"
+            className="w-full max-w-3xl p-3.5 relative max-h-[90vh] overflow-y-auto border-border/50 bg-card/40 backdrop-blur-md"
             onClick={(event) => event.stopPropagation()}
           >
             <button
+              type="button"
               onClick={() => setShowCreateModal(false)}
-              className="absolute top-4 right-4 text-muted-foreground hover:text-white"
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
             >
               <X className="w-4 h-4" />
             </button>
             <div className="mb-5">
-              <h3 className="text-lg font-semibold text-white">
-                Create Template
-              </h3>
+              <h3 className="text-lg font-semibold text-foreground">Create Template</h3>
               <p className="text-sm text-muted-foreground mt-1">
-                Define the reusable metadata fields that should be captured
-                before document ingest.
+                Define the reusable metadata fields that should be captured before document ingest.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-muted-foreground mb-1.5 block">
-                  Template Name
-                </label>
+                <span className="text-xs text-muted-foreground mb-1.5 block">Template Name</span>
                 <Input
+                  className="h-9"
                   value={draftTemplate.name}
                   onChange={(event) =>
                     setDraftTemplate((current) => ({
@@ -367,10 +337,9 @@ export default function DocumentTemplates() {
                 />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground mb-1.5 block">
-                  Category
-                </label>
+                <span className="text-xs text-muted-foreground mb-1.5 block">Category</span>
                 <Select
+                  className="h-9 text-xs"
                   value={draftTemplate.category}
                   onChange={(event) =>
                     setDraftTemplate((current) => ({
@@ -389,9 +358,7 @@ export default function DocumentTemplates() {
             </div>
 
             <div className="mt-4">
-              <label className="text-xs text-muted-foreground mb-1.5 block">
-                Description
-              </label>
+              <span className="text-xs text-muted-foreground mb-1.5 block">Description</span>{" "}
               <textarea
                 value={draftTemplate.description}
                 onChange={(event) =>
@@ -400,15 +367,14 @@ export default function DocumentTemplates() {
                     description: event.target.value,
                   }))
                 }
-                className="min-h-24 w-full rounded-lg border border-border bg-slate-950/60 px-3 py-2.5 text-sm text-foreground placeholder:text-slate-600 focus:border-teal-500/50 focus:outline-none focus:ring-1 focus:ring-teal-500/30"
+                className="min-h-24 w-full rounded-lg border border-border/50 bg-slate-950/60 px-3 py-2.5 text-sm text-foreground placeholder:text-slate-600 focus:border-teal-500/50 focus:outline-none focus:ring-1 focus:ring-teal-500/30"
               />
             </div>
 
             <div className="mt-4">
-              <label className="text-xs text-muted-foreground mb-1.5 block">
-                Tags
-              </label>
+              <span className="text-xs text-muted-foreground mb-1.5 block">Tags</span>
               <Input
+                className="h-9"
                 value={draftTemplate.tagsText}
                 onChange={(event) =>
                   setDraftTemplate((current) => ({
@@ -422,14 +388,8 @@ export default function DocumentTemplates() {
 
             <div className="mt-6">
               <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm font-semibold text-white">
-                  Template Fields
-                </h4>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={addTemplateField}
-                >
+                <h4 className="text-sm font-semibold text-foreground">Template Fields</h4>
+                <Button size="sm" variant="secondary" onClick={addTemplateField}>
                   <Plus className="w-3.5 h-3.5" /> Add Field
                 </Button>
               </div>
@@ -437,14 +397,15 @@ export default function DocumentTemplates() {
                 {draftTemplate.fields.map((field, index) => (
                   <div
                     key={`${index}-${field.label}`}
-                    className="rounded-xl border border-white/6 bg-card/40 p-3"
+                    className="rounded-xl border border-border/50 bg-card/30 p-2.5"
                   >
                     <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_auto_auto] gap-3 items-end">
                       <div>
-                        <label className="text-xs text-muted-foreground mb-1.5 block">
+                        <span className="text-xs text-muted-foreground mb-1.5 block">
                           Field Label
-                        </label>
+                        </span>
                         <Input
+                          className="h-9"
                           value={field.label}
                           onChange={(event) =>
                             updateDraftField(index, {
@@ -455,10 +416,11 @@ export default function DocumentTemplates() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-muted-foreground mb-1.5 block">
+                        <span className="text-xs text-muted-foreground mb-1.5 block">
                           Field Type
-                        </label>
+                        </span>
                         <Select
+                          className="h-9 text-xs"
                           value={field.type}
                           onChange={(event) =>
                             updateDraftField(index, {
@@ -479,9 +441,7 @@ export default function DocumentTemplates() {
                           }
                           aria-label={`Toggle required for field ${index + 1}`}
                         />
-                        <span className="text-xs text-muted-foreground">
-                          Required
-                        </span>
+                        <span className="text-xs text-muted-foreground">Required</span>
                       </div>
                       <Button
                         variant="ghost"
@@ -494,10 +454,9 @@ export default function DocumentTemplates() {
                     </div>
                     {field.type === "select" && (
                       <div className="mt-3">
-                        <label className="text-xs text-muted-foreground mb-1.5 block">
-                          Options
-                        </label>
+                        <span className="text-xs text-muted-foreground mb-1.5 block">Options</span>
                         <Input
+                          className="h-9"
                           value={field.optionsText}
                           onChange={(event) =>
                             updateDraftField(index, {
@@ -529,34 +488,30 @@ export default function DocumentTemplates() {
           onClick={closeUseModal}
         >
           <GlassCard
-            className="w-full max-w-lg p-6 relative"
+            className="w-full max-w-lg p-3.5 relative border-border/50 bg-card/40 backdrop-blur-md"
             onClick={(event) => event.stopPropagation()}
           >
-            <button onClick={closeUseModal} className="absolute top-4 right-4">
-              <X className="w-4 h-4 text-muted-foreground hover:text-white" />
+            <button type="button" onClick={closeUseModal} className="absolute top-4 right-4">
+              <X className="w-4 h-4 text-muted-foreground hover:text-foreground" />
             </button>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-8 rounded-lg bg-teal-500/15 flex items-center justify-center">
                 <BookOpen className="w-4 h-4 text-primary" />
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-white">
-                  {previewTemplate.name}
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  {previewTemplate.category}
-                </p>
+                <h3 className="text-sm font-semibold text-foreground">{previewTemplate.name}</h3>
+                <p className="text-xs text-muted-foreground">{previewTemplate.category}</p>
               </div>
             </div>
             <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
               {previewTemplate.fields.map((field) => (
                 <div key={field.label}>
                   <label className="text-xs text-muted-foreground mb-1 block">
-                    {field.label}{" "}
-                    {field.required && <span className="text-rose-400">*</span>}
+                    {field.label} {field.required && <span className="text-rose-400">*</span>}
                   </label>
                   {field.type === "select" ? (
                     <Select
+                      className="h-9 text-xs"
                       value={formValues[field.label] || ""}
                       onChange={(event) =>
                         setFormValues((current) => ({
@@ -585,6 +540,7 @@ export default function DocumentTemplates() {
                     />
                   ) : (
                     <Input
+                      className="h-9"
                       value={formValues[field.label] || ""}
                       onChange={(event) =>
                         setFormValues((current) => ({
@@ -633,7 +589,7 @@ export default function DocumentTemplates() {
           All Templates
         </h2>
         {unstarred.length === 0 && starred.length === 0 ? (
-          <GlassCard className="p-10 text-center text-muted-foreground text-sm">
+          <GlassCard className="p-10 border-border/50 bg-card/40 backdrop-blur-md text-center text-muted-foreground text-sm">
             No templates match your search.
           </GlassCard>
         ) : unstarred.length === 0 ? null : (
@@ -663,24 +619,21 @@ function TemplateCard({
   onUse: (template: DocumentTemplate) => void;
 }) {
   return (
-    <GlassCard className="p-5 flex flex-col gap-3 hover:border-teal-500/30 transition-all group">
+    <GlassCard className="p-3.5 flex flex-col gap-3 border-border/50 bg-card/40 backdrop-blur-md hover:-translate-y-0.5 hover:border-primary/30 hover:bg-secondary/40 transition-all duration-200 group">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-teal-500/10 flex items-center justify-center">
             <FileText className="w-4 h-4 text-primary" />
           </div>
           <div>
-            <div className="text-sm font-semibold text-white">
-              {template.name}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {template.category}
-            </div>
+            <div className="text-sm font-semibold text-foreground">{template.name}</div>
+            <div className="text-xs text-muted-foreground">{template.category}</div>
           </div>
         </div>
         <button
+          type="button"
           onClick={() => void onStar(template.id)}
-          className="text-slate-600 hover:text-amber-400 transition-colors"
+          className="text-muted-foreground hover:text-amber-400 transition-colors"
         >
           {template.starred ? (
             <Star className="w-4 h-4 text-amber-400" />
@@ -689,9 +642,7 @@ function TemplateCard({
           )}
         </button>
       </div>
-      <p className="text-xs text-muted-foreground leading-relaxed">
-        {template.description}
-      </p>
+      <p className="text-xs text-muted-foreground leading-relaxed">{template.description}</p>
       <div className="flex flex-wrap gap-1">
         {template.tags.map((tag) => (
           <span
@@ -702,7 +653,7 @@ function TemplateCard({
           </span>
         ))}
       </div>
-      <div className="flex items-center justify-between text-xs text-slate-600 mt-auto pt-2 border-t border-border">
+      <div className="flex items-center justify-between text-xs text-muted-foreground mt-auto pt-2 border-t border-border/50">
         <span>Used {template.usageCount}×</span>
         {template.lastUsed && <span>Last: {template.lastUsed}</span>}
       </div>

@@ -19,15 +19,13 @@ export class FullTextSearchService {
 
     // Search documents by OCR content
     MOCK_DOCUMENTS.forEach((doc) => {
-      const ocrText = (
-        (doc as { ocrText?: string }).ocrText || ""
-      ).toLowerCase();
+      const ocrText = ((doc as { ocrText?: string }).ocrText || "").toLowerCase();
       const nameMatch = doc.name.toLowerCase().includes(q) ? 3 : 0;
       const ocrMatch = ocrText.includes(q) ? 1 : 0;
       const score = nameMatch + ocrMatch;
 
       if (score > 0) {
-        const snippet = this.extractSnippet(ocrText, q);
+        const snippet = FullTextSearchService.extractSnippet(ocrText, q);
         results.push({
           id: doc.id,
           type: "document",
@@ -42,16 +40,12 @@ export class FullTextSearchService {
     if (records) {
       records.forEach((rec) => {
         const descMatch = rec.description.toLowerCase().includes(q) ? 2 : 0;
-        const typeMatch = (rec.workType || "").toLowerCase().includes(q)
-          ? 1
-          : 0;
-        const remarksMatch = (rec.remarks || "").toLowerCase().includes(q)
-          ? 1
-          : 0;
+        const typeMatch = (rec.workType || "").toLowerCase().includes(q) ? 1 : 0;
+        const remarksMatch = (rec.remarks || "").toLowerCase().includes(q) ? 1 : 0;
         const score = descMatch + typeMatch + remarksMatch;
 
         if (score > 0) {
-          const snippet = this.extractSnippet(rec.description, q);
+          const snippet = FullTextSearchService.extractSnippet(rec.description, q);
           results.push({
             id: rec.id,
             type: "work",
@@ -67,11 +61,7 @@ export class FullTextSearchService {
     return results.sort((a, b) => b.score - a.score).slice(0, 20);
   }
 
-  private static extractSnippet(
-    text: string,
-    query: string,
-    contextLen: number = 100,
-  ): string {
+  private static extractSnippet(text: string, query: string, contextLen: number = 100): string {
     if (!text) return "";
 
     const idx = text.toLowerCase().indexOf(query.toLowerCase());
@@ -81,8 +71,6 @@ export class FullTextSearchService {
     const end = Math.min(text.length, idx + contextLen / 2);
     const snippet = text.substring(start, end).trim();
 
-    return (
-      (start > 0 ? "..." : "") + snippet + (end < text.length ? "..." : "")
-    );
+    return (start > 0 ? "..." : "") + snippet + (end < text.length ? "..." : "");
   }
 }

@@ -1,14 +1,12 @@
-import type {
-  SearchDocumentFacets,
-  SearchScope,
-  SearchResult,
-} from "../lib/types";
+import type { SearchDocumentFacets, SearchResult, SearchScope } from "../lib/types";
+
 export type { SearchResult };
+
 import apiClient from "./ApiClient";
+import { CaseService } from "./CaseService";
 import { DocumentService } from "./DocumentService";
 import { PLService } from "./PLService";
 import { WorkLedgerService } from "./WorkLedgerService";
-import { CaseService } from "./CaseService";
 
 export interface CrossEntityResults {
   documents: SearchResult[];
@@ -49,10 +47,7 @@ function contains(text: string | undefined | null, q: string): boolean {
   return Boolean(text?.toLowerCase().includes(q));
 }
 
-function snippet(
-  text: string | undefined | null,
-  query: string,
-): string | undefined {
+function snippet(text: string | undefined | null, query: string): string | undefined {
   if (!text) return undefined;
   const lowerText = text.toLowerCase();
   const lowerQuery = query.toLowerCase();
@@ -67,64 +62,84 @@ function snippet(
   return `...${text.slice(start, end)}...`;
 }
 
+import {
+  ApiCaseRecordSchema,
+  ApiDocumentSchema,
+  ApiPLItemSchema,
+  ApiWorkRecordSchema,
+} from "../lib/schemas";
+
 function mapBackendResults(
   response: Awaited<ReturnType<typeof apiClient.search>>,
   query: string,
 ): CrossEntityResults {
-  const documents = response.documents.map((doc: any) => ({
-    type: "document" as const,
-    id: String(doc.id),
-    title: doc.name || String(doc.id),
-    subtitle: String(doc.id),
-    status: doc.status,
-    matchField: "Document",
-    snippet: snippet(doc.extracted_text || doc.description, query),
-    date: doc.updated_at || doc.created_at || doc.date,
-    duplicateStatus: doc.duplicate_status,
-    duplicateGroupKey: doc.duplicate_group_key,
-    fingerprintState: resolveFingerprintState(doc),
-    linkedPl: doc.linked_pl,
-    matchReasons: Array.isArray(doc.match_reasons) ? doc.match_reasons : [],
-    matchedAssertions: Array.isArray(doc.matched_assertions)
-      ? doc.matched_assertions
-      : [],
-    matchedEntities: Array.isArray(doc.matched_entities)
-      ? doc.matched_entities
-      : [],
-  }));
+  const documents = response.documents.map((rawDoc: unknown) => {
+    const doc = ApiDocumentSchema.parse(rawDoc);
+    return {
+      type: "document" as const,
+      id: String(doc.id),
+      title: doc.name || doc.title || String(doc.id),
+      subtitle: String(doc.id),
+      status: doc.status || undefined,
+      matchField: "Document",
+      snippet: snippet(doc.extracted_text || doc.description, query),
+      date: doc.updated_at || doc.created_at || doc.date || undefined,
+      duplicateStatus: doc.duplicate_status || undefined,
+      duplicateGroupKey: doc.duplicate_group_key || undefined,
+      fingerprintState: resolveFingerprintState(doc),
+      linkedPl: doc.linked_pl || undefined,
+      matchReasons: Array.isArray(doc.match_reasons) ? doc.match_reasons : [],
+      matchedAssertions: Array.isArray(doc.matched_assertions) ? doc.matched_assertions : [],
+      matchedEntities: Array.isArray(doc.matched_entities) ? doc.matched_entities : [],
+    };
+  });
 
-  const plItems = response.pl_items.map((item: any) => ({
-    type: "pl" as const,
-    id: String(item.id),
-    title: item.name || String(item.id),
-    subtitle: item.part_number || String(item.id),
-    status: item.status,
-    matchField: "PL Item",
-    snippet: snippet(item.description, query),
-    date: item.last_updated || item.created_at,
-  }));
+  const plItems = response.pl_items.map((rawItem: unknown) => {
+    const item = ApiPLItemSchema.parse(rawItem);
+    return {
+      type: "pl" as const,
+      id: String(item.id),
+      title: item.name || item.title || String(item.id),
+      subtitle: item.part_number || String(item.id),
+      status: item.status || undefined,
+      matchField: "PL Item",
+      snippet: snippet(item.description, query),
+      date: item.last_updated || item.updated_at || item.created_at || undefined,
+    };
+  });
 
-  const work = response.work_records.map((record: any) => ({
-    type: "work" as const,
-    id: String(record.id),
-    title: record.description || String(record.id),
-    subtitle: record.eoffice_number || String(record.id),
-    status: record.status,
-    matchField: "Work Record",
-    snippet: snippet(record.remarks || record.description, query),
-    date: record.updated_at || record.created_at || record.date,
-  }));
+  const work = response.work_records.map((rawRecord: unknown) => {
+    const record = ApiWorkRecordSchema.parse(rawRecord);
+    return {
+      type: "work" as const,
+      id: String(record.id),
+      title: record.description || record.title || String(record.id),
+      subtitle: record.eoffice_number || String(record.id),
+      status: record.status || undefined,
+      matchField: "Work Record",
+      snippet: snippet(record.remarks || record.description, query),
+      date: record.updated_at || record.created_at || record.date || undefined,
+    };
+  });
 
-  const cases = response.cases.map((caseRecord: any) => ({
-    type: "case" as const,
-    id: String(caseRecord.id),
-    title: caseRecord.title || String(caseRecord.id),
-    subtitle: caseRecord.pl_reference || String(caseRecord.id),
-    status: caseRecord.status,
-    matchField: "Case",
-    snippet: snippet(caseRecord.description || caseRecord.resolution, query),
-    date: caseRecord.opened_at || caseRecord.closed_at,
-  }));
+  const cases = response.cases.map((rawCaseRecord: unknown) => {
+    const caseRecord = ApiCaseRecordSchema.parse(rawCaseRecord);
+    return {
+      type: "case" as const,
+      id: String(caseRecord.id),
+      title: caseRecord.title || caseRecord.name || String(caseRecord.id),
+      subtitle: caseRecord.pl_reference || String(caseRecord.id),
+      status: caseRecord.status || undefined,
+      matchField: "Case",
+      snippet: snippet(caseRecord.description || caseRecord.resolution, query),
+      date:
+        caseRecord.opened_at ||
+        caseRecord.closed_at ||
+        caseRecord.updated_at ||
+        caseRecord.created_at ||
+        undefined,
+    };
+  });
 
   return {
     documents,
@@ -143,9 +158,7 @@ async function searchLocally(
 ): Promise<CrossEntityResults> {
   const duplicateFilter = filters.duplicateFilter ?? "include";
   const normalizedStatuses = new Set(
-    (filters.statusFilters ?? [])
-      .map((status) => status.trim())
-      .filter(Boolean),
+    (filters.statusFilters ?? []).map((status) => status.trim()).filter(Boolean),
   );
   const dateRange = filters.dateRange ?? "any";
   const q = query.trim().toLowerCase();
@@ -183,9 +196,7 @@ async function searchLocally(
       normalizedStatuses.has(value) ||
       normalizedStatuses.has(value.toUpperCase()) ||
       normalizedStatuses.has(value.toLowerCase()) ||
-      normalizedStatuses.has(
-        value.replace(/\b\w/g, (char) => char.toUpperCase()),
-      )
+      normalizedStatuses.has(value.replace(/\b\w/g, (char) => char.toUpperCase()))
     );
   };
 
@@ -355,10 +366,7 @@ export const SearchService = {
         throw error;
       }
 
-      if (
-        import.meta.env.DEV &&
-        import.meta.env.VITE_ENABLE_DEV_MOCK_API === "true"
-      ) {
+      if (import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEV_MOCK_API === "true") {
         return searchLocally(q, scope, filters);
       }
 

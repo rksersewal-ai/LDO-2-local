@@ -1,139 +1,116 @@
-import { GlassCard, Badge, Button, Input } from "../components/ui/Shared";
-import { Palette, Type, Box, Sparkles } from "lucide-react";
+import { Activity, CheckCircle, Info, Layers, ShieldAlert, Sparkles } from "lucide-react";
+import { useState } from "react";
+import { Badge, Button, GlassCard, Input, PageHeader, Select } from "../components/ui/Shared";
 
 export default function DesignSystem() {
+  const [inputValue, setInputValue] = useState("");
+  const [selectValue, setSelectValue] = useState("option-1");
+
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
-      <div>
-        <h1 className="text-2xl font-semibold text-foreground mb-2">
-          Design System
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          LDO-2 EDMS component library and design tokens reference.
-        </p>
-      </div>
+    <div className="space-y-6 max-w-5xl mx-auto pb-10">
+      <PageHeader
+        title="Design System Showcase"
+        subtitle="Catalog of our custom theme components, design tokens, and aesthetic layers."
+        breadcrumb={<span>Admin / Identity / Design System</span>}
+      />
 
-      {/* Colors */}
-      <GlassCard className="p-6">
-        <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-          <Palette className="w-5 h-5 text-primary" /> Colors
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { name: "Teal Primary", class: "bg-teal-500", text: "text-white" },
-            {
-              name: "Emerald Accent",
-              class: "bg-emerald-500",
-              text: "text-white",
-            },
-            { name: "Slate Base", class: "bg-card", text: "text-white" },
-            { name: "Rose Danger", class: "bg-rose-500", text: "text-white" },
-            {
-              name: "Amber Warning",
-              class: "bg-amber-500",
-              text: "text-white",
-            },
-            { name: "Blue Info", class: "bg-blue-500", text: "text-white" },
-            { name: "Slate 950 BG", class: "bg-slate-950", text: "text-white" },
-            {
-              name: "Slate 400 Text",
-              class: "bg-slate-400",
-              text: "text-slate-950",
-            },
-          ].map((c) => (
-            <div key={c.name}>
-              <div className={`w-full h-12 rounded-xl ${c.class} mb-2`} />
-              <p className="text-xs text-muted-foreground">{c.name}</p>
+      {/* Grid of components */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Buttons Showcase */}
+        <GlassCard className="p-4 space-y-4 border-border/50 bg-card/40 backdrop-blur-md">
+          <div className="flex items-center gap-2 border-b border-border/40 pb-2">
+            <Sparkles className="w-4 h-4 text-primary" />
+            <h2 className="text-sm font-semibold text-white">Button Components</h2>
+          </div>
+          <div className="flex flex-wrap gap-2 pt-2">
+            <Button variant="primary">Primary Button</Button>
+            <Button variant="secondary">Secondary Button</Button>
+            <Button variant="ghost">Ghost Button</Button>
+            <Button variant="danger">Danger Button</Button>
+          </div>
+          <div className="flex flex-wrap gap-2 pt-2">
+            <Button size="sm" variant="primary">
+              Small Primary
+            </Button>
+            <Button size="sm" variant="secondary">
+              Small Secondary
+            </Button>
+          </div>
+        </GlassCard>
+
+        {/* Badges Showcase */}
+        <GlassCard className="p-4 space-y-4 border-border/50 bg-card/40 backdrop-blur-md">
+          <div className="flex items-center gap-2 border-b border-border/40 pb-2">
+            <Layers className="w-4 h-4 text-primary" />
+            <h2 className="text-sm font-semibold text-white">Badge Indicators</h2>
+          </div>
+          <div className="flex flex-wrap gap-3 pt-2">
+            <Badge variant="default">Default Badge</Badge>
+            <Badge variant="success">Success Badge</Badge>
+            <Badge variant="warning">Warning Badge</Badge>
+            <Badge variant="danger">Danger Badge</Badge>
+            <Badge variant="info">Info Badge</Badge>
+            <Badge variant="processing">Processing Badge</Badge>
+          </div>
+        </GlassCard>
+
+        {/* Inputs & Controls */}
+        <GlassCard className="p-4 space-y-4 border-border/50 bg-card/40 backdrop-blur-md">
+          <div className="flex items-center gap-2 border-b border-border/40 pb-2">
+            <Activity className="w-4 h-4 text-primary" />
+            <h2 className="text-sm font-semibold text-white">Form Inputs & Controls</h2>
+          </div>
+          <div className="space-y-3 pt-2">
+            <div>
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">
+                Standard Input
+              </span>
+              <Input
+                placeholder="Enter some text..."
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                className="h-9 text-xs"
+              />
             </div>
-          ))}
-        </div>
-      </GlassCard>
+            <div>
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">
+                Custom Selector
+              </span>
+              <Select
+                value={selectValue}
+                onChange={(e) => setSelectValue(e.target.value)}
+                className="h-9 text-xs"
+              >
+                <option value="option-1">Option 1 - Default</option>
+                <option value="option-2">Option 2 - Special</option>
+                <option value="option-3">Option 3 - Restricted</option>
+              </Select>
+            </div>
+          </div>
+        </GlassCard>
 
-      {/* Badges */}
-      <GlassCard className="p-6">
-        <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-          <Box className="w-5 h-5 text-primary" /> Badges
-        </h2>
-        <div className="flex flex-wrap gap-3">
-          <Badge>Default</Badge>
-          <Badge variant="success">Success</Badge>
-          <Badge variant="warning">Warning</Badge>
-          <Badge variant="danger">Danger</Badge>
-          <Badge variant="processing">Processing</Badge>
-        </div>
-      </GlassCard>
-
-      {/* Buttons */}
-      <GlassCard className="p-6">
-        <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-primary" /> Buttons
-        </h2>
-        <div className="flex flex-wrap gap-3">
-          <Button>Primary Button</Button>
-          <Button variant="secondary">Secondary</Button>
-          <Button variant="ghost">Ghost Button</Button>
-          <Button variant="danger">Danger Button</Button>
-        </div>
-      </GlassCard>
-
-      {/* Typography */}
-      <GlassCard className="p-6">
-        <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-          <Type className="w-5 h-5 text-primary" /> Typography
-        </h2>
-        <div className="space-y-3">
-          <h1 className="text-4xl font-bold text-white">
-            Heading 1 — Bold White
-          </h1>
-          <h2 className="text-2xl font-bold text-white">
-            Heading 2 — Bold White
-          </h2>
-          <h3 className="text-lg font-semibold text-foreground">
-            Heading 3 — Semibold Slate-200
-          </h3>
-          <p className="text-sm text-foreground/90">
-            Body text — Slate-300 at 14px. Used for most paragraph content.
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Caption text — Slate-400 at 12px. Used for metadata and labels.
-          </p>
-          <p className="font-mono text-xs text-primary">
-            Monospace — Teal-400. Used for IDs, codes, and technical values.
-          </p>
-        </div>
-      </GlassCard>
-
-      {/* Inputs */}
-      <GlassCard className="p-6">
-        <h2 className="text-lg font-bold text-white mb-4">Inputs</h2>
-        <div className="space-y-3 max-w-md">
-          <Input placeholder="Standard text input" className="w-full" />
-          <Input placeholder="Disabled input" className="w-full" disabled />
-          <select className="w-full bg-slate-950/50 border border-teal-500/20 text-foreground text-sm rounded-xl px-4 py-2 focus:outline-none">
-            <option>Select option</option>
-            <option>Option A</option>
-            <option>Option B</option>
-          </select>
-        </div>
-      </GlassCard>
-
-      {/* Glass Card Variants */}
-      <GlassCard className="p-6">
-        <h2 className="text-lg font-bold text-white mb-4">
-          GlassCard Component
-        </h2>
-        <div className="grid grid-cols-3 gap-4">
-          <GlassCard className="p-4 text-center">
-            <p className="text-xs text-muted-foreground">Default Card</p>
-          </GlassCard>
-          <GlassCard className="p-4 text-center border-teal-500/40">
-            <p className="text-xs text-muted-foreground">Highlighted Card</p>
-          </GlassCard>
-          <GlassCard className="p-4 text-center border-amber-500/30 bg-amber-950/10">
-            <p className="text-xs text-muted-foreground">Warning Card</p>
-          </GlassCard>
-        </div>
-      </GlassCard>
+        {/* Alert Cards */}
+        <GlassCard className="p-4 space-y-4 border-border/50 bg-card/40 backdrop-blur-md">
+          <div className="flex items-center gap-2 border-b border-border/40 pb-2">
+            <ShieldAlert className="w-4 h-4 text-primary" />
+            <h2 className="text-sm font-semibold text-white">Alert Messages</h2>
+          </div>
+          <div className="space-y-2 pt-2">
+            <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-teal-500/8 border border-teal-500/20 text-xs text-primary/90">
+              <Info className="w-4 h-4 text-primary shrink-0" />
+              <span>Information alert showing safe notification state.</span>
+            </div>
+            <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-rose-500/8 border border-rose-500/20 text-xs text-rose-300">
+              <ShieldAlert className="w-4 h-4 text-rose-400 shrink-0" />
+              <span>Danger warning displaying high severity notice.</span>
+            </div>
+            <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-emerald-500/8 border border-emerald-500/20 text-xs text-emerald-300">
+              <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>Success completion banner validating transaction.</span>
+            </div>
+          </div>
+        </GlassCard>
+      </div>
     </div>
   );
 }

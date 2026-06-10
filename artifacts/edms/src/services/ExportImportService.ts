@@ -1,6 +1,6 @@
 import * as XLSX from "xlsx";
-import type { WorkRecord } from "../lib/types";
 import { MOCK_DOCUMENTS } from "../lib/mock";
+import type { WorkRecord } from "../lib/types";
 
 export class ExportImportService {
   private static buildTableHtml(
@@ -10,12 +10,12 @@ export class ExportImportService {
     subtitle?: string,
   ) {
     const head = headers
-      .map((header) => `<th>${this.escapeHtml(header)}</th>`)
+      .map((header) => `<th>${ExportImportService.escapeHtml(header)}</th>`)
       .join("");
     const body = rows
       .map(
         (row) =>
-          `<tr>${row.map((cell) => `<td>${this.escapeHtml(String(cell ?? ""))}</td>`).join("")}</tr>`,
+          `<tr>${row.map((cell) => `<td>${ExportImportService.escapeHtml(String(cell ?? ""))}</td>`).join("")}</tr>`,
       )
       .join("");
 
@@ -23,7 +23,7 @@ export class ExportImportService {
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>${this.escapeHtml(title)}</title>
+    <title>${ExportImportService.escapeHtml(title)}</title>
     <style>
       body { font-family: Segoe UI, Arial, sans-serif; padding: 28px; color: #0f172a; }
       h1 { margin: 0 0 6px; font-size: 22px; }
@@ -35,8 +35,8 @@ export class ExportImportService {
     </style>
   </head>
   <body>
-    <h1>${this.escapeHtml(title)}</h1>
-    ${subtitle ? `<p>${this.escapeHtml(subtitle)}</p>` : ""}
+    <h1>${ExportImportService.escapeHtml(title)}</h1>
+    ${subtitle ? `<p>${ExportImportService.escapeHtml(subtitle)}</p>` : ""}
     <table>
       <thead><tr>${head}</tr></thead>
       <tbody>${body}</tbody>
@@ -97,7 +97,7 @@ export class ExportImportService {
       r.status,
       r.date,
       r.closingDate || r.completionDate || "",
-      this.getDaysTaken(r),
+      ExportImportService.getDaysTaken(r),
       r.plNumber || "",
       r.eOfficeNumber || "",
       r.targetDays ?? "",
@@ -135,7 +135,7 @@ export class ExportImportService {
       r.status,
       r.date,
       r.closingDate || r.completionDate || "",
-      this.getDaysTaken(r),
+      ExportImportService.getDaysTaken(r),
       r.plNumber || "",
       r.eOfficeNumber || "",
       r.targetDays ?? "",
@@ -237,31 +237,23 @@ export class ExportImportService {
     userName: string,
   ): Partial<WorkRecord> {
     const startDate =
-      row["Start Date"] ||
-      row["Date"] ||
-      row["date"] ||
-      new Date().toISOString().split("T")[0];
-    const closingDate = row["Closing Date"] || row["closingDate"] || "";
-    const parsedDays = Number(row["Days Taken"] || row["daysTaken"] || "");
+      row["Start Date"] || row.Date || row.date || new Date().toISOString().split("T")[0];
+    const closingDate = row["Closing Date"] || row.closingDate || "";
+    const parsedDays = Number(row["Days Taken"] || row.daysTaken || "");
 
     return {
-      description: row["Description"] || row["description"] || "",
-      workCategory: (row["Category"] ||
-        row["category"] ||
-        "GENERAL") as WorkRecord["workCategory"],
-      workType: row["Type"] || row["type"] || "",
-      status: (row["Status"] ||
-        row["status"] ||
-        "OPEN") as WorkRecord["status"],
+      description: row.Description || row.description || "",
+      workCategory: (row.Category || row.category || "GENERAL") as WorkRecord["workCategory"],
+      workType: row.Type || row.type || "",
+      status: (row.Status || row.status || "OPEN") as WorkRecord["status"],
       date: startDate,
       closingDate: closingDate || undefined,
       completionDate: closingDate || undefined,
-      plNumber: row["PL Number"] || row["plNumber"] || "",
-      eOfficeNumber: row["eOffice Case"] || row["eOfficeNumber"] || "",
+      plNumber: row["PL Number"] || row.plNumber || "",
+      eOfficeNumber: row["eOffice Case"] || row.eOfficeNumber || "",
       daysTaken: Number.isFinite(parsedDays) ? parsedDays : undefined,
-      targetDays:
-        Number(row["Target Days"] || row["targetDays"] || "") || undefined,
-      remarks: row["Remarks"] || row["remarks"] || "",
+      targetDays: Number(row["Target Days"] || row.targetDays || "") || undefined,
+      remarks: row.Remarks || row.remarks || "",
       userId,
       userName,
     };
@@ -282,15 +274,18 @@ export class ExportImportService {
 
   static downloadWorkRecordsCSV(records: WorkRecord[]) {
     const date = new Date().toISOString().split("T")[0];
-    this.downloadBlob(
-      this.exportWorkRecordsCSV(records),
+    ExportImportService.downloadBlob(
+      ExportImportService.exportWorkRecordsCSV(records),
       `work-records-${date}.csv`,
     );
   }
 
   static downloadDocumentsCSV() {
     const date = new Date().toISOString().split("T")[0];
-    this.downloadBlob(this.exportDocumentsCSV(), `documents-${date}.csv`);
+    ExportImportService.downloadBlob(
+      ExportImportService.exportDocumentsCSV(),
+      `documents-${date}.csv`,
+    );
   }
 
   static exportGenericTableExcel(
@@ -309,6 +304,35 @@ export class ExportImportService {
     XLSX.writeFile(wb, `${filenamePrefix}-${date}.xlsx`);
   }
 
+  static downloadGenericTableCSV(
+    headers: string[],
+    rows: Array<Array<string | number>>,
+    filenamePrefix: string,
+  ) {
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    const csv = XLSX.utils.sheet_to_csv(ws);
+    const date = new Date().toISOString().split("T")[0];
+    ExportImportService.downloadBlob(
+      new Blob([csv], { type: "text/csv;charset=utf-8;" }),
+      `${filenamePrefix}-${date}.csv`,
+    );
+  }
+
+  static exportGenericTableJson(
+    headers: string[],
+    rows: Array<Array<string | number>>,
+    filenamePrefix: string,
+  ) {
+    const payload = rows.map((row) =>
+      Object.fromEntries(headers.map((header, index) => [header, row[index] ?? ""])),
+    );
+    const date = new Date().toISOString().split("T")[0];
+    ExportImportService.downloadBlob(
+      new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8;" }),
+      `${filenamePrefix}-${date}.json`,
+    );
+  }
+
   static exportGenericTableWord(
     title: string,
     headers: string[],
@@ -316,10 +340,10 @@ export class ExportImportService {
     filenamePrefix: string,
     subtitle?: string,
   ) {
-    const html = this.buildTableHtml(title, headers, rows, subtitle);
+    const html = ExportImportService.buildTableHtml(title, headers, rows, subtitle);
     const blob = new Blob(["\ufeff", html], { type: "application/msword" });
     const date = new Date().toISOString().split("T")[0];
-    this.downloadBlob(blob, `${filenamePrefix}-${date}.doc`);
+    ExportImportService.downloadBlob(blob, `${filenamePrefix}-${date}.doc`);
   }
 
   static exportGenericTablePdf(
@@ -328,7 +352,7 @@ export class ExportImportService {
     rows: Array<Array<string | number>>,
     subtitle?: string,
   ) {
-    const html = this.buildTableHtml(title, headers, rows, subtitle);
+    const html = ExportImportService.buildTableHtml(title, headers, rows, subtitle);
     const printWindow = window.open("", "_blank", "width=1200,height=900");
     if (!printWindow) return;
     printWindow.document.open();

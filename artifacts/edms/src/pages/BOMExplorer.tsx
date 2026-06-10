@@ -1,36 +1,29 @@
-import { useState } from "react";
-import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import {
-  Train,
-  Layers,
-  Zap,
-  Package,
-  Plus,
   ArrowRight,
   ChevronRight,
-  Search,
-  Filter,
   Clock,
+  Filter,
   GitBranch,
+  Layers,
+  Package,
+  Plus,
+  Search,
+  Train,
+  Zap,
 } from "lucide-react";
-import { PRODUCTS } from "../lib/bomData";
-import type { Product } from "../lib/bomData";
-import {
-  GlassCard,
-  Badge,
-  Button,
-  Input,
-  FilterPills,
-  PageHeader,
-} from "../components/ui/Shared";
-import { BomDraftService } from "../services/BomDraftService";
+import { useState } from "react";
+import { useNavigate } from "react-router";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../components/ui/dropdown-menu";
+import { Badge, Button, FilterPills, GlassCard, Input, PageHeader } from "../components/ui/Shared";
+import type { Product } from "../lib/bomData";
+import { PRODUCTS } from "../lib/bomData";
+import { BomDraftService } from "../services/BomDraftService";
 import { ExportImportService } from "../services/ExportImportService";
 
 const PRODUCT_ICONS: Record<string, React.ElementType> = {
@@ -40,9 +33,7 @@ const PRODUCT_ICONS: Record<string, React.ElementType> = {
   Zap,
 };
 
-function lifecycleBadgeVariant(
-  lc: string,
-): "success" | "warning" | "info" | "default" {
+function lifecycleBadgeVariant(lc: string): "success" | "warning" | "info" | "default" {
   if (lc === "Production") return "success";
   if (lc === "In Development") return "info";
   if (lc === "Prototyping") return "warning";
@@ -50,14 +41,10 @@ function lifecycleBadgeVariant(
 }
 
 function categoryColor(cat: string): string {
-  if (cat.includes("Passenger"))
-    return "from-blue-500/10 to-teal-500/10 border-blue-500/20";
-  if (cat.includes("Freight"))
-    return "from-amber-500/10 to-orange-500/10 border-amber-500/20";
-  if (cat.includes("EMU"))
-    return "from-purple-500/10 to-indigo-500/10 border-purple-500/20";
-  if (cat.includes("Electrical"))
-    return "from-emerald-500/10 to-teal-500/10 border-emerald-500/20";
+  if (cat.includes("Passenger")) return "from-blue-500/10 to-teal-500/10 border-blue-500/20";
+  if (cat.includes("Freight")) return "from-amber-500/10 to-orange-500/10 border-amber-500/20";
+  if (cat.includes("EMU")) return "from-purple-500/10 to-indigo-500/10 border-purple-500/20";
+  if (cat.includes("Electrical")) return "from-emerald-500/10 to-teal-500/10 border-emerald-500/20";
   return "from-teal-500/10 to-slate-500/10 border-teal-500/20";
 }
 
@@ -97,8 +84,7 @@ function ProductCard({
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, delay: index * 0.06, ease: "easeOut" }}
-      whileHover={{ y: -3, transition: { duration: 0.15 } }}
-      className={`relative group bg-card border-border rounded-2xl bg-gradient-to-br ${gradClass} border cursor-pointer overflow-hidden transition-shadow duration-200 hover:shadow-xl`}
+      className={`relative group bg-card/40 border-border/50 rounded-xl bg-gradient-to-br ${gradClass} border cursor-pointer overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-secondary/40 backdrop-blur-md shadow-sm hover:shadow-lg`}
       onClick={() => navigate(`/bom/${product.id}`)}
       role="button"
       tabIndex={0}
@@ -106,69 +92,53 @@ function ProductCard({
     >
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-br from-teal-500/5 to-transparent pointer-events-none" />
 
-      <div className="p-6">
+      <div className="p-4">
         {/* Icon + Badge row */}
-        <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start justify-between mb-3">
           <div
-            className={`w-11 h-11 rounded-xl bg-card border border-border flex items-center justify-center ${iconColor}`}
+            className={`w-9 h-9 rounded-lg bg-card border border-border flex items-center justify-center ${iconColor}`}
           >
-            <Icon className="w-5 h-5" />
+            <Icon className="w-4 h-4" />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {isDraft && <Badge variant="info">Draft</Badge>}
-            <Badge variant={lifecycleBadgeVariant(product.lifecycle)}>
-              {product.lifecycle}
-            </Badge>
+            <Badge variant={lifecycleBadgeVariant(product.lifecycle)}>{product.lifecycle}</Badge>
           </div>
         </div>
 
         {/* Name + subtitle */}
-        <h3 className="text-base font-bold text-foreground mb-0.5 tracking-tight">
-          {product.name}
-        </h3>
-        <p className="text-xs text-muted-foreground mb-1">{product.subtitle}</p>
-        <p className="text-[11px] text-muted-foreground line-clamp-2 mb-4 leading-relaxed">
+        <h3 className="text-sm font-bold text-foreground mb-0.5 tracking-tight">{product.name}</h3>
+        <p className="text-[11px] text-muted-foreground mb-1">{product.subtitle}</p>
+        <p className="text-[11px] text-muted-foreground line-clamp-2 mb-3 leading-relaxed">
           {product.description}
         </p>
 
         {/* Stats row */}
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center gap-3 mb-3">
           <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
             <GitBranch className="w-3 h-3 text-primary" />
-            <span className="font-mono text-primary font-semibold">
-              {product.total}
-            </span>
+            <span className="font-mono text-primary font-semibold">{product.total}</span>
             <span>nodes</span>
           </div>
           <span className="w-px h-3 bg-border" />
           <div className="text-[11px] text-muted-foreground">
-            <span className="font-mono text-blue-400">
-              {product.assemblies}
-            </span>{" "}
-            assy
+            <span className="font-mono text-blue-400">{product.assemblies}</span> assy
           </div>
           <span className="w-px h-3 bg-border" />
           <div className="text-[11px] text-muted-foreground">
-            <span className="font-mono text-foreground/90">
-              {product.parts}
-            </span>{" "}
-            parts
+            <span className="font-mono text-foreground/90">{product.parts}</span> parts
           </div>
         </div>
 
         {/* Footer row */}
-        <div className="flex items-center justify-between pt-3 border-t border-border">
+        <div className="flex items-center justify-between pt-2.5 border-t border-border">
           <div>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-              Root PL
-            </p>
-            <p className="font-mono text-[11px] text-primary">
-              {product.rootPL}
-            </p>
+            <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Root PL</p>
+            <p className="font-mono text-[10px] text-primary">{product.rootPL}</p>
           </div>
-          <div className="flex items-center gap-1.5 text-xs font-medium text-primary group-hover:text-primary/90 transition-colors">
+          <div className="flex items-center gap-1 text-[11px] font-medium text-primary group-hover:text-primary/90 transition-colors">
             <span>View BOM</span>
-            <ArrowRight className="w-3.5 h-3.5 translate-x-0 group-hover:translate-x-0.5 transition-transform" />
+            <ArrowRight className="w-3 h-3 translate-x-0 group-hover:translate-x-0.5 transition-transform" />
           </div>
         </div>
       </div>
@@ -184,24 +154,22 @@ function CreateNewCard() {
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, delay: 4 * 0.06, ease: "easeOut" }}
-      whileHover={{ y: -3, transition: { duration: 0.15 } }}
-      className="relative bg-card border-border rounded-2xl border-2 border-dashed border-teal-500/25 hover:border-teal-400/50 cursor-pointer group transition-all duration-200 overflow-hidden"
+      className="relative bg-card/40 border-border/50 rounded-xl border-2 border-dashed border-teal-500/20 hover:border-teal-400/40 cursor-pointer group transition-all duration-200 hover:-translate-y-0.5 hover:bg-secondary/40 backdrop-blur-md overflow-hidden"
       onClick={() => navigate("/bom/new")}
       role="button"
       tabIndex={0}
       onKeyDown={(event) => event.key === "Enter" && navigate("/bom/new")}
     >
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-teal-500/5 pointer-events-none" />
-      <div className="p-6 h-full flex flex-col items-center justify-center text-center min-h-[240px]">
-        <div className="w-12 h-12 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center mb-3 group-hover:bg-teal-500/20 transition-colors">
-          <Plus className="w-5 h-5 text-primary" />
+      <div className="p-4 h-full flex flex-col items-center justify-center text-center min-h-[200px]">
+        <div className="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center mb-2.5 group-hover:bg-teal-500/20 transition-colors">
+          <Plus className="w-4 h-4 text-primary" />
         </div>
-        <p className="text-sm font-semibold text-primary mb-1 group-hover:text-primary/90 transition-colors">
+        <p className="text-xs font-semibold text-primary mb-0.5 group-hover:text-primary/90 transition-colors">
           Create New BOM
         </p>
-        <p className="text-[11px] text-muted-foreground leading-relaxed">
-          Define a new product structure and start building your bill of
-          materials
+        <p className="text-[10px] text-muted-foreground leading-relaxed">
+          Define a new product structure and start building your bill of materials
         </p>
       </div>
     </motion.div>
@@ -224,8 +192,7 @@ export default function BOMExplorer() {
       p.category.toLowerCase().includes(search.toLowerCase()) ||
       p.rootPL.includes(search);
     const matchCat = categoryFilter === "All" || p.category === categoryFilter;
-    const matchLife =
-      lifecycleFilter === "All" || p.lifecycle === lifecycleFilter;
+    const matchLife = lifecycleFilter === "All" || p.lifecycle === lifecycleFilter;
     return matchSearch && matchCat && matchLife;
   });
 
@@ -349,8 +316,7 @@ export default function BOMExplorer() {
           { label: "Total Nodes", value: totalNodes, accent: false },
           {
             label: "In Production",
-            value: allProducts.filter((p) => p.lifecycle === "Production")
-              .length,
+            value: allProducts.filter((p) => p.lifecycle === "Production").length,
             accent: false,
           },
           { label: "Total Parts", value: totalParts, accent: false },
@@ -359,9 +325,7 @@ export default function BOMExplorer() {
             <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-0.5">
               {s.label}
             </p>
-            <p
-              className={`text-2xl font-bold ${s.accent ? "text-primary" : "text-foreground"}`}
-            >
+            <p className={`text-2xl font-bold ${s.accent ? "text-primary" : "text-foreground"}`}>
               {s.value}
             </p>
           </GlassCard>
@@ -375,7 +339,7 @@ export default function BOMExplorer() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Search products, PL numbers..."
-              className="pl-9 w-full"
+              className="pl-9 w-full h-9"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -406,13 +370,11 @@ export default function BOMExplorer() {
         {(categoryFilter !== "All" || lifecycleFilter !== "All" || search) && (
           <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border">
             <span className="text-xs text-muted-foreground">
-              Showing{" "}
-              <span className="text-primary font-semibold">
-                {filtered.length}
-              </span>{" "}
-              of {allProducts.length} products
+              Showing <span className="text-primary font-semibold">{filtered.length}</span> of{" "}
+              {allProducts.length} products
             </span>
             <button
+              type="button"
               onClick={() => {
                 setSearch("");
                 setCategoryFilter("All");
@@ -444,9 +406,7 @@ export default function BOMExplorer() {
           <div className="w-14 h-14 rounded-2xl bg-secondary/60 border border-border flex items-center justify-center mx-auto mb-4">
             <Search className="w-6 h-6 text-muted-foreground" />
           </div>
-          <p className="text-foreground/90 font-medium mb-1">
-            No products found
-          </p>
+          <p className="text-foreground/90 font-medium mb-1">No products found</p>
           <p className="text-muted-foreground text-sm mb-4">
             Try adjusting your search or filter criteria
           </p>
@@ -488,14 +448,10 @@ export default function BOMExplorer() {
                   <span className="text-sm text-foreground/90 group-hover:text-white transition-colors">
                     {p.name}
                   </span>
-                  <span className="text-xs text-muted-foreground">
-                    {p.subtitle}
-                  </span>
+                  <span className="text-xs text-muted-foreground">{p.subtitle}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-muted-foreground">
-                    {p.lastModified}
-                  </span>
+                  <span className="text-xs text-muted-foreground">{p.lastModified}</span>
                   <ChevronRight className="w-3.5 h-3.5 text-slate-600 group-hover:text-primary transition-colors" />
                 </div>
               </button>

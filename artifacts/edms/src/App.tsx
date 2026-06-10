@@ -1,20 +1,14 @@
+import { type ComponentType, type LazyExoticComponent, lazy, Suspense } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router";
-import {
-  lazy,
-  Suspense,
-  type ComponentType,
-  type LazyExoticComponent,
-} from "react";
-import { AuthProvider } from "./lib/auth";
-import { DocTabsProvider } from "./contexts/DocTabsContext";
-import { ThemeProvider } from "./contexts/ThemeContext";
-import { RightPanelProvider } from "./contexts/RightPanelContext";
-import { ToastProvider } from "./contexts/ToastContext";
-import { ToastContainer } from "./components/ui/Toast";
-import { useToast } from "./contexts/ToastContext";
-import { TooltipProvider } from "./components/ui/tooltip";
-import { PLDetailDialogProvider } from "./contexts/PLDetailDialogContext";
 import { ProtectedRoute } from "./components/layout/ProtectedRoute";
+import { ToastContainer } from "./components/ui/Toast";
+import { TooltipProvider } from "./components/ui/tooltip";
+import { DocTabsProvider } from "./contexts/DocTabsContext";
+import { PLDetailDialogProvider } from "./contexts/PLDetailDialogContext";
+import { RightPanelProvider } from "./contexts/RightPanelContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import { ToastProvider, useToast } from "./contexts/ToastContext";
+import { AuthProvider } from "./lib/auth";
 
 const AppLayout = lazy(() => import("./components/layout/AppLayout"));
 const Login = lazy(() => import("./pages/Login"));
@@ -61,11 +55,7 @@ function RouteFallback() {
   );
 }
 
-function LazyView({
-  Component,
-}: {
-  Component: LazyExoticComponent<ComponentType<any>>;
-}) {
+function LazyView({ Component }: { Component: LazyExoticComponent<ComponentType> }) {
   return (
     <Suspense fallback={<RouteFallback />}>
       <Component />
@@ -73,13 +63,7 @@ function LazyView({
   );
 }
 
-const ALL_ROLES = [
-  "admin",
-  "supervisor",
-  "engineer",
-  "reviewer",
-  "viewer",
-] as const;
+const ALL_ROLES = ["admin", "supervisor", "engineer", "reviewer", "viewer"] as const;
 const ADMIN_ONLY = ["admin"] as const;
 const ADMIN_SUPERVISOR = ["admin", "supervisor"] as const;
 const ENGINEER_UP = ["admin", "supervisor", "engineer"] as const;

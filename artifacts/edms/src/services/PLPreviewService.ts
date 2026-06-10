@@ -145,9 +145,7 @@ function serializeValue(value: unknown): string {
   return String(value);
 }
 
-function stripForComparison(
-  payload: Partial<PLNumber> | PLPreviewPayload | null,
-) {
+function stripForComparison(payload: Partial<PLNumber> | PLPreviewPayload | null) {
   if (!payload) {
     return {};
   }
@@ -201,12 +199,7 @@ function buildChangeLog(
 }
 
 function toPreviewPayload(record: PLNumber): PLPreviewPayload {
-  const {
-    id: _id,
-    createdAt: _createdAt,
-    updatedAt: _updatedAt,
-    ...rest
-  } = record;
+  const { id: _id, createdAt: _createdAt, updatedAt: _updatedAt, ...rest } = record;
   return rest;
 }
 
@@ -264,11 +257,7 @@ export const PLPreviewService = {
       ...patch,
       draft: nextDraftData,
       updatedAt: new Date().toISOString(),
-      changeLog: buildChangeLog(
-        existing.baseline,
-        nextDraftData,
-        existing.actor,
-      ),
+      changeLog: buildChangeLog(existing.baseline, nextDraftData, existing.actor),
     };
 
     store[draftId] = next;
@@ -288,9 +277,7 @@ export const PLPreviewService = {
     action: "create" | "update" | "rollback";
     note?: string;
   }) {
-    const plNumber = normalizePlNumber(
-      input.snapshot.plNumber || input.snapshot.id,
-    );
+    const plNumber = normalizePlNumber(input.snapshot.plNumber || input.snapshot.id);
     const history = readHistoryStore();
     const nextEntry: PLRevisionEntry = {
       id: `PLREV-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,

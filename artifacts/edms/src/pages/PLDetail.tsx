@@ -1,102 +1,83 @@
+import {
+  Activity,
+  AlertCircle,
+  AlertTriangle,
+  ArrowLeft,
+  ArrowRight,
+  Box,
+  Briefcase,
+  Building2,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Cpu,
+  DatabaseBackup,
+  Download,
+  Edit3,
+  ExternalLink,
+  FileSearch,
+  FileText,
+  GitBranch,
+  Hash,
+  Info,
+  Layers,
+  Maximize,
+  Minimize2,
+  Minus,
+  Package,
+  Plus,
+  Printer,
+  Save,
+  Shield,
+  Square,
+  User,
+  Weight,
+  X,
+} from "lucide-react";
 import type { ReactNode } from "react";
-import { useState, useMemo, useEffect } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router";
-import {
-  GlassCard,
-  Badge,
-  Button,
-  Input,
-  Select,
-} from "../components/ui/Shared";
-import { DatePicker } from "../components/ui/DatePicker";
-import { PLNumberSelect } from "../components/ui/PLNumberSelect";
-import { PLNumberMultiSelect } from "../components/ui/PLNumberMultiSelect";
-import { Switch } from "../components/ui/switch";
-import { useAuth } from "../lib/auth";
-import { MOCK_PL_RECORDS } from "../lib/mock";
-import { getPLRecord } from "../lib/bomData";
-import { usePLItem, usePLItems } from "../hooks/usePLItems";
-import {
-  usePlLinkableDocuments,
-  type PlLinkableDocument,
-} from "../hooks/usePlLinkableDocuments";
-import { useDocumentChangeAlerts } from "../hooks/useDocumentChangeAlerts";
-import { PLService } from "../services/PLService";
-import { ExportImportService } from "../services/ExportImportService";
-import { PLPreviewService } from "../services/PLPreviewService";
-import { resolveDocumentPreviewPath } from "../lib/documentPreview";
-import type { DocumentChangeAlert } from "../services/DocumentChangeAlertService";
-import type {
-  PLNumber,
-  EngineeringChange,
-  SafetyClassification,
-  InspectionCategory,
-} from "../lib/types";
-import { INSPECTION_CATEGORY_LABELS, AGENCIES } from "../lib/constants";
-import { LoadingState } from "../components/ui/LoadingState";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 import { toast } from "sonner";
+import { DocumentChangeReviewCard } from "../components/documents/DocumentChangeReviewCard";
 import {
   DocumentPreviewButton,
   getDocumentContextAttributes,
 } from "../components/documents/DocumentPreviewActions";
-import { DocumentChangeReviewCard } from "../components/documents/DocumentChangeReviewCard";
-import {
-  ArrowLeft,
-  FileText,
-  AlertCircle,
-  FileSearch,
-  DatabaseBackup,
-  Box,
-  Layers,
-  Cpu,
-  Shield,
-  Package,
-  Hash,
-  Weight,
-  Building2,
-  User,
-  Calendar,
-  Activity,
-  ChevronRight,
-  Download,
-  Printer,
-  ArrowRight,
-  AlertTriangle,
-  ExternalLink,
-  X,
-  Plus,
-  Edit3,
-  GitBranch,
-  Briefcase,
-  Save,
-  Minus,
-  Maximize,
-  Minimize2,
-  Square,
-  ChevronLeft,
-  Info,
-} from "lucide-react";
+import { DatePicker } from "../components/ui/DatePicker";
+import { LoadingState } from "../components/ui/LoadingState";
+import { PLNumberMultiSelect } from "../components/ui/PLNumberMultiSelect";
+import { PLNumberSelect } from "../components/ui/PLNumberSelect";
+import { Badge, Button, GlassCard, Input, Select } from "../components/ui/Shared";
+import { Switch } from "../components/ui/switch";
+import { useDocumentChangeAlerts } from "../hooks/useDocumentChangeAlerts";
+import { usePLItem, usePLItems } from "../hooks/usePLItems";
+import { type PlLinkableDocument, usePlLinkableDocuments } from "../hooks/usePlLinkableDocuments";
+import { useAuth } from "../lib/auth";
+import { getPLRecord } from "../lib/bomData";
+import { AGENCIES, INSPECTION_CATEGORY_LABELS } from "../lib/constants";
+import { resolveDocumentPreviewPath } from "../lib/documentPreview";
+import { MOCK_PL_RECORDS } from "../lib/mock";
+import type {
+  EngineeringChange,
+  InspectionCategory,
+  PLNumber,
+  SafetyClassification,
+} from "../lib/types";
+import type { DocumentChangeAlert } from "../services/DocumentChangeAlertService";
+import { ExportImportService } from "../services/ExportImportService";
+import { PLPreviewService } from "../services/PLPreviewService";
+import { PLService } from "../services/PLService";
 
-function NodeIcon({
-  type,
-  className = "w-5 h-5",
-}: {
-  type: string;
-  className?: string;
-}) {
-  if (type === "assembly")
-    return <Box className={`${className} text-blue-400`} />;
-  if (type === "sub-assembly")
-    return <Layers className={`${className} text-indigo-400`} />;
+function NodeIcon({ type, className = "w-5 h-5" }: { type: string; className?: string }) {
+  if (type === "assembly") return <Box className={`${className} text-blue-400`} />;
+  if (type === "sub-assembly") return <Layers className={`${className} text-indigo-400`} />;
   return <Cpu className={`${className} text-muted-foreground`} />;
 }
 
 function tagColor(tag: string) {
   const t = tag.toLowerCase();
-  if (t.includes("safety"))
-    return "bg-rose-900/50 text-rose-300 border-rose-500/30";
-  if (t.includes("high voltage"))
-    return "bg-amber-900/50 text-amber-300 border-amber-500/30";
+  if (t.includes("safety")) return "bg-rose-900/50 text-rose-300 border-rose-500/30";
+  if (t.includes("high voltage")) return "bg-amber-900/50 text-amber-300 border-amber-500/30";
   if (t.includes("electrical") || t.includes("electronics"))
     return "bg-blue-900/50 text-blue-300 border-blue-500/30";
   if (t.includes("rotating") || t.includes("precision"))
@@ -108,15 +89,9 @@ function statusBadgeVariant(
   status: string,
 ): "default" | "success" | "warning" | "danger" | "processing" {
   if (
-    [
-      "Approved",
-      "Released",
-      "Active",
-      "Production",
-      "Implemented",
-      "ACTIVE",
-      "RELEASED",
-    ].includes(status)
+    ["Approved", "Released", "Active", "Production", "Implemented", "ACTIVE", "RELEASED"].includes(
+      status,
+    )
   )
     return "success";
   if (
@@ -132,11 +107,7 @@ function statusBadgeVariant(
     ].includes(status)
   )
     return "warning";
-  if (
-    ["Obsolete", "Superseded", "End of Life", "Cancelled", "OBSOLETE"].includes(
-      status,
-    )
-  )
+  if (["Obsolete", "Superseded", "End of Life", "Cancelled", "OBSOLETE"].includes(status))
     return "danger";
   return "default";
 }
@@ -162,7 +133,7 @@ const EC_STATUS_DOT: Record<string, string> = {
   RELEASED: "bg-emerald-400",
 };
 
-function Field({
+function _Field({
   label,
   error,
   children,
@@ -173,43 +144,28 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-        {label}
-      </label>
+      <span className="block text-xs font-medium text-muted-foreground mb-1.5">{label}</span>
       {children}
       {error && <p className="text-[10px] text-rose-400 mt-1">{error}</p>}
     </div>
   );
 }
 
-function InfoRow({
-  label,
-  value,
-  mono,
-}: {
-  label: string;
-  value?: string | null;
-  mono?: boolean;
-}) {
+function InfoRow({ label, value, mono }: { label: string; value?: string | null; mono?: boolean }) {
   if (!value) return null;
   return (
     <div className="flex flex-col gap-0.5">
       <span className="text-[10px] uppercase tracking-widest font-semibold text-muted-foreground">
         {label}
       </span>
-      <span
-        className={`text-sm text-foreground ${mono ? "font-mono text-primary/90" : ""}`}
-      >
+      <span className={`text-sm text-foreground ${mono ? "font-mono text-primary/90" : ""}`}>
         {value}
       </span>
     </div>
   );
 }
 
-function exportPlDetails(
-  title: string,
-  rows: Array<[string, string | number]>,
-) {
+function exportPlDetails(title: string, rows: Array<[string, string | number]>) {
   ExportImportService.exportGenericTableExcel(
     title,
     ["Field", "Value"],
@@ -280,9 +236,7 @@ function DocumentLinkingSection({
   const handleUnlink = async (docId: string) => {
     setLinkingId(docId);
     try {
-      await onLinkChange(
-        (pl.linkedDocumentIds ?? []).filter((id) => id !== docId),
-      );
+      await onLinkChange((pl.linkedDocumentIds ?? []).filter((id) => id !== docId));
     } finally {
       setLinkingId(null);
     }
@@ -291,7 +245,7 @@ function DocumentLinkingSection({
   return (
     <div className="grid grid-cols-2 gap-4">
       {/* Left Column: Search & Available Documents */}
-      <GlassCard className="p-6 flex flex-col">
+      <GlassCard className="p-3.5 flex flex-col hover:border-primary/20 transition-all duration-200">
         <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
           <FileSearch className="w-4 h-4 text-primary" />
           Search & Link Documents
@@ -302,7 +256,7 @@ function DocumentLinkingSection({
             placeholder="Search by name or ID..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full"
+            className="w-full h-9"
           />
         </div>
 
@@ -323,9 +277,7 @@ function DocumentLinkingSection({
                   <p className="text-xs font-semibold text-foreground group-hover:text-teal-200 truncate">
                     {doc.name}
                   </p>
-                  <p className="text-[10px] text-muted-foreground font-mono">
-                    {doc.id}
-                  </p>
+                  <p className="text-[10px] text-muted-foreground font-mono">{doc.id}</p>
                 </div>
                 <Button
                   size="sm"
@@ -355,7 +307,7 @@ function DocumentLinkingSection({
       </GlassCard>
 
       {/* Right Column: Linked Documents */}
-      <GlassCard className="p-6 flex flex-col">
+      <GlassCard className="p-3.5 flex flex-col hover:border-primary/20 transition-all duration-200">
         <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
           <FileText className="w-4 h-4 text-primary" />
           Linked Documents
@@ -394,29 +346,21 @@ function DocumentLinkingSection({
                           }}
                           className="shrink-0 rounded-md border border-amber-400/30 px-2 py-0.5 text-[9px] font-semibold text-amber-100 hover:bg-amber-500/12 transition-colors"
                         >
-                          {expandedAlertId === alert.id
-                            ? "Hide review"
-                            : "Review change"}
+                          {expandedAlertId === alert.id ? "Hide review" : "Review change"}
                         </button>
                       </div>
                     )}
                     <div className="flex items-center gap-2">
                       <FileText className="w-4 h-4 text-primary shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-foreground truncate">
-                          {doc.name}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground font-mono">
-                          {doc.id}
-                        </p>
+                        <p className="text-xs font-semibold text-foreground truncate">{doc.name}</p>
+                        <p className="text-[10px] text-muted-foreground font-mono">{doc.id}</p>
                       </div>
                       <Button
                         size="sm"
                         variant="ghost"
                         className="text-[10px] h-6 px-2 shrink-0 text-muted-foreground hover:text-foreground"
-                        onClick={() =>
-                          navigate(resolveDocumentPreviewPath(doc.id))
-                        }
+                        onClick={() => navigate(resolveDocumentPreviewPath(doc.id))}
                       >
                         <ExternalLink className="w-3 h-3" />
                       </Button>
@@ -440,14 +384,9 @@ function DocumentLinkingSection({
                         alert={alert}
                         className="mt-3"
                         defaultOpen
-                        onOpenPl={() =>
-                          navigate(`/pl/${pl.id}?tab=crossrefs&doc=${doc.id}`)
-                        }
+                        onOpenPl={() => navigate(`/pl/${pl.id}?tab=crossrefs&doc=${doc.id}`)}
                         onApprove={() =>
-                          onApproveAlert?.(
-                            alert.id,
-                            "Approved from PL linked documents",
-                          )
+                          onApproveAlert?.(alert.id, "Approved from PL linked documents")
                         }
                         onBypass={() =>
                           onBypassAlert?.(alert.id, {
@@ -490,9 +429,9 @@ function FormField({
 }) {
   return (
     <div>
-      <label className="block text-[10px] uppercase tracking-widest font-semibold text-muted-foreground mb-1">
+      <span className="block text-[10px] uppercase tracking-widest font-semibold text-muted-foreground mb-1">
         {label}
-      </label>
+      </span>
       {children}
       {error && <p className="text-[10px] text-rose-400 mt-1">{error}</p>}
     </div>
@@ -578,6 +517,9 @@ export function PLFormModal({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isMaximized, setIsMaximized] = useState(true);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [activeTab, setActiveTab] = useState<
+    "general" | "vendor" | "safety" | "references" | "admin"
+  >("general");
 
   const splitList = (s: string) =>
     s
@@ -587,8 +529,7 @@ export function PLFormModal({
 
   const validate = () => {
     const errs: Record<string, string> = {};
-    if (!isEdit && !form.plNumber.trim())
-      errs.plNumber = "PL Number is required";
+    if (!isEdit && !form.plNumber.trim()) errs.plNumber = "PL Number is required";
     else if (!isEdit && !/^\d{8}$/.test(form.plNumber.trim()))
       errs.plNumber = "Must be exactly 8 digits";
     if (!form.name.trim()) errs.name = "Name is required";
@@ -614,8 +555,7 @@ export function PLFormModal({
         controllingAgency: form.controllingAgency,
         status: form.status as PLNumber["status"],
         safetyCritical: form.safetyCritical,
-        safetyClassification:
-          (form.safetyClassification as SafetyClassification) || undefined,
+        safetyClassification: (form.safetyClassification as SafetyClassification) || undefined,
         severityOfFailure: form.severityOfFailure || undefined,
         consequences: form.consequences || undefined,
         functionality: form.functionality || undefined,
@@ -663,17 +603,15 @@ export function PLFormModal({
         const key = k as keyof typeof form;
         const orig =
           key === "usedIn"
-            ? (pl!.usedIn ?? []).join(", ")
+            ? (pl?.usedIn ?? []).join(", ")
             : key === "drawingNumbers"
-              ? (pl!.drawingNumbers ?? []).join(", ")
+              ? (pl?.drawingNumbers ?? []).join(", ")
               : key === "specNumbers"
-                ? (pl!.specNumbers ?? []).join(", ")
-                : String(pl![key as keyof PLNumber] ?? "");
+                ? (pl?.specNumbers ?? []).join(", ")
+                : String(pl?.[key as keyof PLNumber] ?? "");
         return String(form[key]) !== orig;
       })
-    : Object.values(form).some((v) =>
-        typeof v === "string" ? v.trim() !== "" : v !== false,
-      );
+    : Object.values(form).some((v) => (typeof v === "string" ? v.trim() !== "" : v !== false));
 
   const [showDiscardWarning, setShowDiscardWarning] = useState(false);
 
@@ -692,9 +630,7 @@ export function PLFormModal({
       {/* Backdrop */}
       <div
         className={`fixed z-[100] flex items-center justify-center transition-all duration-300 ${
-          isMaximized
-            ? "inset-0 bg-slate-900"
-            : "inset-0 bg-slate-900/60 backdrop-blur-sm p-4"
+          isMaximized ? "inset-0 bg-slate-900" : "inset-0 bg-slate-900/60 backdrop-blur-sm p-4"
         } animate-in fade-in`}
       >
         <div
@@ -710,17 +646,14 @@ export function PLFormModal({
           <div className="px-4 py-3 bg-slate-900 text-white flex justify-between items-center shrink-0 select-none">
             <div className="flex items-center gap-3">
               <button
+                type="button"
                 onClick={handleClose}
                 className="p-1.5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <div className="p-1.5 bg-teal-600 rounded-lg">
-                {isEdit ? (
-                  <Edit3 className="w-4 h-4" />
-                ) : (
-                  <Plus className="w-4 h-4" />
-                )}
+                {isEdit ? <Edit3 className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
               </div>
               <div>
                 <h3 className="text-sm font-bold">
@@ -747,36 +680,29 @@ export function PLFormModal({
                   {errorCount > 1 ? "s" : ""}
                 </span>
               )}
-              <span className="text-[9px] text-slate-500 mr-2 hidden sm:inline">
-                Ctrl+S · Esc
-              </span>
+              <span className="text-[9px] text-slate-500 mr-2 hidden sm:inline">Ctrl+S · Esc</span>
               <button
+                type="button"
                 onClick={() => {
                   setIsMinimized(!isMinimized);
                   if (isMaximized) setIsMaximized(false);
                 }}
                 className="p-1.5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors"
               >
-                {isMinimized ? (
-                  <Maximize className="w-4 h-4" />
-                ) : (
-                  <Minus className="w-4 h-4" />
-                )}
+                {isMinimized ? <Maximize className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
               </button>
               <button
+                type="button"
                 onClick={() => {
                   setIsMaximized(!isMaximized);
                   setIsMinimized(false);
                 }}
                 className="p-1.5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors"
               >
-                {isMaximized ? (
-                  <Minimize2 className="w-4 h-4" />
-                ) : (
-                  <Square className="w-4 h-4" />
-                )}
+                {isMaximized ? <Minimize2 className="w-4 h-4" /> : <Square className="w-4 h-4" />}
               </button>
               <button
+                type="button"
                 onClick={handleClose}
                 className="p-1.5 hover:bg-rose-500 rounded-lg text-slate-400 hover:text-white transition-colors ml-1"
               >
@@ -796,9 +722,7 @@ export function PLFormModal({
                       <AlertTriangle className="w-4 h-4" />
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold text-rose-300">
-                        Validation Errors
-                      </h4>
+                      <h4 className="text-xs font-bold text-rose-300">Validation Errors</h4>
                       <p className="text-[10px] text-rose-300/80 mt-0.5">
                         {Object.values(errors).join(" · ")}
                       </p>
@@ -806,55 +730,189 @@ export function PLFormModal({
                   </div>
                 )}
 
-                <div className="grid grid-cols-3 gap-6">
-                  {/* ══════ COLUMN 1 — Identity & Classification ══════ */}
-                  <div className="space-y-5">
-                    {/* Identity */}
-                    <section>
-                      <h3 className="text-[10px] uppercase tracking-widest font-black text-primary mb-3 flex items-center gap-1.5">
-                        <Hash className="w-3 h-3" /> Identity
-                      </h3>
-                      <div className="space-y-3">
-                        {isEdit ? (
-                          <F label="PL Number (read-only)">
-                            <div className="bg-secondary/40 border border-border/30 rounded-xl px-4 py-2.5 text-sm font-mono text-muted-foreground">
-                              {pl.plNumber}
-                            </div>
-                          </F>
-                        ) : (
-                          <F
-                            label="PL Number (8 digits) *"
-                            error={errors.plNumber}
-                          >
-                            <Input
-                              value={form.plNumber}
-                              onChange={(e) =>
-                                setForm((f) => ({
-                                  ...f,
-                                  plNumber: e.target.value,
-                                }))
-                              }
-                              placeholder="e.g. 38110000"
-                              className={`w-full font-mono font-bold ${errors.plNumber ? "border-rose-500/50" : ""}`}
-                              maxLength={8}
-                              inputMode="numeric"
+                {/* Clean Horizontal Tabs Bar */}
+                <div className="sticky top-0 bg-slate-950/45 backdrop-blur-md z-10 -mx-6 px-6 py-2.5 mb-6 border-b border-border/40 flex items-center justify-between gap-4 overflow-x-auto thin-scrollbar select-none">
+                  <div className="flex gap-1.5">
+                    {[
+                      { id: "general", label: "General & Classification", icon: Hash },
+                      { id: "vendor", label: "Vendor Details", icon: Package },
+                      { id: "safety", label: "Safety Analysis", icon: Shield },
+                      { id: "references", label: "Engineering Refs", icon: GitBranch },
+                      { id: "admin", label: "Personnel & Admin", icon: User },
+                    ].map((t) => {
+                      const Icon = t.icon;
+                      const isActive = activeTab === t.id;
+                      const hasError = (() => {
+                        if (t.id === "general") {
+                          return !!(errors.plNumber || errors.name || errors.description);
+                        }
+                        if (t.id === "vendor") {
+                          return !!errors.uvamId;
+                        }
+                        return false;
+                      })();
+                      return (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => setActiveTab(t.id as any)}
+                          className={`flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-xl transition-all border ${
+                            isActive
+                              ? "bg-teal-500/10 text-teal-400 border-teal-500/20 shadow-[0_2px_10px_rgba(20,184,166,0.08)]"
+                              : "bg-transparent text-muted-foreground border-transparent hover:bg-secondary/40 hover:text-foreground"
+                          }`}
+                        >
+                          <Icon className="w-3.5 h-3.5" />
+                          <span>{t.label}</span>
+                          {hasError && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse ml-0.5" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider hidden sm:inline-block">
+                    Tab{" "}
+                    {["general", "vendor", "safety", "references", "admin"].indexOf(activeTab) + 1}{" "}
+                    of 5
+                  </span>
+                </div>
+
+                <div className="min-h-[360px] animate-in fade-in-50 duration-200">
+                  {/* ══════ GENERAL & CLASSIFICATION TABS ══════ */}
+                  {activeTab === "general" && (
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="space-y-4 col-span-2 sm:col-span-1">
+                        <h4 className="text-xs font-bold text-teal-400/90 uppercase tracking-widest flex items-center gap-2 mb-2">
+                          <Hash className="w-3.5 h-3.5" /> General Identity
+                        </h4>
+                        <div className="space-y-4 bg-secondary/10 p-5 rounded-2xl border border-border/20">
+                          {isEdit ? (
+                            <F label="PL Number (read-only)">
+                              <div className="bg-slate-900/60 border border-border/30 rounded-xl px-4 py-2.5 text-sm font-mono text-muted-foreground">
+                                {pl.plNumber}
+                              </div>
+                            </F>
+                          ) : (
+                            <F label="PL Number (8 digits) *" error={errors.plNumber}>
+                              <Input
+                                value={form.plNumber}
+                                onChange={(e) =>
+                                  setForm((f) => ({
+                                    ...f,
+                                    plNumber: e.target.value,
+                                  }))
+                                }
+                                placeholder="e.g. 38110000"
+                                className={`w-full font-mono font-bold ${errors.plNumber ? "border-rose-500/50" : ""}`}
+                                maxLength={8}
+                                inputMode="numeric"
+                              />
+                            </F>
+                          )}
+                          <F label="Component Name *" error={errors.name}>
+                            <FormTextInput
+                              value={form.name}
+                              onChange={(v) => setForm((f) => ({ ...f, name: v }))}
+                              placeholder="Full descriptive name"
+                              hasError={!!errors.name}
                             />
                           </F>
-                        )}
-                        <F label="Component Name *" error={errors.name}>
-                          <FormTextInput
-                            value={form.name}
-                            onChange={(v) =>
-                              setForm((f) => ({ ...f, name: v }))
-                            }
-                            placeholder="Full descriptive name"
-                            hasError={!!errors.name}
-                          />
-                        </F>
-                        <F
-                          label="Technical Description *"
-                          error={errors.description}
-                        >
+                          <div className="grid grid-cols-2 gap-4">
+                            <F label="Status">
+                              <Select
+                                value={form.status}
+                                onChange={(e) =>
+                                  setForm((f) => ({
+                                    ...f,
+                                    status: e.target.value as PLNumber["status"],
+                                  }))
+                                }
+                                className="w-full"
+                              >
+                                <option value="ACTIVE">Active</option>
+                                <option value="UNDER_REVIEW">Under Review</option>
+                                <option value="OBSOLETE">Obsolete</option>
+                              </Select>
+                            </F>
+                            <F label="Vendor Type">
+                              <Select
+                                value={form.vendorType}
+                                onChange={(e) =>
+                                  setForm((f) => ({
+                                    ...f,
+                                    vendorType: e.target.value,
+                                  }))
+                                }
+                                className="w-full"
+                              >
+                                <option value="">— Select —</option>
+                                <option value="VD">VD (Vendor Drg)</option>
+                                <option value="NVD">NVD (Non-Vendor)</option>
+                              </Select>
+                            </F>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4 col-span-2 sm:col-span-1">
+                        <h4 className="text-xs font-bold text-teal-400/90 uppercase tracking-widest flex items-center gap-2 mb-2">
+                          <Layers className="w-3.5 h-3.5" /> Classification
+                        </h4>
+                        <div className="space-y-4 bg-secondary/10 p-5 rounded-2xl border border-border/20">
+                          <div className="grid grid-cols-2 gap-4">
+                            <F label="Inspection Category">
+                              <Select
+                                value={form.category}
+                                onChange={(e) =>
+                                  setForm((f) => ({
+                                    ...f,
+                                    category: e.target.value as InspectionCategory,
+                                  }))
+                                }
+                                className="w-full"
+                              >
+                                {(["CAT-A", "CAT-B", "CAT-C", "CAT-D"] as InspectionCategory[]).map(
+                                  (c) => (
+                                    <option key={c} value={c}>
+                                      {c} — {INSPECTION_CATEGORY_LABELS[c]}
+                                    </option>
+                                  ),
+                                )}
+                              </Select>
+                            </F>
+                            <F label="Controlling Agency">
+                              <Select
+                                value={form.controllingAgency}
+                                onChange={(e) =>
+                                  setForm((f) => ({
+                                    ...f,
+                                    controllingAgency: e.target.value,
+                                  }))
+                                }
+                                className="w-full"
+                              >
+                                <option value="">— Select —</option>
+                                {AGENCIES.map((a) => (
+                                  <option key={a} value={a}>
+                                    {a}
+                                  </option>
+                                ))}
+                              </Select>
+                            </F>
+                          </div>
+                          <F label="Application Area">
+                            <FormTextInput
+                              value={form.applicationArea}
+                              onChange={(v) => setForm((f) => ({ ...f, applicationArea: v }))}
+                              placeholder="e.g. WAP7, WAG9HC, WAG12B"
+                            />
+                          </F>
+                        </div>
+                      </div>
+
+                      <div className="col-span-2 space-y-2">
+                        <F label="Technical Description *" error={errors.description}>
                           <textarea
                             value={form.description}
                             onChange={(e) =>
@@ -863,165 +921,78 @@ export function PLFormModal({
                                 description: e.target.value,
                               }))
                             }
-                            rows={3}
+                            rows={4}
                             placeholder="Detailed technical description of the component..."
                             className={`${ta} ${errors.description ? "border-rose-500/50" : ""}`}
                           />
                         </F>
-                        <div className="grid grid-cols-2 gap-3">
-                          <F label="Status">
-                            <Select
-                              value={form.status}
-                              onChange={(e) =>
-                                setForm((f) => ({
-                                  ...f,
-                                  status: e.target.value as PLNumber["status"],
-                                }))
-                              }
-                              className="w-full"
-                            >
-                              <option value="ACTIVE">Active</option>
-                              <option value="UNDER_REVIEW">Under Review</option>
-                              <option value="OBSOLETE">Obsolete</option>
-                            </Select>
-                          </F>
-                          <F label="Vendor Type">
-                            <Select
-                              value={form.vendorType}
-                              onChange={(e) =>
-                                setForm((f) => ({
-                                  ...f,
-                                  vendorType: e.target.value,
-                                }))
-                              }
-                              className="w-full"
-                            >
-                              <option value="">— Select —</option>
-                              <option value="VD">VD (Vendor Drg)</option>
-                              <option value="NVD">NVD (Non-Vendor)</option>
-                            </Select>
-                          </F>
-                        </div>
                       </div>
-                    </section>
+                    </div>
+                  )}
 
-                    {/* Classification */}
-                    <section>
-                      <h3 className="text-[10px] uppercase tracking-widest font-black text-primary mb-3 flex items-center gap-1.5">
-                        <Layers className="w-3 h-3" /> Classification
-                      </h3>
-                      <div className="space-y-3">
-                        <div className="grid grid-cols-2 gap-3">
-                          <F label="Inspection Category">
-                            <Select
-                              value={form.category}
-                              onChange={(e) =>
-                                setForm((f) => ({
-                                  ...f,
-                                  category: e.target
-                                    .value as InspectionCategory,
-                                }))
-                              }
-                              className="w-full"
-                            >
-                              {(
-                                [
-                                  "CAT-A",
-                                  "CAT-B",
-                                  "CAT-C",
-                                  "CAT-D",
-                                ] as InspectionCategory[]
-                              ).map((c) => (
-                                <option key={c} value={c}>
-                                  {c} — {INSPECTION_CATEGORY_LABELS[c]}
-                                </option>
-                              ))}
-                            </Select>
-                          </F>
-                          <F label="Controlling Agency">
-                            <Select
-                              value={form.controllingAgency}
-                              onChange={(e) =>
-                                setForm((f) => ({
-                                  ...f,
-                                  controllingAgency: e.target.value,
-                                }))
-                              }
-                              className="w-full"
-                            >
-                              <option value="">— Select —</option>
-                              {AGENCIES.map((a) => (
-                                <option key={a} value={a}>
-                                  {a}
-                                </option>
-                              ))}
-                            </Select>
-                          </F>
-                        </div>
-                        <F label="Application Area">
-                          <FormTextInput
-                            value={form.applicationArea}
-                            onChange={(v) =>
-                              setForm((f) => ({ ...f, applicationArea: v }))
+                  {/* ══════ VENDOR DETAILS TAB ══════ */}
+                  {activeTab === "vendor" && (
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="col-span-2">
+                        <F label="Vendor Type Selection">
+                          <Select
+                            value={form.vendorType}
+                            onChange={(e) =>
+                              setForm((f) => ({
+                                ...f,
+                                vendorType: e.target.value,
+                              }))
                             }
-                            placeholder="e.g. WAP7, WAG9HC, WAG12B"
-                          />
+                            className="w-full max-w-xs"
+                          >
+                            <option value="">— Unspecified / Select —</option>
+                            <option value="VD">VD (Vendor Drawing)</option>
+                            <option value="NVD">NVD (Non-Vendor Directory)</option>
+                          </Select>
                         </F>
                       </div>
-                    </section>
-                  </div>
 
-                  {/* ══════ COLUMN 2 — VD/NVD + Safety ══════ */}
-                  <div className="space-y-5">
-                    {/* VD / NVD conditional section */}
-                    {form.vendorType ? (
-                      <section>
-                        <h3 className="text-[10px] uppercase tracking-widest font-black text-indigo-400 mb-3 flex items-center gap-1.5">
-                          <Package className="w-3 h-3" />{" "}
-                          {form.vendorType === "VD"
-                            ? "Vendor Directory"
-                            : "Non-Vendor Details"}
-                        </h3>
-                        {form.vendorType === "VD" ? (
-                          <div className="space-y-3">
-                            <div className="p-3 bg-indigo-900/20 border border-indigo-500/30 rounded-xl">
-                              <p className="text-[10px] text-indigo-300">
-                                VD items require UVAM item ID and controlling
-                                agency assignment.
-                              </p>
-                            </div>
-                            <div className="grid grid-cols-2 gap-3">
-                              <F label="UVAM Item ID *" error={errors.uvamId}>
-                                <FormTextInput
-                                  value={form.uvamId}
-                                  onChange={(v) =>
-                                    setForm((f) => ({ ...f, uvamId: v }))
-                                  }
-                                  placeholder="UVAM reference"
-                                  mono
-                                  hasError={!!errors.uvamId}
-                                />
-                              </F>
-                              <F label="STR Number">
-                                <FormTextInput
-                                  value={form.strNumber}
-                                  onChange={(v) =>
-                                    setForm((f) => ({ ...f, strNumber: v }))
-                                  }
-                                  placeholder="STR reference"
-                                  mono
-                                />
-                              </F>
-                            </div>
+                      {form.vendorType === "VD" && (
+                        <div className="col-span-2 grid grid-cols-2 gap-6 bg-indigo-950/10 p-6 rounded-2xl border border-indigo-500/15 animate-in fade-in duration-200">
+                          <div className="col-span-2 flex items-center gap-2.5 pb-2 border-b border-indigo-500/10">
+                            <Package className="w-4 h-4 text-indigo-400" />
+                            <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-widest">
+                              Vendor Directory Configuration
+                            </h4>
                           </div>
-                        ) : (
-                          <div className="space-y-3">
-                            <div className="p-3 bg-purple-900/20 border border-purple-500/30 rounded-xl">
-                              <p className="text-[10px] text-purple-300">
-                                NVD items may include eligibility criteria and
-                                procurement notes.
-                              </p>
-                            </div>
+                          <div className="col-span-2 sm:col-span-1">
+                            <F label="UVAM Item ID *" error={errors.uvamId}>
+                              <FormTextInput
+                                value={form.uvamId}
+                                onChange={(v) => setForm((f) => ({ ...f, uvamId: v }))}
+                                placeholder="Enter UVAM reference"
+                                mono
+                                hasError={!!errors.uvamId}
+                              />
+                            </F>
+                          </div>
+                          <div className="col-span-2 sm:col-span-1">
+                            <F label="STR Number">
+                              <FormTextInput
+                                value={form.strNumber}
+                                onChange={(v) => setForm((f) => ({ ...f, strNumber: v }))}
+                                placeholder="STR reference"
+                                mono
+                              />
+                            </F>
+                          </div>
+                        </div>
+                      )}
+
+                      {form.vendorType === "NVD" && (
+                        <div className="col-span-2 grid grid-cols-2 gap-6 bg-purple-950/10 p-6 rounded-2xl border border-purple-500/15 animate-in fade-in duration-200">
+                          <div className="col-span-2 flex items-center gap-2.5 pb-2 border-b border-purple-500/10">
+                            <Package className="w-4 h-4 text-purple-400" />
+                            <h4 className="text-xs font-bold text-purple-400 uppercase tracking-widest">
+                              Non-Vendor Details & Criteria
+                            </h4>
+                          </div>
+                          <div className="col-span-2">
                             <F label="Eligibility Criteria">
                               <textarea
                                 value={form.eligibilityCriteria}
@@ -1036,6 +1007,8 @@ export function PLFormModal({
                                 className={ta}
                               />
                             </F>
+                          </div>
+                          <div className="col-span-2">
                             <F label="Procurement Conditions">
                               <textarea
                                 value={form.procurementConditions}
@@ -1045,86 +1018,100 @@ export function PLFormModal({
                                     procurementConditions: e.target.value,
                                   }))
                                 }
-                                rows={2}
+                                rows={3}
                                 placeholder="Procurement conditions, restrictions..."
                                 className={ta}
                               />
                             </F>
                           </div>
-                        )}
-                      </section>
-                    ) : (
-                      <section>
-                        <h3 className="text-[10px] uppercase tracking-widest font-black text-indigo-400 mb-3 flex items-center gap-1.5">
-                          <Package className="w-3 h-3" /> Vendor / Non-Vendor
-                        </h3>
-                        <div className="p-4 rounded-xl bg-secondary/30 border border-border/30 text-center">
-                          <Package className="w-6 h-6 mx-auto mb-2 text-slate-600" />
-                          <p className="text-[10px] text-muted-foreground">
-                            Select a Vendor Type in the left column to configure
-                            VD/NVD details.
-                          </p>
                         </div>
-                      </section>
-                    )}
+                      )}
 
-                    {/* Safety */}
-                    <section>
-                      <h3 className="text-[10px] uppercase tracking-widest font-black text-rose-400 mb-3 flex items-center gap-1.5">
-                        <Shield className="w-3 h-3" /> Safety
-                      </h3>
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/40 border border-border/30">
+                      {!form.vendorType && (
+                        <div className="col-span-2 p-10 rounded-2xl bg-secondary/10 border border-border/20 text-center space-y-3">
+                          <Package className="w-8 h-8 mx-auto text-slate-600 opacity-60" />
                           <div>
-                            <p className="text-sm font-medium text-foreground">
-                              Safety Vital Component
+                            <p className="text-sm font-bold text-foreground">
+                              No Vendor Type Configured
                             </p>
-                            <p className="text-[10px] text-muted-foreground">
-                              Triggers additional oversight
+                            <p className="text-xs text-muted-foreground max-w-md mx-auto mt-1">
+                              Select a vendor type from the option above to access UVAM Item IDs,
+                              STR configurations, eligibility criteria, or procurement restrictions.
                             </p>
                           </div>
-                          <Switch
-                            checked={form.safetyCritical}
-                            onCheckedChange={(safetyCritical) =>
-                              setForm((f) => ({ ...f, safetyCritical }))
-                            }
-                            aria-label="Toggle safety vital component"
-                          />
                         </div>
-                        {form.safetyCritical && (
-                          <>
-                            <div className="grid grid-cols-2 gap-3">
-                              <F label="Safety Classification">
-                                <Select
-                                  value={form.safetyClassification}
-                                  onChange={(e) =>
-                                    setForm((f) => ({
-                                      ...f,
-                                      safetyClassification: e.target.value,
-                                    }))
-                                  }
-                                  className="w-full"
-                                >
-                                  <option value="">— None —</option>
-                                  <option value="LOW">Low</option>
-                                  <option value="MEDIUM">Medium</option>
-                                  <option value="HIGH">High</option>
-                                  <option value="CRITICAL">Critical</option>
-                                </Select>
-                              </F>
-                              <F label="Severity of Failure">
-                                <FormTextInput
-                                  value={form.severityOfFailure}
-                                  onChange={(v) =>
-                                    setForm((f) => ({
-                                      ...f,
-                                      severityOfFailure: v,
-                                    }))
-                                  }
-                                  placeholder="e.g. Catastrophic"
-                                />
-                              </F>
-                            </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* ══════ SAFETY ANALYSIS TAB ══════ */}
+                  {activeTab === "safety" && (
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="col-span-2 flex items-center justify-between p-5 rounded-2xl bg-rose-950/5 border border-rose-500/10 shadow-[0_2px_8px_rgba(244,63,94,0.02)]">
+                        <div className="space-y-0.5">
+                          <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+                            <Shield className="w-4 h-4 text-rose-500" /> Safety Vital Component
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Identify if this part requires additional security, diagnostics, and
+                            testing validation rules.
+                          </p>
+                        </div>
+                        <Switch
+                          checked={form.safetyCritical}
+                          onCheckedChange={(safetyCritical) =>
+                            setForm((f) => ({ ...f, safetyCritical }))
+                          }
+                          aria-label="Toggle safety vital component"
+                        />
+                      </div>
+
+                      {form.safetyCritical ? (
+                        <div className="col-span-2 grid grid-cols-2 gap-6 bg-rose-950/10 p-6 rounded-2xl border border-rose-500/15 animate-in fade-in duration-200">
+                          <div className="col-span-2 sm:col-span-1">
+                            <F label="Safety Classification">
+                              <Select
+                                value={form.safetyClassification}
+                                onChange={(e) =>
+                                  setForm((f) => ({
+                                    ...f,
+                                    safetyClassification: e.target.value,
+                                  }))
+                                }
+                                className="w-full"
+                              >
+                                <option value="">— None —</option>
+                                <option value="LOW">Low</option>
+                                <option value="MEDIUM">Medium</option>
+                                <option value="HIGH">High</option>
+                                <option value="CRITICAL">Critical</option>
+                              </Select>
+                            </F>
+                          </div>
+                          <div className="col-span-2 sm:col-span-1">
+                            <F label="Severity of Failure">
+                              <FormTextInput
+                                value={form.severityOfFailure}
+                                onChange={(v) =>
+                                  setForm((f) => ({
+                                    ...f,
+                                    severityOfFailure: v,
+                                  }))
+                                }
+                                placeholder="e.g. Catastrophic"
+                              />
+                            </F>
+                          </div>
+                          <div className="col-span-2 sm:col-span-1">
+                            <F label="Functionality">
+                              <FormTextInput
+                                value={form.functionality}
+                                onChange={(v) => setForm((f) => ({ ...f, functionality: v }))}
+                                placeholder="Primary function description"
+                              />
+                            </F>
+                          </div>
+                          <div className="col-span-2">
                             <F label="Consequences of Failure">
                               <textarea
                                 value={form.consequences}
@@ -1134,94 +1121,92 @@ export function PLFormModal({
                                     consequences: e.target.value,
                                   }))
                                 }
-                                rows={2}
-                                placeholder="Describe consequences..."
+                                rows={3}
+                                placeholder="Describe consequences of safety failure..."
                                 className={ta}
                               />
                             </F>
-                            <F label="Functionality">
-                              <FormTextInput
-                                value={form.functionality}
-                                onChange={(v) =>
-                                  setForm((f) => ({ ...f, functionality: v }))
-                                }
-                                placeholder="Primary function description"
-                              />
-                            </F>
-                          </>
-                        )}
-                      </div>
-                    </section>
-                  </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="col-span-2 p-10 rounded-2xl bg-secondary/10 border border-border/20 text-center space-y-3">
+                          <Shield className="w-8 h-8 mx-auto text-slate-600 opacity-60" />
+                          <div>
+                            <p className="text-sm font-bold text-foreground">
+                              Standard Non-Safety Component
+                            </p>
+                            <p className="text-xs text-muted-foreground max-w-md mx-auto mt-1">
+                              This component is currently designated as non-safety critical. Enable
+                              the switch above to configure classification ratings and failure
+                              modes.
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
-                  {/* ══════ COLUMN 3 — Engineering Refs + Personnel ══════ */}
-                  <div className="space-y-5">
-                    {/* Engineering References */}
-                    <section>
-                      <h3 className="text-[10px] uppercase tracking-widest font-black text-primary mb-3 flex items-center gap-1.5">
-                        <GitBranch className="w-3 h-3" /> Engineering References
-                      </h3>
-                      <div className="space-y-3">
+                  {/* ══════ ENGINEERING REFS TAB ══════ */}
+                  {activeTab === "references" && (
+                    <div className="grid grid-cols-2 gap-6 bg-secondary/5 p-6 rounded-2xl border border-border/20">
+                      <div className="col-span-2 sm:col-span-1">
                         <F label="Drawing Numbers (comma-separated)">
                           <FormTextInput
                             value={form.drawingNumbers}
-                            onChange={(v) =>
-                              setForm((f) => ({ ...f, drawingNumbers: v }))
-                            }
+                            onChange={(v) => setForm((f) => ({ ...f, drawingNumbers: v }))}
                             placeholder="DWG-001, DWG-002"
                             mono
                           />
                         </F>
+                      </div>
+                      <div className="col-span-2 sm:col-span-1">
                         <F label="Spec Numbers (comma-separated)">
                           <FormTextInput
                             value={form.specNumbers}
-                            onChange={(v) =>
-                              setForm((f) => ({ ...f, specNumbers: v }))
-                            }
+                            onChange={(v) => setForm((f) => ({ ...f, specNumbers: v }))}
                             placeholder="SPEC-101, SPEC-102"
                             mono
                           />
                         </F>
+                      </div>
+
+                      <div className="col-span-2 sm:col-span-1">
                         <F label="Mother Part / Parent Assembly">
                           <PLNumberSelect
                             value={form.motherPart}
-                            onChange={(motherPart) =>
-                              setForm((f) => ({ ...f, motherPart }))
-                            }
+                            onChange={(motherPart) => setForm((f) => ({ ...f, motherPart }))}
                             plItems={plItems.filter(
-                              (item) =>
-                                item.plNumber !==
-                                (isEdit ? pl.plNumber : form.plNumber),
+                              (item) => item.plNumber !== (isEdit ? pl.plNumber : form.plNumber),
                             )}
                             loading={plItemsLoading}
                             placeholder="Search parent assembly PL..."
                             helperText="Select parent assembly or leave blank."
                           />
                         </F>
-                        {(!form.vendorType || form.vendorType !== "VD") && (
-                          <div className="grid grid-cols-2 gap-3">
-                            <F label="UVAM ID">
-                              <FormTextInput
-                                value={form.uvamId}
-                                onChange={(v) =>
-                                  setForm((f) => ({ ...f, uvamId: v }))
-                                }
-                                placeholder="UVAM ref"
-                                mono
-                              />
-                            </F>
-                            <F label="STR Number">
-                              <FormTextInput
-                                value={form.strNumber}
-                                onChange={(v) =>
-                                  setForm((f) => ({ ...f, strNumber: v }))
-                                }
-                                placeholder="STR ref"
-                                mono
-                              />
-                            </F>
-                          </div>
-                        )}
+                      </div>
+
+                      {(!form.vendorType || form.vendorType !== "VD") && (
+                        <div className="col-span-2 sm:col-span-1 grid grid-cols-2 gap-4">
+                          <F label="UVAM ID">
+                            <FormTextInput
+                              value={form.uvamId}
+                              onChange={(v) => setForm((f) => ({ ...f, uvamId: v }))}
+                              placeholder="UVAM ref"
+                              mono
+                            />
+                          </F>
+                          <F label="STR Number">
+                            <FormTextInput
+                              value={form.strNumber}
+                              onChange={(v) => setForm((f) => ({ ...f, strNumber: v }))}
+                              placeholder="STR ref"
+                              mono
+                            />
+                          </F>
+                        </div>
+                      )}
+
+                      <div className="col-span-2">
                         <F label="Used In (PL numbers)">
                           <PLNumberMultiSelect
                             values={form.usedIn
@@ -1235,30 +1220,28 @@ export function PLFormModal({
                               }))
                             }
                             plItems={plItems.filter(
-                              (item) =>
-                                item.plNumber !==
-                                (isEdit ? pl.plNumber : form.plNumber),
+                              (item) => item.plNumber !== (isEdit ? pl.plNumber : form.plNumber),
                             )}
                             loading={plItemsLoading}
                             helperText="Parent assemblies where this item is used."
                           />
                         </F>
                       </div>
-                    </section>
+                    </div>
+                  )}
 
-                    {/* Personnel & Admin */}
-                    <section>
-                      <h3 className="text-[10px] uppercase tracking-widest font-black text-primary mb-3 flex items-center gap-1.5">
-                        <User className="w-3 h-3" /> Personnel & Admin
-                      </h3>
-                      <div className="space-y-3">
-                        <div className="grid grid-cols-2 gap-3">
+                  {/* ══════ PERSONNEL & ADMIN TAB ══════ */}
+                  {activeTab === "admin" && (
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="col-span-2 sm:col-span-1 space-y-4">
+                        <h4 className="text-xs font-bold text-teal-400/90 uppercase tracking-widest flex items-center gap-2 mb-2">
+                          <User className="w-3.5 h-3.5" /> Engineering Personnel
+                        </h4>
+                        <div className="space-y-4 bg-secondary/10 p-5 rounded-2xl border border-border/20">
                           <F label="Design Supervisor">
                             <FormTextInput
                               value={form.designSupervisor}
-                              onChange={(v) =>
-                                setForm((f) => ({ ...f, designSupervisor: v }))
-                              }
+                              onChange={(v) => setForm((f) => ({ ...f, designSupervisor: v }))}
                               placeholder="SSE/Design"
                             />
                           </F>
@@ -1275,16 +1258,54 @@ export function PLFormModal({
                             />
                           </F>
                         </div>
-                        <F label="E-Office File Reference">
-                          <FormTextInput
-                            value={form.eOfficeFile}
-                            onChange={(v) =>
-                              setForm((f) => ({ ...f, eOfficeFile: v }))
-                            }
-                            placeholder="F.No. 100/D-1/2026"
-                          />
-                        </F>
-                        {!form.vendorType && (
+                      </div>
+
+                      <div className="col-span-2 sm:col-span-1 space-y-4">
+                        <h4 className="text-xs font-bold text-teal-400/90 uppercase tracking-widest flex items-center gap-2 mb-2">
+                          <Activity className="w-3.5 h-3.5" /> Administrative References
+                        </h4>
+                        <div className="space-y-4 bg-secondary/10 p-5 rounded-2xl border border-border/20">
+                          <F label="E-Office File Reference">
+                            <FormTextInput
+                              value={form.eOfficeFile}
+                              onChange={(v) => setForm((f) => ({ ...f, eOfficeFile: v }))}
+                              placeholder="F.No. 100/D-1/2026"
+                            />
+                          </F>
+
+                          {isEdit && (
+                            <div className="bg-slate-900/60 rounded-xl p-4 space-y-2.5 text-xs border border-border/20">
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground font-medium">
+                                  Record Created
+                                </span>
+                                <span className="font-mono text-foreground">
+                                  {pl.createdAt ? new Date(pl.createdAt).toLocaleDateString() : "—"}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground font-medium">
+                                  Last Updated
+                                </span>
+                                <span className="font-mono text-foreground">
+                                  {pl.updatedAt ? new Date(pl.updatedAt).toLocaleDateString() : "—"}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground font-medium">
+                                  Primary Group
+                                </span>
+                                <span className="font-mono text-teal-400">
+                                  {pl.category ?? "—"}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {!form.vendorType && (
+                        <div className="col-span-2">
                           <F label="Eligibility Criteria">
                             <textarea
                               value={form.eligibilityCriteria}
@@ -1294,54 +1315,15 @@ export function PLFormModal({
                                   eligibilityCriteria: e.target.value,
                                 }))
                               }
-                              rows={2}
+                              rows={3}
                               placeholder="Eligibility requirements..."
                               className={ta}
                             />
                           </F>
-                        )}
-                      </div>
-                    </section>
-
-                    {/* Edit mode: Record Info */}
-                    {isEdit && (
-                      <section>
-                        <h3 className="text-[10px] uppercase tracking-widest font-black text-muted-foreground mb-3 flex items-center gap-1.5">
-                          <Activity className="w-3 h-3" /> Record Info
-                        </h3>
-                        <div className="bg-secondary/30 border border-border/30 rounded-xl p-4 space-y-2 text-xs">
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">
-                              Created
-                            </span>
-                            <span className="font-mono text-foreground">
-                              {pl.createdAt
-                                ? new Date(pl.createdAt).toLocaleDateString()
-                                : "—"}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">
-                              Updated
-                            </span>
-                            <span className="font-mono text-foreground">
-                              {pl.updatedAt
-                                ? new Date(pl.updatedAt).toLocaleDateString()
-                                : "—"}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">
-                              Category
-                            </span>
-                            <span className="font-mono text-primary">
-                              {pl.category ?? "—"}
-                            </span>
-                          </div>
                         </div>
-                      </section>
-                    )}
-                  </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* System info banner */}
@@ -1406,13 +1388,10 @@ export function PLFormModal({
             <div className="bg-card border border-border rounded-xl shadow-2xl max-w-sm w-full p-6 space-y-4">
               <div className="flex items-center gap-2 text-amber-400">
                 <AlertTriangle className="w-5 h-5" />
-                <h3 className="text-sm font-bold text-foreground">
-                  Discard changes?
-                </h3>
+                <h3 className="text-sm font-bold text-foreground">Discard changes?</h3>
               </div>
               <p className="text-xs text-muted-foreground">
-                You have unsaved changes. Closing will discard all
-                modifications.
+                You have unsaved changes. Closing will discard all modifications.
               </p>
               <div className="flex gap-2">
                 <Button
@@ -1423,12 +1402,7 @@ export function PLFormModal({
                 >
                   Continue Editing
                 </Button>
-                <Button
-                  variant="danger"
-                  size="sm"
-                  onClick={onClose}
-                  className="flex-1"
-                >
+                <Button variant="danger" size="sm" onClick={onClose} className="flex-1">
                   Discard
                 </Button>
               </div>
@@ -1474,22 +1448,18 @@ function AddECForm({ onAdd, onCancel }: AddECFormProps) {
       </p>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-[10px] font-medium text-muted-foreground mb-1">
+          <span className="block text-[10px] font-medium text-muted-foreground mb-1">
             EC Number *
-          </label>
+          </span>
           <Input
             value={form.ecNumber}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, ecNumber: e.target.value }))
-            }
+            onChange={(e) => setForm((f) => ({ ...f, ecNumber: e.target.value }))}
             placeholder="EC-2026-XXXX"
             className="w-full font-mono"
           />
         </div>
         <div>
-          <label className="block text-[10px] font-medium text-muted-foreground mb-1">
-            Status
-          </label>
+          <label className="block text-[10px] font-medium text-muted-foreground mb-1">Status</label>
           <Select
             value={form.status}
             onChange={(e) =>
@@ -1507,18 +1477,11 @@ function AddECForm({ onAdd, onCancel }: AddECFormProps) {
           </Select>
         </div>
         <div>
-          <label className="block text-[10px] font-medium text-muted-foreground mb-1">
-            Date
-          </label>
-          <DatePicker
-            value={form.date}
-            onChange={(v) => setForm((f) => ({ ...f, date: v }))}
-          />
+          <label className="block text-[10px] font-medium text-muted-foreground mb-1">Date</label>
+          <DatePicker value={form.date} onChange={(v) => setForm((f) => ({ ...f, date: v }))} />
         </div>
         <div>
-          <label className="block text-[10px] font-medium text-muted-foreground mb-1">
-            Author
-          </label>
+          <label className="block text-[10px] font-medium text-muted-foreground mb-1">Author</label>
           <Input
             value={form.author}
             onChange={(e) => setForm((f) => ({ ...f, author: e.target.value }))}
@@ -1528,14 +1491,12 @@ function AddECForm({ onAdd, onCancel }: AddECFormProps) {
         </div>
       </div>
       <div>
-        <label className="block text-[10px] font-medium text-muted-foreground mb-1">
+        <span className="block text-[10px] font-medium text-muted-foreground mb-1">
           Description *
-        </label>
+        </span>
         <textarea
           value={form.description}
-          onChange={(e) =>
-            setForm((f) => ({ ...f, description: e.target.value }))
-          }
+          onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
           rows={2}
           placeholder="Describe the engineering change..."
           className="w-full bg-slate-950/60 border border-border text-foreground text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/30 transition-all placeholder:text-slate-600 resize-none"
@@ -1563,10 +1524,7 @@ type PLNumberTab = "overview" | "documents" | "changes" | "crossrefs";
 
 function isPLNumberTab(value: string | null): value is PLNumberTab {
   return (
-    value === "overview" ||
-    value === "documents" ||
-    value === "changes" ||
-    value === "crossrefs"
+    value === "overview" || value === "documents" || value === "changes" || value === "crossrefs"
   );
 }
 
@@ -1582,15 +1540,11 @@ function PLNumberDetailView({
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<PLNumberTab>(() =>
-    isPLNumberTab(searchParams.get("tab"))
-      ? (searchParams.get("tab") as PLNumberTab)
-      : "overview",
+    isPLNumberTab(searchParams.get("tab")) ? (searchParams.get("tab") as PLNumberTab) : "overview",
   );
   const [editOpen, setEditOpen] = useState(false);
   const [showAddEC, setShowAddEC] = useState(false);
-  const [expandedCrossrefAlertId, setExpandedCrossrefAlertId] = useState<
-    string | null
-  >(null);
+  const [expandedCrossrefAlertId, setExpandedCrossrefAlertId] = useState<string | null>(null);
   const { documents, loading: documentsLoading } = usePlLinkableDocuments();
   const {
     alerts: documentAlerts,
@@ -1604,10 +1558,7 @@ function PLNumberDetailView({
     [documents, pl.linkedDocumentIds],
   );
   const documentAlertMap = useMemo(
-    () =>
-      Object.fromEntries(
-        documentAlerts.map((alert) => [alert.documentId, alert]),
-      ),
+    () => Object.fromEntries(documentAlerts.map((alert) => [alert.documentId, alert])),
     [documentAlerts],
   );
 
@@ -1686,6 +1637,7 @@ function PLNumberDetailView({
       {/* Header */}
       <div>
         <button
+          type="button"
           onClick={() => navigate("/pl")}
           className="flex items-center gap-2 text-muted-foreground hover:text-primary/90 text-sm mb-4 transition-colors"
         >
@@ -1731,11 +1683,7 @@ function PLNumberDetailView({
             </p>
           </div>
           <div className="flex gap-2 flex-wrap">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setEditOpen(true)}
-            >
+            <Button variant="secondary" size="sm" onClick={() => setEditOpen(true)}>
               <Edit3 className="w-4 h-4" /> Edit PL
             </Button>
             <Button variant="secondary" size="sm" onClick={handleExport}>
@@ -1755,6 +1703,7 @@ function PLNumberDetailView({
       <div className="flex gap-1 border-b border-border overflow-x-auto">
         {tabs.map((tab) => (
           <button
+            type="button"
             key={tab.id}
             onClick={() => handleTabChange(tab.id)}
             className={`flex-shrink-0 px-4 py-2.5 text-xs font-medium border-b-2 transition-all -mb-px flex items-center gap-1.5 ${
@@ -1779,16 +1728,12 @@ function PLNumberDetailView({
       {activeTab === "overview" && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4">
-            <GlassCard className="p-6">
-              <h2 className="text-sm font-bold text-white mb-3">
-                Technical Description
-              </h2>
-              <p className="text-sm text-foreground/90 leading-relaxed">
-                {pl.description || "—"}
-              </p>
+            <GlassCard className="p-3.5 hover:border-primary/20 hover:bg-secondary/30 transition-all duration-200">
+              <h2 className="text-sm font-bold text-white mb-3">Technical Description</h2>
+              <p className="text-sm text-foreground/90 leading-relaxed">{pl.description || "—"}</p>
             </GlassCard>
 
-            <GlassCard className="p-6">
+            <GlassCard className="p-3.5 hover:border-primary/20 hover:bg-secondary/30 transition-all duration-200">
               <h2 className="text-sm font-bold text-white mb-4">Properties</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <InfoRow label="PL Number" value={pl.plNumber} mono />
@@ -1799,27 +1744,16 @@ function PLNumberDetailView({
                 <InfoRow label="Vendor Type" value={pl.vendorType} />
                 <InfoRow label="UVAM ID" value={pl.uvamId} />
                 <InfoRow label="STR Number" value={pl.strNumber} />
-                <InfoRow
-                  label="Design Supervisor"
-                  value={pl.designSupervisor}
-                />
-                <InfoRow
-                  label="Concerned Supervisor"
-                  value={pl.concernedSupervisor}
-                />
+                <InfoRow label="Design Supervisor" value={pl.designSupervisor} />
+                <InfoRow label="Concerned Supervisor" value={pl.concernedSupervisor} />
                 <InfoRow label="E-Office File" value={pl.eOfficeFile} />
-                <InfoRow
-                  label="Last Updated"
-                  value={pl.updatedAt?.slice(0, 10)}
-                />
+                <InfoRow label="Last Updated" value={pl.updatedAt?.slice(0, 10)} />
               </div>
             </GlassCard>
 
             {(pl.drawingNumbers?.length > 0 || pl.specNumbers?.length > 0) && (
-              <GlassCard className="p-6">
-                <h2 className="text-sm font-bold text-white mb-4">
-                  Engineering References
-                </h2>
+              <GlassCard className="p-3.5 hover:border-primary/20 hover:bg-secondary/30 transition-all duration-200">
+                <h2 className="text-sm font-bold text-white mb-4">Engineering References</h2>
                 {pl.drawingNumbers?.length > 0 && (
                   <div className="mb-3">
                     <p className="text-[10px] uppercase tracking-widest font-semibold text-muted-foreground mb-2">
@@ -1861,27 +1795,17 @@ function PLNumberDetailView({
               pl.severityOfFailure ||
               pl.eligibilityCriteria ||
               pl.procurementConditions) && (
-              <GlassCard className="p-6">
-                <h2 className="text-sm font-bold text-white mb-4">
-                  Safety & Eligibility Details
-                </h2>
+              <GlassCard className="p-3.5 hover:border-primary/20 hover:bg-secondary/30 transition-all duration-200">
+                <h2 className="text-sm font-bold text-white mb-4">Safety & Eligibility Details</h2>
                 <div className="space-y-3">
-                  <InfoRow
-                    label="Safety Classification"
-                    value={pl.safetyClassification}
-                  />
-                  <InfoRow
-                    label="Severity of Failure"
-                    value={pl.severityOfFailure}
-                  />
+                  <InfoRow label="Safety Classification" value={pl.safetyClassification} />
+                  <InfoRow label="Severity of Failure" value={pl.severityOfFailure} />
                   {pl.consequences && (
                     <div>
                       <p className="text-[10px] uppercase tracking-widest font-semibold text-muted-foreground mb-1">
                         Consequences of Failure
                       </p>
-                      <p className="text-sm text-foreground/90">
-                        {pl.consequences}
-                      </p>
+                      <p className="text-sm text-foreground/90">{pl.consequences}</p>
                     </div>
                   )}
                   {pl.functionality && (
@@ -1889,9 +1813,7 @@ function PLNumberDetailView({
                       <p className="text-[10px] uppercase tracking-widest font-semibold text-muted-foreground mb-1">
                         Functionality
                       </p>
-                      <p className="text-sm text-foreground/90">
-                        {pl.functionality}
-                      </p>
+                      <p className="text-sm text-foreground/90">{pl.functionality}</p>
                     </div>
                   )}
                   {pl.eligibilityCriteria && (
@@ -1899,9 +1821,7 @@ function PLNumberDetailView({
                       <p className="text-[10px] uppercase tracking-widest font-semibold text-muted-foreground mb-1">
                         Eligibility Criteria
                       </p>
-                      <p className="text-sm text-foreground/90">
-                        {pl.eligibilityCriteria}
-                      </p>
+                      <p className="text-sm text-foreground/90">{pl.eligibilityCriteria}</p>
                     </div>
                   )}
                   {pl.procurementConditions && (
@@ -1909,9 +1829,7 @@ function PLNumberDetailView({
                       <p className="text-[10px] uppercase tracking-widest font-semibold text-muted-foreground mb-1">
                         Procurement Conditions
                       </p>
-                      <p className="text-sm text-foreground/90">
-                        {pl.procurementConditions}
-                      </p>
+                      <p className="text-sm text-foreground/90">{pl.procurementConditions}</p>
                     </div>
                   )}
                 </div>
@@ -1920,7 +1838,7 @@ function PLNumberDetailView({
           </div>
 
           <div className="space-y-4">
-            <GlassCard className="p-5">
+            <GlassCard className="p-3.5 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-secondary/40 transition-all duration-200">
               <h3 className="text-sm font-bold text-white mb-3">Quick Stats</h3>
               <div className="space-y-2">
                 {[
@@ -1955,16 +1873,14 @@ function PLNumberDetailView({
                 ].map((s) => (
                   <div key={s.label} className="flex justify-between text-sm">
                     <span className="text-muted-foreground">{s.label}</span>
-                    <span className="text-primary font-semibold">
-                      {s.value}
-                    </span>
+                    <span className="text-primary font-semibold">{s.value}</span>
                   </div>
                 ))}
               </div>
             </GlassCard>
 
             {(pl.usedIn ?? []).length > 0 && (
-              <GlassCard className="p-5">
+              <GlassCard className="p-3.5 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-secondary/40 transition-all duration-200">
                 <h3 className="text-sm font-bold text-white mb-3">Used In</h3>
                 <div className="space-y-1.5">
                   {(pl.usedIn ?? []).map((p) => (
@@ -1984,7 +1900,7 @@ function PLNumberDetailView({
 
             {/* Recent Activity Feed */}
             {(pl.engineeringChanges ?? []).length > 0 && (
-              <GlassCard className="p-5">
+              <GlassCard className="p-3.5 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-secondary/40 transition-all duration-200">
                 <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
                   <Activity className="w-4 h-4 text-primary" />
                   Recent Activity
@@ -2021,6 +1937,7 @@ function PLNumberDetailView({
                 </div>
                 {(pl.engineeringChanges ?? []).length > 5 && (
                   <button
+                    type="button"
                     onClick={() => setActiveTab("changes")}
                     className="mt-3 text-xs text-primary hover:text-primary/90 transition-colors"
                   >
@@ -2040,9 +1957,7 @@ function PLNumberDetailView({
           documents={documents}
           documentsLoading={documentsLoading}
           documentAlerts={documentAlertMap}
-          onLinkChange={(nextLinkedIds) =>
-            onDirectUpdate({ linkedDocumentIds: nextLinkedIds })
-          }
+          onLinkChange={(nextLinkedIds) => onDirectUpdate({ linkedDocumentIds: nextLinkedIds })}
           onApproveAlert={approveAlert}
           onBypassAlert={bypassAlert}
           focusedDocumentId={focusedDocumentId}
@@ -2053,9 +1968,7 @@ function PLNumberDetailView({
       {activeTab === "changes" && (
         <GlassCard className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-bold text-white">
-              Engineering Changes
-            </h2>
+            <h2 className="text-base font-bold text-white">Engineering Changes</h2>
             <Button size="sm" onClick={() => setShowAddEC((v) => !v)}>
               {showAddEC ? (
                 <>
@@ -2069,12 +1982,7 @@ function PLNumberDetailView({
             </Button>
           </div>
 
-          {showAddEC && (
-            <AddECForm
-              onAdd={handleAddEC}
-              onCancel={() => setShowAddEC(false)}
-            />
-          )}
+          {showAddEC && <AddECForm onAdd={handleAddEC} onCancel={() => setShowAddEC(false)} />}
 
           {engineeringChanges.length > 0 ? (
             <div className="space-y-0">
@@ -2103,13 +2011,9 @@ function PLNumberDetailView({
                           {ec.status.replace("_", " ")}
                         </span>
                       </div>
-                      <span className="text-[10px] text-slate-600 shrink-0">
-                        {ec.date}
-                      </span>
+                      <span className="text-[10px] text-slate-600 shrink-0">{ec.date}</span>
                     </div>
-                    <p className="text-sm text-foreground leading-snug">
-                      {ec.description}
-                    </p>
+                    <p className="text-sm text-foreground leading-snug">{ec.description}</p>
                     {ec.author && (
                       <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
                         <User className="w-3 h-3" />
@@ -2124,9 +2028,7 @@ function PLNumberDetailView({
             !showAddEC && (
               <div className="text-center py-10">
                 <GitBranch className="w-10 h-10 mx-auto mb-3 text-slate-600 opacity-50" />
-                <p className="text-muted-foreground text-sm">
-                  No engineering changes recorded.
-                </p>
+                <p className="text-muted-foreground text-sm">No engineering changes recorded.</p>
                 <p className="text-slate-600 text-xs mt-1">
                   Add the first engineering change using the button above.
                 </p>
@@ -2169,9 +2071,7 @@ function PLNumberDetailView({
                       >
                         <FileText className="w-4 h-4 text-primary shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <span className="text-sm text-foreground truncate">
-                            {doc.name}
-                          </span>
+                          <span className="text-sm text-foreground truncate">{doc.name}</span>
                           <span className="font-mono text-[10px] text-muted-foreground ml-2">
                             {doc.id}
                           </span>
@@ -2183,8 +2083,7 @@ function PLNumberDetailView({
                           )}
                         </div>
                         <div className="flex items-center gap-1.5 shrink-0">
-                          {(doc.ocrStatus === "Completed" ||
-                            doc.ocrStatus === "COMPLETED") && (
+                          {(doc.ocrStatus === "Completed" || doc.ocrStatus === "COMPLETED") && (
                             <span className="flex items-center gap-1 px-1.5 py-0.5 bg-indigo-500/10 border border-indigo-500/30 rounded-full text-[9px] text-indigo-300">
                               <FileSearch className="w-2.5 h-2.5" /> OCR
                             </span>
@@ -2200,15 +2099,10 @@ function PLNumberDetailView({
                               }}
                               className="rounded-full border border-amber-500/25 bg-amber-500/10 px-2 py-0.5 text-[9px] font-semibold text-amber-100 hover:bg-amber-500/14 transition-colors"
                             >
-                              {expandedCrossrefAlertId === alert.id
-                                ? "Hide review"
-                                : "Review"}
+                              {expandedCrossrefAlertId === alert.id ? "Hide review" : "Review"}
                             </button>
                           )}
-                          <Badge
-                            variant={statusBadgeVariant(doc.status)}
-                            className="text-[9px]"
-                          >
+                          <Badge variant={statusBadgeVariant(doc.status)} className="text-[9px]">
                             {doc.status}
                           </Badge>
                           <DocumentPreviewButton
@@ -2224,19 +2118,13 @@ function PLNumberDetailView({
                           alert={alert}
                           defaultOpen
                           className="border-amber-500/15"
-                          onOpenPl={() =>
-                            navigate(`/pl/${pl.id}?tab=crossrefs&doc=${doc.id}`)
-                          }
+                          onOpenPl={() => navigate(`/pl/${pl.id}?tab=crossrefs&doc=${doc.id}`)}
                           onApprove={() =>
-                            approveAlert(
-                              alert.id,
-                              "Approved from PL cross-reference list",
-                            )
+                            approveAlert(alert.id, "Approved from PL cross-reference list")
                           }
                           onBypass={() =>
                             bypassAlert(alert.id, {
-                              bypassReason:
-                                "Bypassed from PL cross-reference list",
+                              bypassReason: "Bypassed from PL cross-reference list",
                             })
                           }
                         />
@@ -2246,9 +2134,7 @@ function PLNumberDetailView({
                 })}
               </div>
             ) : (
-              <p className="text-muted-foreground text-sm">
-                No documents linked.
-              </p>
+              <p className="text-muted-foreground text-sm">No documents linked.</p>
             )}
           </GlassCard>
 
@@ -2264,20 +2150,14 @@ function PLNumberDetailView({
             {(pl.linkedWorkIds ?? []).length > 0 ? (
               <div className="space-y-1.5">
                 {(pl.linkedWorkIds ?? []).map((id) => {
-                  const isOpen =
-                    id.startsWith("WR-OPEN") || id.includes("-OPEN-");
-                  const isClosed =
-                    id.startsWith("WR-CLOSED") || id.includes("-CLOSED-");
+                  const isOpen = id.startsWith("WR-OPEN") || id.includes("-OPEN-");
+                  const isClosed = id.startsWith("WR-CLOSED") || id.includes("-CLOSED-");
                   const statusVariant = isClosed
                     ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/30"
                     : isOpen
                       ? "bg-slate-700/50 text-muted-foreground border-slate-600/40"
                       : "bg-amber-500/10 text-amber-300 border-amber-500/30";
-                  const statusLabel = isClosed
-                    ? "Closed"
-                    : isOpen
-                      ? "Open"
-                      : "In Progress";
+                  const statusLabel = isClosed ? "Closed" : isOpen ? "Open" : "In Progress";
                   return (
                     <div
                       key={id}
@@ -2285,9 +2165,7 @@ function PLNumberDetailView({
                       onClick={() => navigate(`/ledger?id=${id}`)}
                     >
                       <Briefcase className="w-4 h-4 text-blue-400 shrink-0" />
-                      <span className="font-mono text-xs text-blue-300 flex-1">
-                        {id}
-                      </span>
+                      <span className="font-mono text-xs text-blue-300 flex-1">{id}</span>
                       <span
                         className={`text-[9px] px-1.5 py-0.5 rounded-full border font-semibold shrink-0 ${statusVariant}`}
                       >
@@ -2299,9 +2177,7 @@ function PLNumberDetailView({
                 })}
               </div>
             ) : (
-              <p className="text-muted-foreground text-sm">
-                No work records linked to this PL.
-              </p>
+              <p className="text-muted-foreground text-sm">No work records linked to this PL.</p>
             )}
           </GlassCard>
 
@@ -2317,14 +2193,9 @@ function PLNumberDetailView({
             {(pl.linkedCaseIds ?? []).length > 0 ? (
               <div className="space-y-1.5">
                 {(pl.linkedCaseIds ?? []).map((id) => {
-                  const isClosed =
-                    id.includes("-CLOSED") || id.includes("RESOLVED");
+                  const isClosed = id.includes("-CLOSED") || id.includes("RESOLVED");
                   const isOpen = id.includes("-OPEN") || id.includes("ACTIVE");
-                  const caseStatus = isClosed
-                    ? "Resolved"
-                    : isOpen
-                      ? "Active"
-                      : "Open";
+                  const caseStatus = isClosed ? "Resolved" : isOpen ? "Active" : "Open";
                   const caseVariant = isClosed
                     ? "bg-slate-700/50 text-muted-foreground border-slate-600/40"
                     : "bg-amber-500/10 text-amber-300 border-amber-500/30";
@@ -2335,9 +2206,7 @@ function PLNumberDetailView({
                       onClick={() => navigate(`/cases?id=${id}`)}
                     >
                       <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
-                      <span className="font-mono text-xs text-amber-300 flex-1">
-                        {id}
-                      </span>
+                      <span className="font-mono text-xs text-amber-300 flex-1">{id}</span>
                       <span
                         className={`text-[9px] px-1.5 py-0.5 rounded-full border font-semibold shrink-0 ${caseVariant}`}
                       >
@@ -2349,9 +2218,7 @@ function PLNumberDetailView({
                 })}
               </div>
             ) : (
-              <p className="text-muted-foreground text-sm">
-                No cases linked to this PL.
-              </p>
+              <p className="text-muted-foreground text-sm">No cases linked to this PL.</p>
             )}
           </GlassCard>
         </div>
@@ -2359,12 +2226,7 @@ function PLNumberDetailView({
 
       {/* Edit Modal */}
       {editOpen && (
-        <PLFormModal
-          mode="edit"
-          pl={pl}
-          onClose={() => setEditOpen(false)}
-          onSave={onUpdate}
-        />
+        <PLFormModal mode="edit" pl={pl} onClose={() => setEditOpen(false)} onSave={onUpdate} />
       )}
     </div>
   );
@@ -2378,11 +2240,7 @@ export default function PLDetail({ plId: plIdProp }: { plId?: string } = {}) {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const {
-    data: plItem,
-    loading: plItemLoading,
-    refetch: refetchPL,
-  } = usePLItem(id);
+  const { data: plItem, loading: plItemLoading, refetch: refetchPL } = usePLItem(id);
 
   const plRecord = id ? getPLRecord(id) : undefined;
   const legacyPL = !plRecord
@@ -2390,12 +2248,7 @@ export default function PLDetail({ plId: plIdProp }: { plId?: string } = {}) {
     : undefined;
 
   const [activeTab, setActiveTab] = useState<
-    | "overview"
-    | "documents"
-    | "drawings"
-    | "whereUsed"
-    | "changes"
-    | "effectivity"
+    "overview" | "documents" | "drawings" | "whereUsed" | "changes" | "effectivity"
   >("overview");
 
   const handleUpdatePL = async (patch: Partial<PLNumber>) => {
@@ -2425,8 +2278,7 @@ export default function PLDetail({ plId: plIdProp }: { plId?: string } = {}) {
       refetchPL();
     } catch (err) {
       toast.error("Update failed", {
-        description:
-          err instanceof Error ? err.message : "An unexpected error occurred",
+        description: err instanceof Error ? err.message : "An unexpected error occurred",
       });
     }
   };
@@ -2484,6 +2336,7 @@ export default function PLDetail({ plId: plIdProp }: { plId?: string } = {}) {
       <div className="space-y-6 max-w-[1400px] mx-auto">
         <div>
           <button
+            type="button"
             onClick={() => navigate("/pl")}
             className="flex items-center gap-2 text-muted-foreground hover:text-primary/90 text-sm mb-4 transition-colors"
           >
@@ -2493,9 +2346,7 @@ export default function PLDetail({ plId: plIdProp }: { plId?: string } = {}) {
             <div>
               <div className="flex items-center gap-3 mb-1 flex-wrap">
                 <NodeIcon type={plRecord.type} className="w-6 h-6" />
-                <h1 className="text-2xl font-bold text-white">
-                  {plRecord.name}
-                </h1>
+                <h1 className="text-2xl font-bold text-white">{plRecord.name}</h1>
                 <Badge variant={statusBadgeVariant(plRecord.lifecycleState)}>
                   {plRecord.lifecycleState}
                 </Badge>
@@ -2507,8 +2358,7 @@ export default function PLDetail({ plId: plIdProp }: { plId?: string } = {}) {
               </div>
               <p className="text-muted-foreground text-sm font-mono pl-9 flex items-center gap-2">
                 <Hash className="w-3.5 h-3.5" />
-                PL {plRecord.plNumber} · Rev {plRecord.revision} ·{" "}
-                {plRecord.type}
+                PL {plRecord.plNumber} · Rev {plRecord.revision} · {plRecord.type}
               </p>
             </div>
             <div className="flex gap-2">
@@ -2528,6 +2378,7 @@ export default function PLDetail({ plId: plIdProp }: { plId?: string } = {}) {
         <div className="flex gap-1 border-b border-border overflow-x-auto">
           {tabs.map((tab) => (
             <button
+              type="button"
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex-shrink-0 px-4 py-2.5 text-xs font-medium border-b-2 transition-all -mb-px ${
@@ -2544,18 +2395,12 @@ export default function PLDetail({ plId: plIdProp }: { plId?: string } = {}) {
         {activeTab === "overview" && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-4">
-              <GlassCard className="p-6">
-                <h2 className="text-base font-bold text-white mb-3">
-                  Description
-                </h2>
-                <p className="text-sm text-foreground/90 leading-relaxed">
-                  {plRecord.description}
-                </p>
+              <GlassCard className="p-3.5 hover:border-primary/20 hover:bg-secondary/30 transition-all duration-200">
+                <h2 className="text-base font-bold text-white mb-3">Description</h2>
+                <p className="text-sm text-foreground/90 leading-relaxed">{plRecord.description}</p>
               </GlassCard>
-              <GlassCard className="p-6">
-                <h2 className="text-base font-bold text-white mb-4">
-                  Properties
-                </h2>
+              <GlassCard className="p-3.5 hover:border-primary/20 hover:bg-secondary/30 transition-all duration-200">
+                <h2 className="text-base font-bold text-white mb-4">Properties</h2>
                 <div className="grid grid-cols-2 gap-4">
                   {[
                     {
@@ -2591,9 +2436,7 @@ export default function PLDetail({ plId: plIdProp }: { plId?: string } = {}) {
                     <div key={f.label} className="flex items-start gap-3">
                       <f.icon className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
                       <div>
-                        <p className="text-xs text-muted-foreground">
-                          {f.label}
-                        </p>
+                        <p className="text-xs text-muted-foreground">{f.label}</p>
                         <p
                           className={`text-sm font-medium text-foreground ${f.mono ? "font-mono" : ""}`}
                         >
@@ -2606,12 +2449,8 @@ export default function PLDetail({ plId: plIdProp }: { plId?: string } = {}) {
                     <div className="flex items-start gap-3">
                       <Building2 className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
                       <div>
-                        <p className="text-xs text-muted-foreground">
-                          Supplier
-                        </p>
-                        <p className="text-sm font-medium text-foreground">
-                          {plRecord.supplier}
-                        </p>
+                        <p className="text-xs text-muted-foreground">Supplier</p>
+                        <p className="text-sm font-medium text-foreground">{plRecord.supplier}</p>
                         {plRecord.supplierPartNo && (
                           <p className="text-xs text-muted-foreground font-mono">
                             {plRecord.supplierPartNo}
@@ -2625,10 +2464,8 @@ export default function PLDetail({ plId: plIdProp }: { plId?: string } = {}) {
             </div>
 
             <div className="space-y-4">
-              <GlassCard className="p-5">
-                <h3 className="text-sm font-bold text-white mb-3">
-                  Tags & Classification
-                </h3>
+              <GlassCard className="p-3.5 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-secondary/40 transition-all duration-200">
+                <h3 className="text-sm font-bold text-white mb-3">Tags & Classification</h3>
                 <div className="flex flex-wrap gap-1.5 mb-3">
                   {plRecord.tags.map((tag) => (
                     <span
@@ -2639,17 +2476,11 @@ export default function PLDetail({ plId: plIdProp }: { plId?: string } = {}) {
                     </span>
                   ))}
                 </div>
-                <div className="text-xs text-muted-foreground mb-1">
-                  Classification
-                </div>
-                <p className="text-xs text-foreground/90">
-                  {plRecord.classification}
-                </p>
+                <div className="text-xs text-muted-foreground mb-1">Classification</div>
+                <p className="text-xs text-foreground/90">{plRecord.classification}</p>
               </GlassCard>
-              <GlassCard className="p-5">
-                <h3 className="text-sm font-bold text-white mb-3">
-                  Quick Stats
-                </h3>
+              <GlassCard className="p-3.5 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-secondary/40 transition-all duration-200">
+                <h3 className="text-sm font-bold text-white mb-3">Quick Stats</h3>
                 <div className="space-y-2">
                   {[
                     {
@@ -2666,9 +2497,7 @@ export default function PLDetail({ plId: plIdProp }: { plId?: string } = {}) {
                   ].map((s) => (
                     <div key={s.label} className="flex justify-between text-sm">
                       <span className="text-muted-foreground">{s.label}</span>
-                      <span className="text-primary font-semibold">
-                        {s.value}
-                      </span>
+                      <span className="text-primary font-semibold">{s.value}</span>
                     </div>
                   ))}
                 </div>
@@ -2678,10 +2507,8 @@ export default function PLDetail({ plId: plIdProp }: { plId?: string } = {}) {
         )}
 
         {activeTab === "documents" && (
-          <GlassCard className="p-6">
-            <h2 className="text-base font-bold text-white mb-4">
-              Linked Documents
-            </h2>
+          <GlassCard className="p-3.5 hover:border-primary/20 transition-all duration-200">
+            <h2 className="text-base font-bold text-white mb-4">Linked Documents</h2>
             <div className="space-y-3">
               {plRecord.linkedDocuments.map((doc) => (
                 <div
@@ -2692,22 +2519,16 @@ export default function PLDetail({ plId: plIdProp }: { plId?: string } = {}) {
                 >
                   <FileText className="w-9 h-9 p-2 rounded-lg bg-teal-500/10 text-primary shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground">
-                      {doc.title}
-                    </p>
+                    <p className="text-sm font-semibold text-foreground">{doc.title}</p>
                     <div className="flex gap-3 text-xs text-muted-foreground mt-0.5">
-                      <span className="font-mono text-primary">
-                        {doc.docId}
-                      </span>
+                      <span className="font-mono text-primary">{doc.docId}</span>
                       <span>{doc.type}</span>
                       <span>Rev {doc.revision}</span>
                       <span>{doc.size}</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Badge variant={statusBadgeVariant(doc.status)}>
-                      {doc.status}
-                    </Badge>
+                    <Badge variant={statusBadgeVariant(doc.status)}>{doc.status}</Badge>
                     <DocumentPreviewButton
                       documentId={doc.docId}
                       title={doc.title}
@@ -2728,17 +2549,13 @@ export default function PLDetail({ plId: plIdProp }: { plId?: string } = {}) {
         )}
 
         {activeTab === "drawings" && (
-          <GlassCard className="p-6">
-            <h2 className="text-base font-bold text-white mb-4">
-              Linked Drawings
-            </h2>
+          <GlassCard className="p-3.5 hover:border-primary/20 transition-all duration-200">
+            <h2 className="text-base font-bold text-white mb-4">Linked Drawings</h2>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border text-muted-foreground">
-                    <th className="pb-3 text-left font-semibold pl-4">
-                      Drawing ID
-                    </th>
+                    <th className="pb-3 text-left font-semibold pl-4">Drawing ID</th>
                     <th className="pb-3 text-left font-semibold">Title</th>
                     <th className="pb-3 text-left font-semibold">Sheet</th>
                     <th className="pb-3 text-left font-semibold">Rev</th>
@@ -2748,29 +2565,14 @@ export default function PLDetail({ plId: plIdProp }: { plId?: string } = {}) {
                 </thead>
                 <tbody className="divide-y divide-slate-800/30">
                   {plRecord.linkedDrawings.map((d) => (
-                    <tr
-                      key={d.drawingId}
-                      className="hover:bg-secondary/30 transition-colors"
-                    >
-                      <td className="py-3 pl-4 font-mono text-xs text-primary">
-                        {d.drawingId}
-                      </td>
-                      <td className="py-3 text-foreground text-sm">
-                        {d.title}
-                      </td>
-                      <td className="py-3 text-muted-foreground text-xs">
-                        {d.sheetNo}
-                      </td>
-                      <td className="py-3 font-mono text-xs text-foreground/90">
-                        {d.revision}
-                      </td>
-                      <td className="py-3 text-muted-foreground text-xs">
-                        {d.format}
-                      </td>
+                    <tr key={d.drawingId} className="hover:bg-secondary/30 transition-colors">
+                      <td className="py-3 pl-4 font-mono text-xs text-primary">{d.drawingId}</td>
+                      <td className="py-3 text-foreground text-sm">{d.title}</td>
+                      <td className="py-3 text-muted-foreground text-xs">{d.sheetNo}</td>
+                      <td className="py-3 font-mono text-xs text-foreground/90">{d.revision}</td>
+                      <td className="py-3 text-muted-foreground text-xs">{d.format}</td>
                       <td className="py-3">
-                        <Badge variant={statusBadgeVariant(d.status)}>
-                          {d.status}
-                        </Badge>
+                        <Badge variant={statusBadgeVariant(d.status)}>{d.status}</Badge>
                       </td>
                     </tr>
                   ))}
@@ -2786,7 +2588,7 @@ export default function PLDetail({ plId: plIdProp }: { plId?: string } = {}) {
         )}
 
         {activeTab === "whereUsed" && (
-          <GlassCard className="p-6">
+          <GlassCard className="p-3.5 hover:border-primary/20 transition-all duration-200">
             <h2 className="text-base font-bold text-white mb-4">Where Used</h2>
             {plRecord.whereUsed.length > 0 ? (
               <div className="space-y-3">
@@ -2798,36 +2600,29 @@ export default function PLDetail({ plId: plIdProp }: { plId?: string } = {}) {
                   >
                     <Box className="w-8 h-8 p-1.5 rounded-lg bg-blue-500/10 text-blue-400 shrink-0" />
                     <div className="flex-1">
-                      <p className="text-sm font-semibold text-foreground">
-                        {u.parentName}
-                      </p>
+                      <p className="text-sm font-semibold text-foreground">{u.parentName}</p>
                       <p className="text-xs text-muted-foreground font-mono">
                         {u.parentPL} · Find No. {u.findNumber}
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="text-xs text-muted-foreground">Quantity</p>
-                      <p className="text-lg font-bold text-primary">
-                        {u.quantity}
-                      </p>
+                      <p className="text-lg font-bold text-primary">{u.quantity}</p>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
               <p className="text-muted-foreground text-sm">
-                This is a top-level assembly and is not used in any parent
-                assemblies.
+                This is a top-level assembly and is not used in any parent assemblies.
               </p>
             )}
           </GlassCard>
         )}
 
         {activeTab === "changes" && (
-          <GlassCard className="p-6">
-            <h2 className="text-base font-bold text-white mb-4">
-              Change History
-            </h2>
+          <GlassCard className="p-3.5 hover:border-primary/20 transition-all duration-200">
+            <h2 className="text-base font-bold text-white mb-4">Change History</h2>
             {plRecord.changeHistory.length > 0 ? (
               <div className="space-y-4">
                 {plRecord.changeHistory.map((c, i) => (
@@ -2844,19 +2639,13 @@ export default function PLDetail({ plId: plIdProp }: { plId?: string } = {}) {
                     </div>
                     <div className="flex-1 pb-4">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="font-mono text-xs text-primary">
-                          {c.changeId}
-                        </span>
+                        <span className="font-mono text-xs text-primary">{c.changeId}</span>
                         <span className="text-xs px-1.5 py-0.5 bg-secondary rounded text-muted-foreground">
                           {c.type}
                         </span>
-                        <Badge variant={statusBadgeVariant(c.status)}>
-                          {c.status}
-                        </Badge>
+                        <Badge variant={statusBadgeVariant(c.status)}>{c.status}</Badge>
                       </div>
-                      <p className="text-sm font-medium text-foreground">
-                        {c.title}
-                      </p>
+                      <p className="text-sm font-medium text-foreground">{c.title}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">
                         {c.author} · {c.date}
                       </p>
@@ -2873,7 +2662,7 @@ export default function PLDetail({ plId: plIdProp }: { plId?: string } = {}) {
         )}
 
         {activeTab === "effectivity" && (
-          <GlassCard className="p-6">
+          <GlassCard className="p-3.5 hover:border-primary/20 transition-all duration-200">
             <h2 className="text-base font-bold text-white mb-4">Effectivity</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {Object.entries(plRecord.effectivity)
@@ -2883,9 +2672,7 @@ export default function PLDetail({ plId: plIdProp }: { plId?: string } = {}) {
                     <p className="text-xs text-muted-foreground mb-1 capitalize">
                       {key.replace(/([A-Z])/g, " $1")}
                     </p>
-                    <p className="text-sm font-medium text-foreground">
-                      {String(value)}
-                    </p>
+                    <p className="text-sm font-medium text-foreground">{String(value)}</p>
                   </div>
                 ))}
             </div>
@@ -2899,6 +2686,7 @@ export default function PLDetail({ plId: plIdProp }: { plId?: string } = {}) {
     return (
       <div className="space-y-6 max-w-[1200px] mx-auto">
         <button
+          type="button"
           onClick={() => navigate("/pl")}
           className="flex items-center gap-2 text-muted-foreground hover:text-primary/90 text-sm mb-4 transition-colors"
         >
@@ -2922,7 +2710,7 @@ export default function PLDetail({ plId: plIdProp }: { plId?: string } = {}) {
         <p className="text-muted-foreground text-sm font-mono">
           {legacyPL.id} · {legacyPL.lifecycle}
         </p>
-        <GlassCard className="p-6">
+        <GlassCard className="p-3.5 hover:border-primary/20 transition-all duration-200">
           <p className="text-foreground/90">{legacyPL.description}</p>
           <div className="mt-4 grid grid-cols-2 gap-4">
             <div>
@@ -2941,14 +2729,11 @@ export default function PLDetail({ plId: plIdProp }: { plId?: string } = {}) {
 
   return (
     <div className="flex items-center justify-center h-[60vh]">
-      <GlassCard className="p-12 text-center max-w-md">
+      <GlassCard className="p-6 text-center max-w-md hover:border-primary/20 transition-all duration-200">
         <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
-        <h2 className="text-xl font-bold text-white mb-2">
-          PL Record Not Found
-        </h2>
+        <h2 className="text-xl font-bold text-white mb-2">PL Record Not Found</h2>
         <p className="text-muted-foreground text-sm mb-4">
-          No PL record with ID{" "}
-          <span className="font-mono text-primary">{id}</span> exists.
+          No PL record with ID <span className="font-mono text-primary">{id}</span> exists.
         </p>
         <Button onClick={() => navigate("/pl")}>
           <ArrowLeft className="w-4 h-4" /> Back to PL Knowledge Hub

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import apiClient from "../services/ApiClient";
 import {
-  DocumentChangeAlertService,
   type DocumentChangeAlert,
+  DocumentChangeAlertService,
 } from "../services/DocumentChangeAlertService";
 
 interface UseDocumentChangeAlertsOptions {
@@ -10,9 +10,7 @@ interface UseDocumentChangeAlertsOptions {
   document?: string;
 }
 
-export function useDocumentChangeAlerts(
-  options: UseDocumentChangeAlertsOptions = {},
-) {
+export function useDocumentChangeAlerts(options: UseDocumentChangeAlertsOptions = {}) {
   const [alerts, setAlerts] = useState<DocumentChangeAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,11 +26,7 @@ export function useDocumentChangeAlerts(
       });
       setAlerts(response.items.map(DocumentChangeAlertService.mapApiReview));
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to load document change alerts",
-      );
+      setError(err instanceof Error ? err.message : "Failed to load document change alerts");
       setAlerts([]);
     } finally {
       setLoading(false);
@@ -47,23 +41,15 @@ export function useDocumentChangeAlerts(
   }, [load]);
 
   const approveAlert = useCallback(async (alertId: string, notes?: string) => {
-    await apiClient.approveSupervisorDocumentReview(
-      alertId,
-      notes ? { notes } : undefined,
-    );
+    await apiClient.approveSupervisorDocumentReview(alertId, notes ? { notes } : undefined);
     DocumentChangeAlertService.notifyUpdated();
   }, []);
 
   const bypassAlert = useCallback(
-    async (
-      alertId: string,
-      payload?: { notes?: string; bypassReason?: string },
-    ) => {
+    async (alertId: string, payload?: { notes?: string; bypassReason?: string }) => {
       await apiClient.bypassSupervisorDocumentReview(alertId, {
         ...(payload?.notes ? { notes: payload.notes } : {}),
-        ...(payload?.bypassReason
-          ? { bypass_reason: payload.bypassReason }
-          : {}),
+        ...(payload?.bypassReason ? { bypass_reason: payload.bypassReason } : {}),
       });
       DocumentChangeAlertService.notifyUpdated();
     },

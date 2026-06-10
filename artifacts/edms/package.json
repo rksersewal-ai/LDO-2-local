@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite --config vite.config.ts --host 0.0.0.0",
     "build": "vite build --config vite.config.ts",
-    "serve": "vite preview --config vite.config.ts --host 0.0.0.0",
+    "build:preview": "vite build --config vite.config.ts --mode preview",
+    "serve": "pnpm run build:preview && vite preview --config vite.config.ts --mode preview --host 0.0.0.0",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
@@ -87,6 +88,7 @@
     "react-dnd": "16.0.1",
     "react-dnd-html5-backend": "16.0.1",
     "react-router": "7.13.1",
-    "xlsx": "0.18.5"
+    "xlsx": "0.18.5",
+    "zustand": "4.5.2"
   }
 }

@@ -43,7 +43,7 @@ export class SystemSettingsService {
   }
 
   static set(next: Partial<SystemSettingsState>) {
-    const updated = { ...this.get(), ...next };
+    const updated = { ...SystemSettingsService.get(), ...next };
     localStorage.setItem(SYSTEM_SETTINGS_KEY, JSON.stringify(updated));
     return updated;
   }

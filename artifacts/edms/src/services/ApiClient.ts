@@ -12,38 +12,28 @@
  */
 
 import axios, {
-  AxiosInstance,
-  AxiosError,
-  AxiosResponse,
-  InternalAxiosRequestConfig,
+  type AxiosError,
+  type AxiosInstance,
+  type AxiosResponse,
+  type InternalAxiosRequestConfig,
 } from "axios";
 import type {
   AppInboxItem,
-  ApiListResponse,
-  ApiItemResponse,
-  ApiMutationResponse,
-  ApiDeleteResponse,
-  NormalizedListResult,
-  ListQueryParams,
-  SearchBucketsResponse,
-  SearchScope,
+  CaseRecord,
   Document,
   DocumentMetadataAssertion,
   DocumentOcrEntity,
-  WorkRecord,
-  PLNumber,
-  CaseRecord,
-  User,
-  InitialRunSummary,
   InitialRunActionResult,
+  InitialRunSummary,
+  ListQueryParams,
+  NormalizedListResult,
+  PLNumber,
+  SearchBucketsResponse,
+  SearchScope,
+  User,
+  WorkRecord,
 } from "../lib/types";
-import {
-  safeValidate,
-  DocumentSchema,
-  PLNumberSchema,
-  WorkRecordSchema,
-  UserSchema,
-} from "../lib/validation";
+import { DocumentSchema, PLNumberSchema, safeValidate, WorkRecordSchema } from "../lib/validation";
 
 interface ApiErrorResponse {
   detail?: string;
@@ -89,7 +79,7 @@ export class ApiClient {
 
     this.client = axios.create({
       baseURL: this.baseURL,
-      timeout: parseInt(import.meta.env.VITE_API_TIMEOUT || "30000"),
+      timeout: parseInt(import.meta.env.VITE_API_TIMEOUT || "30000", 10),
       headers: {
         "Content-Type": "application/json",
       },
@@ -111,10 +101,7 @@ export class ApiClient {
         const originalRequest = error.config as RetryableRequestConfig;
 
         // Skip refresh for login/refresh endpoints or already-retried requests
-        if (
-          !this.shouldRedirectOnUnauthorized(error) ||
-          originalRequest?._retried
-        ) {
+        if (!this.shouldRedirectOnUnauthorized(error) || originalRequest?._retried) {
           return Promise.reject(error);
         }
 
@@ -162,9 +149,7 @@ export class ApiClient {
     return localStorage.getItem(REFRESH_TOKEN_KEY);
   }
 
-  private shouldRedirectOnUnauthorized(
-    error: AxiosError<ApiErrorResponse>,
-  ): boolean {
+  private shouldRedirectOnUnauthorized(error: AxiosError<ApiErrorResponse>): boolean {
     if (error.response?.status !== 401) {
       return false;
     }
@@ -196,11 +181,7 @@ export class ApiClient {
     const code = error.code;
 
     // Network errors (timeout, connection refused)
-    if (
-      code === "ECONNABORTED" ||
-      code === "ECONNREFUSED" ||
-      code === "ETIMEDOUT"
-    ) {
+    if (code === "ECONNABORTED" || code === "ECONNREFUSED" || code === "ETIMEDOUT") {
       return true;
     }
 
@@ -238,8 +219,7 @@ export class ApiClient {
    */
   private calculateBackoffDelay(attempt: number): number {
     const baseDelay =
-      this.retryConfig.initialDelayMs *
-      Math.pow(this.retryConfig.backoffMultiplier, attempt);
+      this.retryConfig.initialDelayMs * this.retryConfig.backoffMultiplier ** attempt;
 
     const capped = Math.min(baseDelay, this.retryConfig.maxDelayMs);
 
@@ -268,8 +248,7 @@ export class ApiClient {
     let lastError: AxiosError | Error | undefined;
 
     // Only retry GET requests by default; other methods retry when explicitly passed a higher maxRetries
-    const shouldRetry =
-      method === "GET" || maxRetries > this.retryConfig.maxRetries;
+    const shouldRetry = method === "GET" || maxRetries > this.retryConfig.maxRetries;
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
@@ -323,31 +302,19 @@ export class ApiClient {
   ): NormalizedListResult<T> {
     const resp = response as Record<string, unknown>;
     // Check if response is already in standard format
-    if (
-      resp &&
-      typeof resp === "object" &&
-      "results" in resp &&
-      "total" in resp
-    ) {
+    if (resp && typeof resp === "object" && "results" in resp && "total" in resp) {
       const page = (resp.page as number) || 1;
       return {
         items: resp.results as T[],
         total: resp.total as number,
         page,
         pageSize: (resp.pageSize as number) || pageSize,
-        hasMore:
-          page * ((resp.pageSize as number) || pageSize) <
-          (resp.total as number),
+        hasMore: page * ((resp.pageSize as number) || pageSize) < (resp.total as number),
       };
     }
 
     // Django REST Framework PageNumberPagination
-    if (
-      resp &&
-      typeof resp === "object" &&
-      "results" in resp &&
-      "count" in resp
-    ) {
+    if (resp && typeof resp === "object" && "results" in resp && "count" in resp) {
       const resolvedPageSize = (resp.pageSize as number) || pageSize;
       const next = resp.next as string | null | undefined;
       const previous = resp.previous as string | null | undefined;
@@ -355,9 +322,7 @@ export class ApiClient {
 
       if (previous && !resp.page) {
         const previousUrl = new URL(previous, window.location.origin);
-        const previousPage = Number(
-          previousUrl.searchParams.get("page") || "1",
-        );
+        const previousPage = Number(previousUrl.searchParams.get("page") || "1");
         page = previousPage + 1;
       } else if (next && !resp.page) {
         const nextUrl = new URL(next, window.location.origin);
@@ -370,8 +335,7 @@ export class ApiClient {
         total: resp.count as number,
         page,
         pageSize: resolvedPageSize,
-        hasMore:
-          Boolean(next) || page * resolvedPageSize < (resp.count as number),
+        hasMore: Boolean(next) || page * resolvedPageSize < (resp.count as number),
       };
     }
 
@@ -386,12 +350,7 @@ export class ApiClient {
       };
     }
 
-    if (
-      resp &&
-      typeof resp === "object" &&
-      "items" in resp &&
-      "total" in resp
-    ) {
+    if (resp && typeof resp === "object" && "items" in resp && "total" in resp) {
       return {
         items: resp.items as T[],
         total: resp.total as number,
@@ -411,41 +370,25 @@ export class ApiClient {
     };
   }
 
-  private normalizeSearchResponse(
-    response: Record<string, unknown>,
-  ): SearchBucketsResponse {
-    const facets = response?.facets as
-      | Record<string, Record<string, unknown[]>>
-      | undefined;
+  private normalizeSearchResponse(response: Record<string, unknown>): SearchBucketsResponse {
+    const facets = response?.facets as Record<string, Record<string, unknown[]>> | undefined;
     const docFacets = facets?.documents;
     return {
       documents: Array.isArray(response?.documents) ? response.documents : [],
-      work_records: Array.isArray(response?.work_records)
-        ? response.work_records
-        : [],
+      work_records: Array.isArray(response?.work_records) ? response.work_records : [],
       pl_items: Array.isArray(response?.pl_items) ? response.pl_items : [],
       cases: Array.isArray(response?.cases) ? response.cases : [],
       total: typeof response?.total === "number" ? response.total : 0,
       facets: {
         documents: {
-          source_system: Array.isArray(docFacets?.source_system)
-            ? docFacets.source_system
-            : [],
-          category: Array.isArray(docFacets?.category)
-            ? docFacets.category
-            : [],
+          source_system: Array.isArray(docFacets?.source_system) ? docFacets.source_system : [],
+          category: Array.isArray(docFacets?.category) ? docFacets.category : [],
           duplicate_status: Array.isArray(docFacets?.duplicate_status)
             ? docFacets.duplicate_status
             : [],
-          ocr_status: Array.isArray(docFacets?.ocr_status)
-            ? docFacets.ocr_status
-            : [],
-          hash_status: Array.isArray(docFacets?.hash_status)
-            ? docFacets.hash_status
-            : [],
-          pl_linked: Array.isArray(docFacets?.pl_linked)
-            ? docFacets.pl_linked
-            : [],
+          ocr_status: Array.isArray(docFacets?.ocr_status) ? docFacets.ocr_status : [],
+          hash_status: Array.isArray(docFacets?.hash_status) ? docFacets.hash_status : [],
+          pl_linked: Array.isArray(docFacets?.pl_linked) ? docFacets.pl_linked : [],
         },
       },
     } as SearchBucketsResponse;
@@ -459,11 +402,7 @@ export class ApiClient {
    * Validate a single API response item against its Zod schema.
    * In dev mode logs a warning on mismatch; never throws so production is unaffected.
    */
-  private validateItem<T>(
-    data: T,
-    schema: import("zod").ZodSchema<unknown>,
-    context: string,
-  ): T {
+  private validateItem<T>(data: T, schema: import("zod").ZodSchema<unknown>, context: string): T {
     if (import.meta.env.DEV) {
       safeValidate(schema, data, context);
     }
@@ -507,10 +446,7 @@ export class ApiClient {
   // Auth Endpoints
   // ─────────────────────────────────────────────────────────────────────────
 
-  async login(
-    username: string,
-    password: string,
-  ): Promise<{ token: string; user: User }> {
+  async login(username: string, password: string): Promise<{ token: string; user: User }> {
     // Login is retried for resilience (pass maxRetries + 1 to force non-GET retry)
     const response = await this.executeWithRetry(
       () =>
@@ -539,10 +475,7 @@ export class ApiClient {
   async logout() {
     const refresh = this.getStoredRefreshToken();
     try {
-      await this.client.post(
-        "/auth/logout/",
-        refresh ? { refresh } : undefined,
-      );
+      await this.client.post("/auth/logout/", refresh ? { refresh } : undefined);
     } finally {
       this.clearStoredAuth();
     }
@@ -586,15 +519,11 @@ export class ApiClient {
       };
 
       const response = await this.executeWithRetry(
-        () =>
-          this.client.get("/documents/", { params, signal: options.signal }),
+        () => this.client.get("/documents/", { params, signal: options.signal }),
         "GET",
         this.retryConfig.maxRetries,
       );
-      const result = this.normalizeListResponse<Document>(
-        response.data,
-        params.page_size,
-      );
+      const result = this.normalizeListResponse<Document>(response.data, params.page_size);
       this.validateList(result.items, DocumentSchema, "getDocuments");
       return result;
     } catch (error) {
@@ -618,10 +547,7 @@ export class ApiClient {
    * Get single document by ID with automatic retry
    * Returns: Document
    */
-  async getDocument(
-    id: string,
-    options: RequestOptions = {},
-  ): Promise<Document> {
+  async getDocument(id: string, options: RequestOptions = {}): Promise<Document> {
     const response = await this.executeWithRetry(
       () =>
         this.client.get<Document>(`/documents/${id}/`, {
@@ -629,11 +555,7 @@ export class ApiClient {
         }),
       "GET",
     );
-    return this.validateItem(
-      response.data,
-      DocumentSchema,
-      `getDocument(${id})`,
-    );
+    return this.validateItem(response.data, DocumentSchema, `getDocument(${id})`);
   }
 
   async getDocumentAssertions(
@@ -642,10 +564,9 @@ export class ApiClient {
   ): Promise<DocumentMetadataAssertion[]> {
     const response = await this.executeWithRetry(
       () =>
-        this.client.get<DocumentMetadataAssertion[]>(
-          `/documents/${id}/assertions/`,
-          { signal: options.signal },
-        ),
+        this.client.get<DocumentMetadataAssertion[]>(`/documents/${id}/assertions/`, {
+          signal: options.signal,
+        }),
       "GET",
     );
     return Array.isArray(response.data) ? response.data : [];
@@ -726,9 +647,7 @@ export class ApiClient {
   }
 
   async reindexDocumentMetadata(id: string): Promise<Record<string, unknown>> {
-    const response = await this.client.post(
-      `/documents/${id}/reindex-metadata/`,
-    );
+    const response = await this.client.post(`/documents/${id}/reindex-metadata/`);
     return response.data;
   }
 
@@ -739,9 +658,7 @@ export class ApiClient {
     return response.data;
   }
 
-  async ingestDocument(
-    data: FormData,
-  ): Promise<Record<string, unknown> & Partial<Document>> {
+  async ingestDocument(data: FormData): Promise<Record<string, unknown> & Partial<Document>> {
     const response = await this.client.post("/documents/ingest/", data, {
       headers: { "Content-Type": "multipart/form-data" },
     });
@@ -749,10 +666,7 @@ export class ApiClient {
   }
 
   async updateDocument(id: string, data: Partial<Document>): Promise<Document> {
-    const response = await this.client.patch<Document>(
-      `/documents/${id}/`,
-      data,
-    );
+    const response = await this.client.patch<Document>(`/documents/${id}/`, data);
     return response.data;
   }
 
@@ -760,20 +674,13 @@ export class ApiClient {
     await this.client.delete(`/documents/${id}/`);
   }
 
-  async uploadDocumentVersion(
-    id: string,
-    file: File,
-  ): Promise<Record<string, unknown>> {
+  async uploadDocumentVersion(id: string, file: File): Promise<Record<string, unknown>> {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await this.client.post(
-      `/documents/${id}/versions/`,
-      formData,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      },
-    );
+    const response = await this.client.post(`/documents/${id}/versions/`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
     return response.data;
   }
 
@@ -798,8 +705,7 @@ export class ApiClient {
     };
 
     const response = await this.executeWithRetry(
-      () =>
-        this.client.get("/work-records/", { params, signal: options.signal }),
+      () => this.client.get("/work-records/", { params, signal: options.signal }),
       "GET",
     );
     return this.normalizeListResponse(response.data, params.page_size);
@@ -809,10 +715,7 @@ export class ApiClient {
    * Get single work record by ID with automatic retry
    * Returns: WorkRecord
    */
-  async getWorkRecord(
-    id: string,
-    options: RequestOptions = {},
-  ): Promise<WorkRecord> {
+  async getWorkRecord(id: string, options: RequestOptions = {}): Promise<WorkRecord> {
     const response = await this.executeWithRetry(
       () =>
         this.client.get<WorkRecord>(`/work-records/${id}/`, {
@@ -820,11 +723,7 @@ export class ApiClient {
         }),
       "GET",
     );
-    return this.validateItem(
-      response.data,
-      WorkRecordSchema,
-      `getWorkRecord(${id})`,
-    );
+    return this.validateItem(response.data, WorkRecordSchema, `getWorkRecord(${id})`);
   }
 
   async createWorkRecord(data: Partial<WorkRecord>): Promise<WorkRecord> {
@@ -832,14 +731,8 @@ export class ApiClient {
     return response.data;
   }
 
-  async updateWorkRecord(
-    id: string,
-    data: Partial<WorkRecord>,
-  ): Promise<WorkRecord> {
-    const response = await this.client.patch<WorkRecord>(
-      `/work-records/${id}/`,
-      data,
-    );
+  async updateWorkRecord(id: string, data: Partial<WorkRecord>): Promise<WorkRecord> {
+    const response = await this.client.patch<WorkRecord>(`/work-records/${id}/`, data);
     return response.data;
   }
 
@@ -895,10 +788,7 @@ export class ApiClient {
   }
 
   async updatePlItem(id: string, data: Partial<PLNumber>): Promise<PLNumber> {
-    const response = await this.client.patch<PLNumber>(
-      `/pl-items/${id}/`,
-      data,
-    );
+    const response = await this.client.patch<PLNumber>(`/pl-items/${id}/`, data);
     return response.data;
   }
 
@@ -1032,10 +922,7 @@ export class ApiClient {
    * Get single OCR job by ID with automatic retry
    * Returns: OcrJob
    */
-  async getOcrJob(
-    id: string,
-    options: RequestOptions = {},
-  ): Promise<Record<string, unknown>> {
+  async getOcrJob(id: string, options: RequestOptions = {}): Promise<Record<string, unknown>> {
     const response = await this.executeWithRetry(
       () => this.client.get(`/ocr/jobs/${id}/`, { signal: options.signal }),
       "GET",
@@ -1089,10 +976,7 @@ export class ApiClient {
    * Get single approval by ID with automatic retry
    * Returns: Approval
    */
-  async getApproval(
-    id: string,
-    options: RequestOptions = {},
-  ): Promise<Record<string, unknown>> {
+  async getApproval(id: string, options: RequestOptions = {}): Promise<Record<string, unknown>> {
     const response = await this.executeWithRetry(
       () => this.client.get(`/approvals/${id}/`, { signal: options.signal }),
       "GET",
@@ -1100,20 +984,14 @@ export class ApiClient {
     return response.data;
   }
 
-  async approveRequest(
-    id: string,
-    comment?: string,
-  ): Promise<Record<string, unknown>> {
+  async approveRequest(id: string, comment?: string): Promise<Record<string, unknown>> {
     const response = await this.client.post(`/approvals/${id}/approve/`, {
       comment,
     });
     return response.data;
   }
 
-  async rejectRequest(
-    id: string,
-    reason: string,
-  ): Promise<Record<string, unknown>> {
+  async rejectRequest(id: string, reason: string): Promise<Record<string, unknown>> {
     const response = await this.client.post(`/approvals/${id}/reject/`, {
       reason,
     });
@@ -1198,16 +1076,11 @@ export class ApiClient {
    * Returns: SearchResult[]
    */
   async getSearchHistory(): Promise<Record<string, unknown>[]> {
-    const response = await this.executeWithRetry(
-      () => this.client.get("/search/history/"),
-      "GET",
-    );
+    const response = await this.executeWithRetry(() => this.client.get("/search/history/"), "GET");
     return response.data;
   }
 
-  async getInbox(
-    options: RequestOptions = {},
-  ): Promise<{ items: AppInboxItem[] }> {
+  async getInbox(options: RequestOptions = {}): Promise<{ items: AppInboxItem[] }> {
     const response = await this.executeWithRetry(
       () => this.client.get("/inbox/", { signal: options.signal }),
       "GET",
@@ -1281,16 +1154,11 @@ export class ApiClient {
     batch_size?: number;
     parameters?: Record<string, unknown>;
   }): Promise<Record<string, unknown>> {
-    const response = await this.client.post(
-      "/indexing/hash-backfill-jobs/",
-      payload ?? {},
-    );
+    const response = await this.client.post("/indexing/hash-backfill-jobs/", payload ?? {});
     return response.data;
   }
 
-  async getInitialRunSummary(
-    options: RequestOptions = {},
-  ): Promise<InitialRunSummary> {
+  async getInitialRunSummary(options: RequestOptions = {}): Promise<InitialRunSummary> {
     const response = await this.executeWithRetry(
       () =>
         this.client.get("/admin/initial-run/", {
@@ -1302,11 +1170,7 @@ export class ApiClient {
   }
 
   async triggerInitialRunAction(payload: {
-    action:
-      | "index_sources"
-      | "backfill_hashes"
-      | "refresh_deduplication"
-      | "queue_pending_ocr";
+    action: "index_sources" | "backfill_hashes" | "refresh_deduplication" | "queue_pending_ocr";
     batch_size?: number;
     skip_indexed?: boolean;
     force_full_hash?: boolean;
@@ -1322,10 +1186,7 @@ export class ApiClient {
   // ─────────────────────────────────────────────────────────────────────────
 
   async getSystemHealth(): Promise<Record<string, unknown>> {
-    const response = await this.executeWithRetry(
-      () => this.client.get("/health/status/"),
-      "GET",
-    );
+    const response = await this.executeWithRetry(() => this.client.get("/health/status/"), "GET");
     return response.data;
   }
 
@@ -1341,35 +1202,24 @@ export class ApiClient {
       return response.data;
     } catch (error) {
       if (import.meta.env.VITE_ENABLE_DEV_MOCK_API === "true") {
-        console.warn(
-          "Dashboard API unavailable after retries, using mock data:",
-          error,
-        );
+        console.warn("Dashboard API unavailable after retries, using mock data:", error);
         const { MOCK_DOCUMENTS } = await import("../lib/mock");
-        const { MOCK_APPROVALS, MOCK_OCR_JOBS } =
-          await import("../lib/mockExtended");
+        const { MOCK_APPROVALS, MOCK_OCR_JOBS } = await import("../lib/mockExtended");
         return {
           documents: {
             total: MOCK_DOCUMENTS.length,
-            approved: MOCK_DOCUMENTS.filter((d) => d.status === "Approved")
-              .length,
-            in_review: MOCK_DOCUMENTS.filter((d) => d.status === "In Review")
-              .length,
+            approved: MOCK_DOCUMENTS.filter((d) => d.status === "Approved").length,
+            in_review: MOCK_DOCUMENTS.filter((d) => d.status === "In Review").length,
             draft: MOCK_DOCUMENTS.filter((d) => d.status === "Draft").length,
           },
           approvals: {
-            pending: MOCK_APPROVALS.filter((a) => a.status === "Pending")
-              .length,
-            approved: MOCK_APPROVALS.filter((a) => a.status === "Approved")
-              .length,
-            rejected: MOCK_APPROVALS.filter((a) => a.status === "Rejected")
-              .length,
+            pending: MOCK_APPROVALS.filter((a) => a.status === "Pending").length,
+            approved: MOCK_APPROVALS.filter((a) => a.status === "Approved").length,
+            rejected: MOCK_APPROVALS.filter((a) => a.status === "Rejected").length,
           },
           ocr_jobs: {
-            completed: MOCK_OCR_JOBS.filter((j) => j.status === "Completed")
-              .length,
-            processing: MOCK_OCR_JOBS.filter((j) => j.status === "Processing")
-              .length,
+            completed: MOCK_OCR_JOBS.filter((j) => j.status === "Completed").length,
+            processing: MOCK_OCR_JOBS.filter((j) => j.status === "Processing").length,
             failed: MOCK_OCR_JOBS.filter((j) => j.status === "Failed").length,
           },
         };
@@ -1383,9 +1233,7 @@ export class ApiClient {
   // Error Handling Utility
   // ─────────────────────────────────────────────────────────────────────────
 
-  static getErrorMessage(
-    error: AxiosError<ApiErrorResponse | unknown>,
-  ): string {
+  static getErrorMessage(error: AxiosError<ApiErrorResponse | unknown>): string {
     if (!error.response && error.message === "Network Error") {
       return "Cannot reach the backend. Verify the EDMS API server or preview proxy is running.";
     }
@@ -1402,16 +1250,12 @@ export class ApiClient {
     return "An error occurred";
   }
 
-  static getFieldErrors(
-    error: AxiosError<ApiErrorResponse | unknown>,
-  ): Record<string, string> {
+  static getFieldErrors(error: AxiosError<ApiErrorResponse | unknown>): Record<string, string> {
     const errors: Record<string, string> = {};
     const data = error.response?.data as ApiErrorResponse | undefined;
     if (data?.errors) {
       Object.entries(data.errors).forEach(([field, messages]) => {
-        errors[field] = Array.isArray(messages)
-          ? messages[0]
-          : String(messages);
+        errors[field] = Array.isArray(messages) ? messages[0] : String(messages);
       });
     }
     return errors;
@@ -1421,9 +1265,7 @@ export class ApiClient {
     return ApiClient.getErrorMessage(error);
   }
 
-  getFieldErrors(
-    error: AxiosError<ApiErrorResponse | unknown>,
-  ): Record<string, string> {
+  getFieldErrors(error: AxiosError<ApiErrorResponse | unknown>): Record<string, string> {
     return ApiClient.getFieldErrors(error);
   }
 }

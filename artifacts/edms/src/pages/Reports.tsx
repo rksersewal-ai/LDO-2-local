@@ -1,23 +1,16 @@
+import { ArrowRight, BarChart3, Download, Search } from "lucide-react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
-import { GlassCard, Badge } from "../components/ui/Shared";
-import { getReportDefinition, REPORT_DEFINITIONS } from "../lib/reporting";
+
+const ReportsBarChart = lazy(() => import("../components/charts/ReportsBarChart"));
+const ReportsPieChart = lazy(() => import("../components/charts/ReportsPieChart"));
+
+import { Badge, Button, GlassCard, Input } from "../components/ui/Shared";
 import { MOCK_DOCUMENTS } from "../lib/mock";
 import { MOCK_WORK_LEDGER } from "../lib/mockExtended";
-import { ArrowRight, BarChart3 } from "lucide-react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts";
-
-const COLORS = ["#14b8a6", "#f59e0b", "#64748b", "#ef4444"];
+import { getReportDefinition, REPORT_DEFINITIONS } from "../lib/reporting";
+import { cn } from "../lib/utils";
+import { ExportImportService } from "../services/ExportImportService";
 
 const docStatusData = [
   {
@@ -69,115 +62,198 @@ function getStatusVariant(status: string) {
 
 export default function Reports() {
   const navigate = useNavigate();
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("All");
+  const [status, setStatus] = useState("All");
+  const [sort, setSort] = useState<"name" | "category" | "rows">("name");
+
+  const reportCards = useMemo(
+    () =>
+      REPORT_DEFINITIONS.map((report) => ({
+        ...report,
+        rowCount: getReportDefinition(report.id)?.getRows().length ?? 0,
+      })),
+    [],
+  );
+  const categoryOptions = [
+    "All",
+    ...Array.from(new Set(reportCards.map((report) => report.category))).sort(),
+  ];
+  const statusOptions = [
+    "All",
+    ...Array.from(new Set(reportCards.map((report) => report.status))).sort(),
+  ];
+  const filteredReports = reportCards
+    .filter((report) => {
+      const haystack =
+        `${report.name} ${report.description} ${report.category} ${report.status}`.toLowerCase();
+      return (
+        (!search.trim() || haystack.includes(search.trim().toLowerCase())) &&
+        (category === "All" || report.category === category) &&
+        (status === "All" || report.status === status)
+      );
+    })
+    .sort((left, right) => {
+      if (sort === "rows") return right.rowCount - left.rowCount;
+      return String(left[sort]).localeCompare(String(right[sort]));
+    });
+
+  const exportCatalog = (format: "csv" | "json") => {
+    const headers = ["Report", "Category", "Status", "Rows", "Generated", "Description"];
+    const rows = filteredReports.map((report) => [
+      report.name,
+      report.category,
+      report.status,
+      report.rowCount,
+      report.generated,
+      report.description,
+    ]);
+    if (format === "csv") {
+      ExportImportService.downloadGenericTableCSV(headers, rows, "report-catalog");
+    } else {
+      ExportImportService.exportGenericTableJson(headers, rows, "report-catalog");
+    }
+  };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
-      <div>
-        <h1 className="text-2xl font-semibold text-foreground mb-2">Reports</h1>
-        <p className="text-muted-foreground text-sm">
-          Operational summaries, analytics, and exportable reports.
-        </p>
+    <div className="flex flex-col gap-4 max-w-7xl mx-auto">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-foreground">Reports</h1>
+          <p className="text-muted-foreground text-xs">
+            Operational summaries, analytics, slicers, and exportable report tables.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => exportCatalog("csv")}
+            className="h-8 text-xs"
+          >
+            <Download className="w-3.5 h-3.5" /> Catalog CSV
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => exportCatalog("json")}
+            className="h-8 text-xs"
+          >
+            <Download className="w-3.5 h-3.5" /> Catalog JSON
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {REPORT_DEFINITIONS.map((report) => {
-          const definition = getReportDefinition(report.id);
-          const rowCount = definition?.getRows().length ?? 0;
+      <GlassCard className="p-2.5">
+        <div className="grid gap-2.5 md:grid-cols-[1fr_160px_140px_140px]">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 w-3.5 h-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Find reports by name, category, status..."
+              className="pl-9 h-8 text-xs"
+            />
+          </div>
+          <select
+            value={category}
+            onChange={(event) => setCategory(event.target.value)}
+            className="h-8 rounded-md border border-border bg-background px-2.5 text-xs text-foreground outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
+          >
+            {categoryOptions.map((option) => (
+              <option key={option}>{option}</option>
+            ))}
+          </select>
+          <select
+            value={status}
+            onChange={(event) => setStatus(event.target.value)}
+            className="h-8 rounded-md border border-border bg-background px-2.5 text-xs text-foreground outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
+          >
+            {statusOptions.map((option) => (
+              <option key={option}>{option}</option>
+            ))}
+          </select>
+          <select
+            value={sort}
+            onChange={(event) => setSort(event.target.value as "name" | "category" | "rows")}
+            className="h-8 rounded-md border border-border bg-background px-2.5 text-xs text-foreground outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
+          >
+            <option value="name">Sort by name</option>
+            <option value="category">Sort by category</option>
+            <option value="rows">Sort by row count</option>
+          </select>
+        </div>
+      </GlassCard>
 
-          return (
-            <GlassCard
-              key={report.id}
-              className="p-5 hover:border-teal-500/40 cursor-pointer transition-all"
-              onClick={() => navigate(`/reports/${report.id}`)}
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div className="w-10 h-10 rounded-lg bg-teal-500/10 text-primary flex items-center justify-center">
-                  <BarChart3 className="w-5 h-5" />
-                </div>
-                <Badge variant={getStatusVariant(report.status)}>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        {filteredReports.map((report) => (
+          <div
+            key={report.id}
+            className="flex flex-col justify-between rounded-xl border bg-card/40 p-3.5 hover:border-primary/25 hover:bg-card/60 transition-all duration-200 cursor-pointer"
+            onClick={() => navigate(`/reports/${report.id}`)}
+          >
+            <div>
+              <div className="flex items-center justify-between gap-3 mb-2.5">
+                <span
+                  className={cn(
+                    "flex h-7 w-7 items-center justify-center rounded-md border text-xs",
+                    report.status === "Ready"
+                      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                      : report.status === "Generating"
+                        ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                        : "bg-rose-500/10 text-rose-400 border-rose-500/20",
+                  )}
+                >
+                  <BarChart3 className="w-3.5 h-3.5 text-muted-foreground" />
+                </span>
+                <Badge
+                  variant={getStatusVariant(report.status)}
+                  size="sm"
+                  className="h-5 text-[9px] px-1.5 uppercase font-semibold"
+                >
                   {report.status}
                 </Badge>
               </div>
-              <h3 className="text-sm font-semibold text-foreground mb-1">
-                {report.name}
-              </h3>
-              <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
+              <h3 className="text-xs font-semibold text-foreground mb-1 truncate">{report.name}</h3>
+              <p className="text-[11px] text-muted-foreground mb-3 line-clamp-2 leading-relaxed">
                 {report.description}
               </p>
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span className="px-2 py-0.5 bg-secondary rounded-md text-muted-foreground">
-                  {report.category}
-                </span>
-                <span>{rowCount} live rows</span>
-              </div>
-              <div className="mt-4 flex items-center justify-between text-[11px] text-primary/90">
-                <span>Open live table</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </div>
-            </GlassCard>
-          );
-        })}
+            </div>
+            <div className="flex items-center justify-between border-t border-border pt-2.5 mt-auto text-[10px] text-muted-foreground">
+              <span className="px-2 py-0.5 bg-secondary rounded text-muted-foreground uppercase font-semibold font-mono text-[9px]">
+                {report.category}
+              </span>
+              <span className="font-mono">{report.rowCount} live rows</span>
+            </div>
+            <div className="mt-3 flex items-center justify-between text-[10px] text-primary/90 font-medium">
+              <span>Open live table</span>
+              <ArrowRight className="w-3 h-3" />
+            </div>
+          </div>
+        ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <GlassCard className="p-6">
-          <h2 className="text-base font-bold text-white mb-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <GlassCard className="p-4">
+          <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-3">
             Document Status Distribution
           </h2>
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart>
-              <Pie
-                data={docStatusData}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={75}
-                label={({ name, value }) => `${name} (${value})`}
-                labelLine={false}
-              >
-                {docStatusData.map((_, index) => (
-                  <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#0f172a",
-                  border: "1px solid rgba(20, 184, 166, 0.2)",
-                  borderRadius: "12px",
-                  color: "#e2e8f0",
-                }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
+          <Suspense
+            fallback={<div className="w-full h-[180px] animate-pulse bg-slate-800/30 rounded-xl" />}
+          >
+            <ReportsPieChart data={docStatusData} />
+          </Suspense>
         </GlassCard>
 
-        <GlassCard className="p-6">
-          <h2 className="text-base font-bold text-white mb-4">
+        <GlassCard className="p-4">
+          <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-3">
             Work Records by Type
           </h2>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={workByType}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="rgba(71, 85, 105, 0.3)"
-              />
-              <XAxis dataKey="type" tick={{ fill: "#94a3b8", fontSize: 11 }} />
-              <YAxis
-                tick={{ fill: "#94a3b8", fontSize: 11 }}
-                allowDecimals={false}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#0f172a",
-                  border: "1px solid rgba(20, 184, 166, 0.2)",
-                  borderRadius: "12px",
-                  color: "#e2e8f0",
-                }}
-              />
-              <Bar dataKey="count" fill="#14b8a6" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <Suspense
+            fallback={<div className="w-full h-[180px] animate-pulse bg-slate-800/30 rounded-xl" />}
+          >
+            <ReportsBarChart data={workByType} />
+          </Suspense>
         </GlassCard>
       </div>
     </div>

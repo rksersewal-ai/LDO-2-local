@@ -75,3 +75,6 @@ venv/
 artifacts/*.pen
 artifacts/edms-preview.log
 *.ipynb_checkpoints
+
+# Archived legacy code
+src/src-archived/

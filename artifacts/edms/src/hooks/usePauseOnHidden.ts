@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 /**
  * usePauseOnHidden — pauses auto-updates when the browser tab is hidden.
@@ -19,8 +19,7 @@ export function usePauseOnHidden(): boolean {
   useEffect(() => {
     const handleVisibility = () => setIsPaused(document.hidden);
     document.addEventListener("visibilitychange", handleVisibility);
-    return () =>
-      document.removeEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
   }, []);
 
   return isPaused;

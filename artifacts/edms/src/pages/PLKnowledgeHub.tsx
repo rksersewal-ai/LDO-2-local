@@ -1,47 +1,36 @@
-import { useState, useMemo } from "react";
-import { toast } from "sonner";
 import {
-  Search,
-  DatabaseBackup,
-  Shield,
-  Hash,
-  Plus,
-  X,
-  CheckCircle,
-  Clock,
+  ArrowRight,
   Building2,
-  Link as LinkIcon,
-  ExternalLink,
-  FileText,
-  FilePlus,
-  ChevronUp,
+  CheckCircle,
   ChevronDown,
   ChevronsUpDown,
-  ArrowRight,
+  ChevronUp,
+  Clock,
+  DatabaseBackup,
+  ExternalLink,
+  FilePlus,
+  FileText,
+  Hash,
+  Link as LinkIcon,
+  Plus,
+  Search,
+  Shield,
+  X,
 } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
-import {
-  GlassCard,
-  Badge,
-  Button,
-  Input,
-  Select,
-} from "../components/ui/Shared";
-import { useAuth } from "../lib/auth";
-import { usePLItems } from "../hooks/usePLItems";
-import {
-  usePlLinkableDocuments,
-  type PlLinkableDocument,
-} from "../hooks/usePlLinkableDocuments";
-import { LoadingState } from "../components/ui/LoadingState";
+import { toast } from "sonner";
+import { EmptyState } from "../components/ui/EmptyState";
 import { ErrorState } from "../components/ui/ErrorState";
-import type { PLNumber } from "../lib/types";
-import { PLFormModal } from "./PLDetail";
-import {
-  PLPreviewService,
-  type PLPreviewPayload,
-} from "../services/PLPreviewService";
+import { Badge, Button, GlassCard, Input } from "../components/ui/Shared";
+import { TableSkeleton } from "../components/ui/TableSkeleton";
+import { usePLItems } from "../hooks/usePLItems";
+import { type PlLinkableDocument, usePlLinkableDocuments } from "../hooks/usePlLinkableDocuments";
+import { useAuth } from "../lib/auth";
 import { resolveDocumentPreviewPath } from "../lib/documentPreview";
+import type { PLNumber } from "../lib/types";
+import { type PLPreviewPayload, PLPreviewService } from "../services/PLPreviewService";
+import { PLFormModal } from "./PLDetail";
 
 const STATUS_LABEL: Record<string, string> = {
   ACTIVE: "Active",
@@ -49,10 +38,7 @@ const STATUS_LABEL: Record<string, string> = {
   OBSOLETE: "Obsolete",
 };
 
-const STATUS_VARIANT: Record<
-  string,
-  "success" | "warning" | "danger" | "default"
-> = {
+const STATUS_VARIANT: Record<string, "success" | "warning" | "danger" | "default"> = {
   ACTIVE: "success",
   UNDER_REVIEW: "warning",
   OBSOLETE: "danger",
@@ -75,10 +61,7 @@ type SortKey =
   | "ecs"
   | "works";
 
-const DOC_STATUS_VARIANT: Record<
-  string,
-  "success" | "warning" | "default" | "danger"
-> = {
+const DOC_STATUS_VARIANT: Record<string, "success" | "warning" | "default" | "danger"> = {
   Approved: "success",
   "In Review": "warning",
   Draft: "default",
@@ -94,10 +77,7 @@ function SortIcon({
   sortKey: SortKey | null;
   sortDir: "asc" | "desc";
 }) {
-  if (sortKey !== col)
-    return (
-      <ChevronsUpDown className="w-3 h-3 text-slate-600 ml-0.5 shrink-0" />
-    );
+  if (sortKey !== col) return <ChevronsUpDown className="w-3 h-3 text-slate-600 ml-0.5 shrink-0" />;
   return sortDir === "asc" ? (
     <ChevronUp className="w-3 h-3 text-primary ml-0.5 shrink-0" />
   ) : (
@@ -134,9 +114,7 @@ function LinkDocumentsModal({
   }, [documents, search]);
 
   const toggle = (id: string) => {
-    setLinked((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
+    setLinked((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   };
 
   const handleSave = () => {
@@ -151,11 +129,11 @@ function LinkDocumentsModal({
           <div>
             <h2 className="text-lg font-bold text-white">Link Documents</h2>
             <p className="text-xs text-muted-foreground mt-0.5">
-              <span className="font-mono text-primary">{pl.plNumber}</span> —{" "}
-              {pl.name}
+              <span className="font-mono text-primary">{pl.plNumber}</span> — {pl.name}
             </p>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground/90 hover:bg-slate-700/50 transition-colors"
           >
@@ -175,6 +153,7 @@ function LinkDocumentsModal({
                   <FileText className="w-3 h-3" />
                   {doc.id}
                   <button
+                    type="button"
                     onClick={() => toggle(id)}
                     className="ml-0.5 text-muted-foreground hover:text-rose-400 transition-colors"
                   >
@@ -190,7 +169,7 @@ function LinkDocumentsModal({
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Search documents by ID, name or category..."
-            className="pl-10 w-full"
+            className="pl-10 w-full h-10"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -210,6 +189,9 @@ function LinkDocumentsModal({
                 data-document-id={doc.id}
                 data-document-title={doc.name}
                 className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${isLinked ? "bg-teal-900/20 border-teal-500/30" : "bg-secondary/30 border-border/40 hover:border-slate-600/60"}`}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === "Enter" && (() => toggle(doc.id))}
                 onClick={() => toggle(doc.id)}
               >
                 <div
@@ -221,9 +203,7 @@ function LinkDocumentsModal({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-mono text-xs text-muted-foreground">
-                      {doc.id}
-                    </span>
+                    <span className="font-mono text-xs text-muted-foreground">{doc.id}</span>
                     <Badge
                       variant={DOC_STATUS_VARIANT[doc.status] ?? "default"}
                       className="text-[9px]"
@@ -247,6 +227,7 @@ function LinkDocumentsModal({
                     </span>
                   )}
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       navigate(resolveDocumentPreviewPath(doc.id));
@@ -317,8 +298,7 @@ export default function PLKnowledgeHub() {
         p.description.toLowerCase().includes(q) ||
         p.drawingNumbers.some((d) => d.toLowerCase().includes(q));
       const matchStatus = statusFilter === "ALL" || p.status === statusFilter;
-      const matchCat =
-        categoryFilter === "ALL" || p.category === categoryFilter;
+      const matchCat = categoryFilter === "ALL" || p.category === categoryFilter;
       const matchSafety =
         safetyFilter === "ALL" ||
         (safetyFilter === "SAFETY" && p.safetyCritical) ||
@@ -362,15 +342,7 @@ export default function PLKnowledgeHub() {
     }
 
     return items;
-  }, [
-    plItems,
-    search,
-    statusFilter,
-    categoryFilter,
-    safetyFilter,
-    sortKey,
-    sortDir,
-  ]);
+  }, [plItems, search, statusFilter, categoryFilter, safetyFilter, sortKey, sortDir]);
 
   const stats = useMemo(
     () => ({
@@ -397,8 +369,7 @@ export default function PLKnowledgeHub() {
       description: data.description ?? "",
       category: data.category ?? "CAT-C",
       controllingAgency: data.controllingAgency ?? "CLW",
-      status:
-        (data.status as "ACTIVE" | "UNDER_REVIEW" | "OBSOLETE") ?? "ACTIVE",
+      status: (data.status as "ACTIVE" | "UNDER_REVIEW" | "OBSOLETE") ?? "ACTIVE",
       safetyCritical: data.safetyCritical ?? false,
       safetyClassification: data.safetyClassification || undefined,
       severityOfFailure: data.severityOfFailure || undefined,
@@ -436,15 +407,8 @@ export default function PLKnowledgeHub() {
     navigate(`/pl/preview/${preview.draftId}`);
   };
 
-  if (loading) return <LoadingState message="Loading PL Knowledge Hub..." />;
   if (error)
-    return (
-      <ErrorState
-        variant="server"
-        message="Failed to load PL records"
-        onRetry={refetch}
-      />
-    );
+    return <ErrorState variant="server" message="Failed to load PL records" onRetry={refetch} />;
 
   const ThCol = ({
     col,
@@ -470,12 +434,9 @@ export default function PLKnowledgeHub() {
     <div className="space-y-6 max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground mb-1">
-            PL Knowledge Hub
-          </h1>
+          <h1 className="text-2xl font-semibold text-foreground mb-1">PL Knowledge Hub</h1>
           <p className="text-muted-foreground text-sm">
-            Central repository for all parts and components — identified by
-            8-digit PL numbers.
+            Central repository for all parts and components — identified by 8-digit PL numbers.
           </p>
         </div>
         <Button onClick={() => setShowCreateModal(true)}>
@@ -508,7 +469,7 @@ export default function PLKnowledgeHub() {
         ].map((s) => (
           <GlassCard
             key={s.label}
-            className="px-4 py-3 flex items-center gap-3"
+            className="p-3 px-4 flex items-center gap-3 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-secondary/40 transition-all duration-200"
           >
             <div className="w-8 h-8 rounded-lg bg-secondary/60 flex items-center justify-center shrink-0">
               {s.icon}
@@ -523,13 +484,13 @@ export default function PLKnowledgeHub() {
         ))}
       </div>
 
-      <GlassCard className="p-6">
+      <GlassCard className="p-4">
         {/* Search */}
         <div className="relative mb-4">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Search PL records by number, name, or drawing..."
-            className="pl-11 w-full"
+            className="pl-11 w-full h-10"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -543,6 +504,7 @@ export default function PLKnowledgeHub() {
             </span>
             {["ALL", "ACTIVE", "UNDER_REVIEW", "OBSOLETE"].map((s) => (
               <button
+                type="button"
                 key={s}
                 onClick={() => setStatusFilter(s)}
                 className={`pill-filter ${statusFilter === s ? "pill-filter-active" : "pill-filter-inactive"}`}
@@ -557,6 +519,7 @@ export default function PLKnowledgeHub() {
             </span>
             {["ALL", "CAT-A", "CAT-B", "CAT-C", "CAT-D"].map((c) => (
               <button
+                type="button"
                 key={c}
                 onClick={() => setCategoryFilter(c)}
                 className={`pill-filter ${categoryFilter === c ? "pill-filter-active" : "pill-filter-inactive"}`}
@@ -575,6 +538,7 @@ export default function PLKnowledgeHub() {
               ["NON_SAFETY", "Standard"],
             ].map(([v, l]) => (
               <button
+                type="button"
                 key={v}
                 onClick={() => setSafetyFilter(v)}
                 className={`pill-filter ${safetyFilter === v ? "pill-filter-active" : "pill-filter-inactive"}`}
@@ -584,6 +548,7 @@ export default function PLKnowledgeHub() {
             ))}
             {activeFilters > 0 && (
               <button
+                type="button"
                 onClick={() => {
                   setStatusFilter("ALL");
                   setCategoryFilter("ALL");
@@ -598,9 +563,8 @@ export default function PLKnowledgeHub() {
         </div>
 
         <div className="text-xs text-muted-foreground mb-4 font-medium">
-          Showing{" "}
-          <span className="text-primary font-semibold">{filtered.length}</span>{" "}
-          of {plItems.length} PL records
+          Showing <span className="text-primary font-semibold">{filtered.length}</span> of{" "}
+          {plItems.length} PL records
           {search && (
             <span className="text-muted-foreground">
               {" "}
@@ -611,148 +575,147 @@ export default function PLKnowledgeHub() {
 
         {/* Sortable Table */}
         <div className="overflow-x-auto -mx-1 px-1">
-          <table className="w-full min-w-[720px] border-separate border-spacing-y-1">
-            <thead>
-              <tr>
-                <ThCol col="plNumber" label="PL Number" className="pl-3 w-36" />
-                <ThCol col="name" label="Name" />
-                <ThCol col="category" label="CAT" className="w-20" />
-                <th className="pb-3 text-left font-semibold text-muted-foreground text-xs w-10">
-                  <Shield className="w-3.5 h-3.5" />
-                </th>
-                <ThCol
-                  col="controllingAgency"
-                  label="Agency"
-                  className="w-24"
-                />
-                <ThCol col="status" label="Status" className="w-28" />
-                <ThCol col="docs" label="Docs" className="w-14 text-center" />
-                <ThCol col="works" label="Works" className="w-14 text-center" />
-                <ThCol col="ecs" label="ECs" className="w-14 text-center" />
-                <th className="pb-3 w-20" />
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((pl) => (
-                <tr
-                  key={pl.id}
-                  className="group cursor-pointer"
-                  onClick={() => navigate(`/pl/${pl.plNumber}`)}
-                >
-                  <td className="py-2.5 pl-3 pr-2 rounded-l-xl bg-secondary/30 group-hover:bg-secondary/50 border-y border-l border-border/30 group-hover:border-teal-500/20 transition-all">
-                    <span className="font-mono text-xs text-primary flex items-center gap-1">
-                      <Hash className="w-3 h-3 shrink-0" />
-                      {pl.plNumber}
-                    </span>
-                  </td>
-                  <td className="py-2.5 px-2 bg-secondary/30 group-hover:bg-secondary/50 border-y border-border/30 group-hover:border-teal-500/20 transition-all max-w-[220px]">
-                    <p className="text-sm font-medium text-foreground group-hover:text-teal-200 transition-colors truncate">
-                      {pl.name}
-                    </p>
-                    {pl.description && (
-                      <p className="text-[10px] text-slate-600 truncate">
-                        {pl.description}
-                      </p>
-                    )}
-                  </td>
-                  <td className="py-2.5 px-2 bg-secondary/30 group-hover:bg-secondary/50 border-y border-border/30 group-hover:border-teal-500/20 transition-all">
-                    <span
-                      className={`px-1.5 py-0.5 rounded border text-[10px] font-semibold ${CATEGORY_COLORS[pl.category] ?? "bg-slate-700/50 text-muted-foreground border-slate-600"}`}
+          {loading ? (
+            <TableSkeleton columns={10} rows={8} className="my-2" />
+          ) : (
+            <>
+              <table className="w-full min-w-[720px] border-separate border-spacing-y-1">
+                <thead>
+                  <tr>
+                    <ThCol col="plNumber" label="PL Number" className="pl-3 w-36" />
+                    <ThCol col="name" label="Name" />
+                    <ThCol col="category" label="CAT" className="w-20" />
+                    <th className="pb-3 text-left font-semibold text-muted-foreground text-xs w-10">
+                      <Shield className="w-3.5 h-3.5" />
+                    </th>
+                    <ThCol col="controllingAgency" label="Agency" className="w-24" />
+                    <ThCol col="status" label="Status" className="w-28" />
+                    <ThCol col="docs" label="Docs" className="w-14 text-center" />
+                    <ThCol col="works" label="Works" className="w-14 text-center" />
+                    <ThCol col="ecs" label="ECs" className="w-14 text-center" />
+                    <th className="pb-3 w-20" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((pl) => (
+                    <tr
+                      key={pl.id}
+                      className="group cursor-pointer"
+                      onClick={() => navigate(`/pl/${pl.plNumber}`)}
                     >
-                      {pl.category}
-                    </span>
-                  </td>
-                  <td className="py-2.5 px-2 bg-secondary/30 group-hover:bg-secondary/50 border-y border-border/30 group-hover:border-teal-500/20 transition-all">
-                    {pl.safetyCritical && (
-                      <span title="Safety Vital">
-                        <Shield className="w-3.5 h-3.5 text-rose-400" />
-                      </span>
-                    )}
-                  </td>
-                  <td className="py-2.5 px-2 bg-secondary/30 group-hover:bg-secondary/50 border-y border-border/30 group-hover:border-teal-500/20 transition-all">
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Building2 className="w-3 h-3 text-slate-600 shrink-0" />
-                      {pl.controllingAgency || "—"}
-                    </span>
-                  </td>
-                  <td className="py-2.5 px-2 bg-secondary/30 group-hover:bg-secondary/50 border-y border-border/30 group-hover:border-teal-500/20 transition-all">
-                    <Badge variant={STATUS_VARIANT[pl.status] ?? "default"}>
-                      {STATUS_LABEL[pl.status] ?? pl.status}
-                    </Badge>
-                  </td>
-                  <td className="py-2.5 px-2 bg-secondary/30 group-hover:bg-secondary/50 border-y border-border/30 group-hover:border-teal-500/20 transition-all text-center">
-                    <span
-                      className={`text-xs font-semibold ${pl.linkedDocumentIds.length > 0 ? "text-primary" : "text-slate-600"}`}
-                    >
-                      {pl.linkedDocumentIds.length}
-                    </span>
-                  </td>
-                  <td className="py-2.5 px-2 bg-secondary/30 group-hover:bg-secondary/50 border-y border-border/30 group-hover:border-teal-500/20 transition-all text-center">
-                    <span
-                      className={`text-xs font-semibold ${(pl.linkedWorkIds?.length ?? 0) > 0 ? "text-blue-400" : "text-slate-600"}`}
-                    >
-                      {pl.linkedWorkIds?.length ?? 0}
-                    </span>
-                  </td>
-                  <td className="py-2.5 px-2 bg-secondary/30 group-hover:bg-secondary/50 border-y border-border/30 group-hover:border-teal-500/20 transition-all text-center">
-                    <span
-                      className={`text-xs font-semibold ${(pl.engineeringChanges?.length ?? 0) > 0 ? "text-amber-400" : "text-slate-600"}`}
-                    >
-                      {pl.engineeringChanges?.length ?? 0}
-                    </span>
-                  </td>
-                  <td className="py-2.5 pl-2 pr-3 rounded-r-xl bg-secondary/30 group-hover:bg-secondary/50 border-y border-r border-border/30 group-hover:border-teal-500/20 transition-all">
-                    <div className="flex items-center gap-1.5 justify-end">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setLinkingPL(pl);
-                        }}
-                        title="Link / Unlink Documents"
-                        className={`w-6 h-6 flex items-center justify-center rounded-lg border transition-all ${
-                          pl.linkedDocumentIds.length > 0
-                            ? "bg-teal-500/10 border-teal-500/30 text-primary hover:bg-teal-500/20"
-                            : "bg-secondary/50 border-border/40 text-slate-600 hover:text-foreground/90 hover:border-slate-600"
-                        }`}
-                      >
-                        <LinkIcon className="w-3 h-3" />
-                      </button>
-                      <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-primary transition-colors" />
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      <td className="py-2.5 pl-3 pr-2 rounded-l-xl bg-secondary/30 group-hover:bg-secondary/50 border-y border-l border-border/30 group-hover:border-teal-500/20 transition-all">
+                        <span className="font-mono text-xs text-primary flex items-center gap-1">
+                          <Hash className="w-3 h-3 shrink-0" />
+                          {pl.plNumber}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-2 bg-secondary/30 group-hover:bg-secondary/50 border-y border-border/30 group-hover:border-teal-500/20 transition-all max-w-[220px]">
+                        <p className="text-sm font-medium text-foreground group-hover:text-teal-200 transition-colors truncate">
+                          {pl.name}
+                        </p>
+                        {pl.description && (
+                          <p className="text-[10px] text-slate-600 truncate">{pl.description}</p>
+                        )}
+                      </td>
+                      <td className="py-2.5 px-2 bg-secondary/30 group-hover:bg-secondary/50 border-y border-border/30 group-hover:border-teal-500/20 transition-all">
+                        <span
+                          className={`px-1.5 py-0.5 rounded border text-[10px] font-semibold ${CATEGORY_COLORS[pl.category] ?? "bg-slate-700/50 text-muted-foreground border-slate-600"}`}
+                        >
+                          {pl.category}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-2 bg-secondary/30 group-hover:bg-secondary/50 border-y border-border/30 group-hover:border-teal-500/20 transition-all">
+                        {pl.safetyCritical && (
+                          <span title="Safety Vital">
+                            <Shield className="w-3.5 h-3.5 text-rose-400" />
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-2.5 px-2 bg-secondary/30 group-hover:bg-secondary/50 border-y border-border/30 group-hover:border-teal-500/20 transition-all">
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Building2 className="w-3 h-3 text-slate-600 shrink-0" />
+                          {pl.controllingAgency || "—"}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-2 bg-secondary/30 group-hover:bg-secondary/50 border-y border-border/30 group-hover:border-teal-500/20 transition-all">
+                        <Badge variant={STATUS_VARIANT[pl.status] ?? "default"}>
+                          {STATUS_LABEL[pl.status] ?? pl.status}
+                        </Badge>
+                      </td>
+                      <td className="py-2.5 px-2 bg-secondary/30 group-hover:bg-secondary/50 border-y border-border/30 group-hover:border-teal-500/20 transition-all text-center">
+                        <span
+                          className={`text-xs font-semibold ${pl.linkedDocumentIds.length > 0 ? "text-primary" : "text-slate-600"}`}
+                        >
+                          {pl.linkedDocumentIds.length}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-2 bg-secondary/30 group-hover:bg-secondary/50 border-y border-border/30 group-hover:border-teal-500/20 transition-all text-center">
+                        <span
+                          className={`text-xs font-semibold ${(pl.linkedWorkIds?.length ?? 0) > 0 ? "text-blue-400" : "text-slate-600"}`}
+                        >
+                          {pl.linkedWorkIds?.length ?? 0}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-2 bg-secondary/30 group-hover:bg-secondary/50 border-y border-border/30 group-hover:border-teal-500/20 transition-all text-center">
+                        <span
+                          className={`text-xs font-semibold ${(pl.engineeringChanges?.length ?? 0) > 0 ? "text-amber-400" : "text-slate-600"}`}
+                        >
+                          {pl.engineeringChanges?.length ?? 0}
+                        </span>
+                      </td>
+                      <td className="py-2.5 pl-2 pr-3 rounded-r-xl bg-secondary/30 group-hover:bg-secondary/50 border-y border-r border-border/30 group-hover:border-teal-500/20 transition-all">
+                        <div className="flex items-center gap-1.5 justify-end">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setLinkingPL(pl);
+                            }}
+                            title="Link / Unlink Documents"
+                            className={`w-6 h-6 flex items-center justify-center rounded-lg border transition-all ${
+                              pl.linkedDocumentIds.length > 0
+                                ? "bg-teal-500/10 border-teal-500/30 text-primary hover:bg-teal-500/20"
+                                : "bg-secondary/50 border-border/40 text-slate-600 hover:text-foreground/90 hover:border-slate-600"
+                            }`}
+                          >
+                            <LinkIcon className="w-3 h-3" />
+                          </button>
+                          <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-primary transition-colors" />
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
 
-          {filtered.length === 0 && (
-            <div className="text-center py-14">
-              <DatabaseBackup className="w-10 h-10 mx-auto mb-3 text-slate-600 opacity-50" />
-              <p className="text-muted-foreground font-medium mb-1">
-                No PL records match
-              </p>
-              <p className="text-slate-600 text-sm mb-4">
-                Try adjusting your search or filters
-              </p>
-              <div className="flex gap-2 justify-center">
-                {activeFilters > 0 && (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => {
-                      setStatusFilter("ALL");
-                      setCategoryFilter("ALL");
-                      setSafetyFilter("ALL");
-                    }}
-                  >
-                    Clear Filters
-                  </Button>
-                )}
-                <Button size="sm" onClick={() => setShowCreateModal(true)}>
-                  <Plus className="w-3.5 h-3.5" /> Create PL Record
-                </Button>
-              </div>
-            </div>
+              {filtered.length === 0 && (
+                <EmptyState
+                  icon={DatabaseBackup}
+                  title="No PL records match"
+                  description="Try adjusting your search or filters"
+                  action={
+                    <>
+                      {activeFilters > 0 && (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => {
+                            setStatusFilter("ALL");
+                            setCategoryFilter("ALL");
+                            setSafetyFilter("ALL");
+                          }}
+                        >
+                          Clear Filters
+                        </Button>
+                      )}
+                      <Button size="sm" onClick={() => setShowCreateModal(true)}>
+                        <Plus className="w-3.5 h-3.5" /> Create PL Record
+                      </Button>
+                    </>
+                  }
+                />
+              )}
+            </>
           )}
         </div>
       </GlassCard>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { PLNumber } from "../lib/types";
 import { PLService } from "../services/PLService";
 
@@ -7,9 +7,7 @@ interface UsePLItemsResult {
   loading: boolean;
   error: string | null;
   refetch: () => void;
-  add: (
-    pl: Omit<PLNumber, "id" | "createdAt" | "updatedAt">,
-  ) => Promise<PLNumber>;
+  add: (pl: Omit<PLNumber, "id" | "createdAt" | "updatedAt">) => Promise<PLNumber>;
   update: (id: string, patch: Partial<PLNumber>) => Promise<PLNumber | null>;
   remove: (id: string) => Promise<boolean>;
 }
@@ -35,9 +33,7 @@ export function usePLItems(): UsePLItemsResult {
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(
-            err instanceof Error ? err.message : "Failed to load PL items",
-          );
+          setError(err instanceof Error ? err.message : "Failed to load PL items");
           setLoading(false);
         }
       });
@@ -102,9 +98,7 @@ export function usePLItem(id: string | undefined) {
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(
-            err instanceof Error ? err.message : "Failed to load PL item",
-          );
+          setError(err instanceof Error ? err.message : "Failed to load PL item");
           setLoading(false);
         }
       });

@@ -1,71 +1,56 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { useParams, useNavigate } from "react-router";
-import { useDrag, useDrop, DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  Box,
-  Layers,
-  Cpu,
-  Shield,
-  Search,
-  ChevronRight,
-  ChevronDown,
-  GripVertical,
-  X,
-  ExternalLink,
-  FileText,
-  ArrowLeft,
-  GitBranch,
-  Eye,
   AlertCircle,
-  Hash,
-  ChevronUp,
-  Plus,
+  ArrowLeft,
+  Box,
   CheckCircle,
+  ChevronDown,
+  ChevronRight,
+  ChevronUp,
+  Cpu,
+  ExternalLink,
+  Eye,
+  FileText,
+  GitBranch,
+  GripVertical,
+  Hash,
+  Layers,
   MoveDiagonal,
+  Plus,
+  Search,
+  Shield,
   Sparkles,
   Unlink2,
+  X,
 } from "lucide-react";
-import {
-  PRODUCTS,
-  BOM_TREES,
-  PL_DATABASE,
-  searchTree,
-  countNodes,
-  cloneTree,
-  findNode,
-  removeNode,
-} from "../lib/bomData";
-import type { BOMNode } from "../lib/bomData";
-import {
-  GlassCard,
-  Badge,
-  Button,
-  Input,
-  Select,
-} from "../components/ui/Shared";
-import { DatePicker } from "../components/ui/DatePicker";
-import { PLNumberSelect } from "../components/ui/PLNumberSelect";
+import type React from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { DndProvider, useDrag, useDrop } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { useNavigate, useParams } from "react-router";
 import {
   DocumentDetailsButton,
   DocumentPreviewButton,
   getDocumentContextAttributes,
 } from "../components/documents/DocumentPreviewActions";
-import { usePLItems } from "../hooks/usePLItems";
-import { BomDraftService } from "../services/BomDraftService";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
+import { DatePicker } from "../components/ui/DatePicker";
+import { PLNumberSelect } from "../components/ui/PLNumberSelect";
+import { Badge, Button, GlassCard, Input, Select } from "../components/ui/Shared";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../components/ui/tooltip";
+import { usePLItems } from "../hooks/usePLItems";
+import type { BOMNode } from "../lib/bomData";
 import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from "../components/ui/tooltip";
+  BOM_TREES,
+  cloneTree,
+  countNodes,
+  findNode,
+  PL_DATABASE,
+  PRODUCTS,
+  removeNode,
+  searchTree,
+} from "../lib/bomData";
+import { BomDraftService } from "../services/BomDraftService";
 
 const BOM_ITEM_TYPE = "BOM_NODE";
 
@@ -76,37 +61,26 @@ interface DragItem {
 }
 
 function NodeIcon({ type }: { type: string }) {
-  if (type === "assembly")
-    return <Box className="w-4 h-4 text-blue-400 shrink-0" />;
-  if (type === "sub-assembly")
-    return <Layers className="w-4 h-4 text-indigo-400 shrink-0" />;
+  if (type === "assembly") return <Box className="w-4 h-4 text-blue-400 shrink-0" />;
+  if (type === "sub-assembly") return <Layers className="w-4 h-4 text-indigo-400 shrink-0" />;
   return <Cpu className="w-4 h-4 text-muted-foreground shrink-0" />;
 }
 
 function tagColor(tag: string) {
   const t = tag.toLowerCase();
-  if (t.includes("safety vital"))
-    return "bg-rose-900/40 text-rose-400 border-rose-500/30";
-  if (t.includes("high voltage"))
-    return "bg-amber-900/40 text-amber-400 border-amber-500/30";
+  if (t.includes("safety vital")) return "bg-rose-900/40 text-rose-400 border-rose-500/30";
+  if (t.includes("high voltage")) return "bg-amber-900/40 text-amber-400 border-amber-500/30";
   if (t.includes("electrical") || t.includes("electronics"))
     return "bg-blue-900/40 text-blue-400 border-blue-500/30";
-  if (t.includes("safety"))
-    return "bg-rose-900/30 text-rose-400 border-rose-500/20";
+  if (t.includes("safety")) return "bg-rose-900/30 text-rose-400 border-rose-500/20";
   return "bg-secondary/80 text-muted-foreground border-border";
 }
 
 function containsNode(nodes: BOMNode[], id: string): boolean {
-  return nodes.some(
-    (node) => node.id === id || containsNode(node.children, id),
-  );
+  return nodes.some((node) => node.id === id || containsNode(node.children, id));
 }
 
-function canMoveToTarget(
-  tree: BOMNode[],
-  dragId: string,
-  targetId: string | null,
-) {
+function canMoveToTarget(tree: BOMNode[], dragId: string, targetId: string | null) {
   if (!targetId) return true;
   if (dragId === targetId) return false;
   const dragged = findNode(tree, dragId);
@@ -231,16 +205,8 @@ function DraggableBOMRow({
   selectedId: string | null;
   onSelect: (nodeId: string) => void;
   searchMatches: Set<string>;
-  onMoveNode: (
-    dragId: string,
-    targetId: string | null,
-    placement: MovePlacement,
-  ) => void;
-  onReorderWithinParent: (
-    parentId: string | null,
-    from: number,
-    to: number,
-  ) => void;
+  onMoveNode: (dragId: string, targetId: string | null, placement: MovePlacement) => void;
+  onReorderWithinParent: (parentId: string | null, from: number, to: number) => void;
   canAcceptDrop: (dragId: string, targetId: string) => boolean;
   onDelink: (node: BOMNode) => void;
   children?: React.ReactNode;
@@ -250,15 +216,9 @@ function DraggableBOMRow({
   const isSelected = selectedId === node.id;
   const isMatch = searchMatches.size > 0 && searchMatches.has(node.id);
   const hasChildren = node.children.length > 0;
-  const [dropPlacement, setDropPlacement] = useState<MovePlacement | null>(
-    null,
-  );
+  const [dropPlacement, setDropPlacement] = useState<MovePlacement | null>(null);
 
-  const [{ isDragging }, dragHandleRef] = useDrag<
-    DragItem,
-    void,
-    { isDragging: boolean }
-  >({
+  const [{ isDragging }, dragHandleRef] = useDrag<DragItem, void, { isDragging: boolean }>({
     type: BOM_ITEM_TYPE,
     item: { id: node.id },
     collect: (monitor) => ({ isDragging: monitor.isDragging() }),
@@ -280,12 +240,7 @@ function DraggableBOMRow({
       const clientOffset = monitor.getClientOffset();
       if (!clientOffset) return;
 
-      setDropPlacement(
-        resolvePlacement(
-          clientOffset.y,
-          rowRef.current.getBoundingClientRect(),
-        ),
-      );
+      setDropPlacement(resolvePlacement(clientOffset.y, rowRef.current.getBoundingClientRect()));
     },
     drop: (item, monitor) => {
       if (
@@ -298,10 +253,7 @@ function DraggableBOMRow({
 
       const clientOffset = monitor.getClientOffset();
       const placement = clientOffset
-        ? resolvePlacement(
-            clientOffset.y,
-            rowRef.current.getBoundingClientRect(),
-          )
+        ? resolvePlacement(clientOffset.y, rowRef.current.getBoundingClientRect())
         : "inside";
 
       onMoveNode(item.id, node.id, placement);
@@ -357,6 +309,7 @@ function DraggableBOMRow({
           </div>
           <div className="flex flex-col gap-px">
             <button
+              type="button"
               disabled={index === 0}
               onClick={(event) => {
                 event.stopPropagation();
@@ -368,6 +321,7 @@ function DraggableBOMRow({
               <ChevronUp className="w-2.5 h-2.5" />
             </button>
             <button
+              type="button"
               disabled={index >= siblingCount - 1}
               onClick={(event) => {
                 event.stopPropagation();
@@ -384,6 +338,7 @@ function DraggableBOMRow({
         <div className="shrink-0 w-5">
           {hasChildren ? (
             <button
+              type="button"
               onClick={(event) => {
                 event.stopPropagation();
                 toggleExpand(node.id);
@@ -409,10 +364,7 @@ function DraggableBOMRow({
               {node.name}
             </span>
             {plRecord?.safetyVital && (
-              <Shield
-                className="w-3 h-3 text-rose-400 shrink-0"
-                aria-label="Safety Vital"
-              />
+              <Shield className="w-3 h-3 text-rose-400 shrink-0" aria-label="Safety Vital" />
             )}
           </div>
           <div className="flex items-center gap-2 mt-0.5 text-[10px] text-muted-foreground">
@@ -436,6 +388,7 @@ function DraggableBOMRow({
         <Tooltip>
           <TooltipTrigger asChild>
             <button
+              type="button"
               onClick={(event) => {
                 event.stopPropagation();
                 onDelink(node);
@@ -451,9 +404,7 @@ function DraggableBOMRow({
       </div>
 
       {hasChildren && isExpanded && (
-        <div className="ml-8 pl-3 border-l border-teal-500/15 mt-0.5 space-y-0.5">
-          {children}
-        </div>
+        <div className="ml-8 pl-3 border-l border-teal-500/15 mt-0.5 space-y-0.5">{children}</div>
       )}
     </div>
   );
@@ -466,11 +417,7 @@ function RootDropZone({
 }: {
   label: string;
   hint: string;
-  onMoveNode: (
-    dragId: string,
-    targetId: string | null,
-    placement: MovePlacement,
-  ) => void;
+  onMoveNode: (dragId: string, targetId: string | null, placement: MovePlacement) => void;
 }) {
   const [{ isOver, canDrop }, dropRef] = useDrop<
     DragItem,
@@ -530,16 +477,8 @@ function BOMTreeLevel({
   selectedId: string | null;
   onSelect: (nodeId: string) => void;
   searchMatches: Set<string>;
-  onMoveNode: (
-    dragId: string,
-    targetId: string | null,
-    placement: MovePlacement,
-  ) => void;
-  onReorderWithinParent: (
-    parentId: string | null,
-    from: number,
-    to: number,
-  ) => void;
+  onMoveNode: (dragId: string, targetId: string | null, placement: MovePlacement) => void;
+  onReorderWithinParent: (parentId: string | null, from: number, to: number) => void;
   canAcceptDrop: (dragId: string, targetId: string) => boolean;
   onDelink: (node: BOMNode) => void;
 }) {
@@ -583,13 +522,7 @@ function BOMTreeLevel({
   );
 }
 
-function DetailPanel({
-  node,
-  onClose,
-}: {
-  node: BOMNode;
-  onClose: () => void;
-}) {
+function DetailPanel({ node, onClose }: { node: BOMNode; onClose: () => void }) {
   const navigate = useNavigate();
   const plRecord = PL_DATABASE[node.id];
 
@@ -600,32 +533,31 @@ function DetailPanel({
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: 320, opacity: 0 }}
       transition={{ duration: 0.2, ease: "easeOut" }}
-      className="w-80 flex-shrink-0 flex flex-col bg-card border-border rounded-2xl overflow-hidden"
+      className="w-80 flex-shrink-0 flex flex-col bg-card/40 border-l border-border backdrop-blur-md overflow-hidden"
     >
-      <div className="flex items-center justify-between p-4 border-b border-border">
+      <div className="flex items-center justify-between p-3.5 border-b border-border">
         <div className="flex items-center gap-2 min-w-0">
           <NodeIcon type={node.type} />
-          <h2 className="text-sm font-bold text-foreground truncate">
-            {node.name}
-          </h2>
+          <h2 className="text-xs font-bold text-foreground truncate">{node.name}</h2>
         </div>
         <button
+          type="button"
           onClick={onClose}
           className="shrink-0 text-muted-foreground hover:text-foreground transition-colors p-1 rounded-lg hover:bg-secondary/60"
         >
-          <X className="w-4 h-4" />
+          <X className="w-3.5 h-3.5" />
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto p-3.5 space-y-4 custom-scrollbar">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+          <p className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground mb-1.5">
             PL Identity
           </p>
-          <div className="bg-card border-border rounded-xl p-3 space-y-2.5">
+          <div className="bg-card/40 border border-border/50 rounded-xl p-3 space-y-2">
             <div>
               <p className="text-[10px] text-muted-foreground">PL Number</p>
-              <p className="font-mono text-sm font-semibold text-primary flex items-center gap-1.5">
+              <p className="font-mono text-xs font-semibold text-primary flex items-center gap-1.5">
                 <Hash className="w-3 h-3" />
                 {node.id}
               </p>
@@ -641,9 +573,7 @@ function DetailPanel({
                 { label: "Find No.", value: node.findNumber, mono: true },
               ].map((field) => (
                 <div key={field.label}>
-                  <p className="text-[10px] text-muted-foreground">
-                    {field.label}
-                  </p>
+                  <p className="text-[10px] text-muted-foreground">{field.label}</p>
                   <p
                     className={`text-xs font-medium text-foreground capitalize ${field.mono ? "font-mono" : ""}`}
                   >
@@ -678,33 +608,23 @@ function DetailPanel({
             <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
               PL Record
             </p>
-            <div className="bg-card border-border rounded-xl p-3 space-y-2.5">
+            <div className="bg-card/40 border border-border/50 rounded-xl p-3 space-y-2">
               {plRecord.safetyVital && (
-                <div className="flex items-center gap-2 px-2.5 py-1.5 bg-rose-900/20 border border-rose-500/20 rounded-lg">
+                <div className="flex items-center gap-2 px-2.5 py-1.5 bg-rose-500/10 border border-rose-500/20 rounded-lg">
                   <Shield className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-                  <span className="text-xs text-rose-300 font-medium">
-                    Safety Vital Item
-                  </span>
+                  <span className="text-xs text-rose-300 font-medium">Safety Vital Item</span>
                 </div>
               )}
               {[
                 { label: "Owner", value: plRecord.owner },
                 { label: "Department", value: plRecord.department },
                 { label: "Lifecycle", value: plRecord.lifecycleState },
-                ...(plRecord.weight
-                  ? [{ label: "Weight", value: plRecord.weight }]
-                  : []),
-                ...(plRecord.supplier
-                  ? [{ label: "Supplier", value: plRecord.supplier }]
-                  : []),
-                ...(plRecord.source
-                  ? [{ label: "Source", value: plRecord.source }]
-                  : []),
+                ...(plRecord.weight ? [{ label: "Weight", value: plRecord.weight }] : []),
+                ...(plRecord.supplier ? [{ label: "Supplier", value: plRecord.supplier }] : []),
+                ...(plRecord.source ? [{ label: "Source", value: plRecord.source }] : []),
               ].map((field) => (
                 <div key={field.label}>
-                  <p className="text-[10px] text-muted-foreground">
-                    {field.label}
-                  </p>
+                  <p className="text-[10px] text-muted-foreground">{field.label}</p>
                   <p className="text-xs text-foreground">{field.value}</p>
                 </div>
               ))}
@@ -722,13 +642,11 @@ function DetailPanel({
                 <div
                   key={doc.docId}
                   {...getDocumentContextAttributes(doc.docId, doc.title)}
-                  className="flex items-center gap-2 p-2 rounded-lg bg-card/40 border border-border"
+                  className="flex items-center gap-2 p-2 rounded-lg bg-card/20 border border-border/50"
                 >
                   <FileText className="w-3.5 h-3.5 text-primary shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] text-foreground/90 truncate">
-                      {doc.title}
-                    </p>
+                    <p className="text-[10px] text-foreground/90 truncate">{doc.title}</p>
                     <p className="text-[9px] text-muted-foreground">
                       {doc.type} · Rev {doc.revision}
                     </p>
@@ -776,12 +694,8 @@ function DetailPanel({
                   className="flex items-center gap-2 p-2 rounded-lg bg-card/40 border border-border"
                 >
                   <NodeIcon type={child.type} />
-                  <span className="text-xs text-foreground/90 flex-1 truncate">
-                    {child.name}
-                  </span>
-                  <span className="font-mono text-[10px] text-primary">
-                    {child.id}
-                  </span>
+                  <span className="text-xs text-foreground/90 flex-1 truncate">{child.name}</span>
+                  <span className="font-mono text-[10px] text-primary">{child.id}</span>
                 </div>
               ))}
             </div>
@@ -797,16 +711,10 @@ function DetailPanel({
         ) : (
           <div className="flex items-center gap-2 p-3 bg-amber-900/20 border border-amber-500/20 rounded-xl">
             <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
-            <p className="text-xs text-amber-300">
-              No PL record found for this node
-            </p>
+            <p className="text-xs text-amber-300">No PL record found for this node</p>
           </div>
         )}
-        <Button
-          variant="secondary"
-          className="w-full"
-          onClick={() => navigate("/pl")}
-        >
+        <Button variant="secondary" className="w-full" onClick={() => navigate("/pl")}>
           <Eye className="w-3.5 h-3.5" /> Browse PL Hub
         </Button>
       </div>
@@ -814,9 +722,7 @@ function DetailPanel({
   );
 }
 
-function getAllAssemblyTargets(
-  nodes: BOMNode[],
-): { id: string; name: string; type: string }[] {
+function getAllAssemblyTargets(nodes: BOMNode[]): { id: string; name: string; type: string }[] {
   const result: { id: string; name: string; type: string }[] = [];
 
   function collect(items: BOMNode[]) {
@@ -865,9 +771,7 @@ function AddNodeModal({
     effectiveDate: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [plLookupResult, setPlLookupResult] = useState<
-    (typeof PL_DATABASE)[string] | null
-  >(null);
+  const [plLookupResult, setPlLookupResult] = useState<(typeof PL_DATABASE)[string] | null>(null);
   const { data: plItems, loading: plItemsLoading } = usePLItems();
 
   const parentOptions = [
@@ -881,8 +785,7 @@ function AddNodeModal({
 
   const handlePlNumberChange = (plNumber: string) => {
     const pl = PL_DATABASE[plNumber] ?? null;
-    const matchedPl =
-      plItems.find((item) => item.plNumber === plNumber) ?? null;
+    const matchedPl = plItems.find((item) => item.plNumber === plNumber) ?? null;
     setPlLookupResult(pl);
     setForm((current) => ({
       ...current,
@@ -901,8 +804,7 @@ function AddNodeModal({
 
   const validate = () => {
     const nextErrors: Record<string, string> = {};
-    if (!/^\d{8}$/.test(form.plNumber.trim()))
-      nextErrors.plNumber = "Enter an 8-digit PL number.";
+    if (!/^\d{8}$/.test(form.plNumber.trim())) nextErrors.plNumber = "Enter an 8-digit PL number.";
     if (!form.name.trim()) nextErrors.name = "Name is required";
     if (form.quantity < 1) nextErrors.quantity = "Quantity must be at least 1";
     return nextErrors;
@@ -933,16 +835,17 @@ function AddNodeModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-      <GlassCard className="w-full max-w-2xl p-6 shadow-2xl max-h-[92vh] overflow-auto">
-        <div className="flex items-center justify-between mb-5">
+      <GlassCard className="w-full max-w-2xl p-4 bg-card/40 border border-border/50 backdrop-blur-md shadow-2xl max-h-[92vh] overflow-auto">
+        <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-lg font-bold text-foreground">Add PL Node</h2>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Place a new PL anywhere in {workspaceName}. You can also drag it
-              later to promote, demote, or re-nest it.
+              Place a new PL anywhere in {workspaceName}. You can also drag it later to promote,
+              demote, or re-nest it.
             </p>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground/90 hover:bg-secondary/60 transition-colors"
           >
@@ -952,9 +855,9 @@ function AddNodeModal({
 
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+            <span className="text-xs font-medium text-muted-foreground mb-1.5 block">
               PL Number *
-            </label>
+            </span>
             <PLNumberSelect
               value={form.plNumber}
               onChange={handlePlNumberChange}
@@ -965,11 +868,7 @@ function AddNodeModal({
               showPreview={false}
               showViewLink={false}
             />
-            {errors.plNumber && (
-              <p className="text-[10px] text-rose-400 mt-1">
-                {errors.plNumber}
-              </p>
-            )}
+            {errors.plNumber && <p className="text-[10px] text-rose-400 mt-1">{errors.plNumber}</p>}
           </div>
 
           {(plLookupResult || selectedPl) && (
@@ -984,8 +883,7 @@ function AddNodeModal({
                     ? `${plLookupResult.department} · Rev ${plLookupResult.revision} · ${plLookupResult.lifecycleState}`
                     : `${selectedPl?.controllingAgency ?? "CLW"} · ${selectedPl?.status ?? "ACTIVE"} record`}
                 </p>
-                {(plLookupResult?.safetyVital ||
-                  selectedPl?.safetyCritical) && (
+                {(plLookupResult?.safetyVital || selectedPl?.safetyCritical) && (
                   <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 bg-rose-900/30 border border-rose-500/30 rounded-full text-[10px] text-rose-300">
                     <Shield className="w-2.5 h-2.5" /> Safety Vital
                   </span>
@@ -995,27 +893,23 @@ function AddNodeModal({
           )}
 
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+            <span className="text-xs font-medium text-muted-foreground mb-1.5 block">
               Component Name *
-            </label>
+            </span>
             <Input
               value={form.name}
-              onChange={(event) =>
-                setForm((current) => ({ ...current, name: event.target.value }))
-              }
+              onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
               placeholder="e.g. Bogie Frame Assembly"
               className={`w-full ${errors.name ? "border-rose-500/50" : ""}`}
             />
-            {errors.name && (
-              <p className="text-[10px] text-rose-400 mt-1">{errors.name}</p>
-            )}
+            {errors.name && <p className="text-[10px] text-rose-400 mt-1">{errors.name}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+              <span className="text-xs font-medium text-muted-foreground mb-1.5 block">
                 Node Type
-              </label>
+              </span>
               <Select
                 value={form.nodeType}
                 onChange={(event) =>
@@ -1032,9 +926,9 @@ function AddNodeModal({
               </Select>
             </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+              <span className="text-xs font-medium text-muted-foreground mb-1.5 block">
                 Revision
-              </label>
+              </span>
               <Input
                 value={form.revision}
                 onChange={(event) =>
@@ -1050,9 +944,9 @@ function AddNodeModal({
           </div>
 
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+            <span className="text-xs font-medium text-muted-foreground mb-1.5 block">
               Place Under
-            </label>
+            </span>
             <Select
               value={form.parentId}
               onChange={(event) =>
@@ -1065,23 +959,21 @@ function AddNodeModal({
             >
               {parentOptions.map((parent) => (
                 <option key={parent.id} value={parent.id}>
-                  {parent.type === "root"
-                    ? "⊤ Top Level"
-                    : `↳ ${parent.name} (${parent.id})`}
+                  {parent.type === "root" ? "⊤ Top Level" : `↳ ${parent.name} (${parent.id})`}
                 </option>
               ))}
             </Select>
             <p className="text-[10px] text-slate-600 mt-1">
-              This only chooses the initial placement. The magnetic drag hints
-              will still let you move it anywhere later.
+              This only chooses the initial placement. The magnetic drag hints will still let you
+              move it anywhere later.
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+              <span className="text-xs font-medium text-muted-foreground mb-1.5 block">
                 Quantity
-              </label>
+              </span>
               <Input
                 type="number"
                 min={1}
@@ -1095,15 +987,13 @@ function AddNodeModal({
                 className={`w-full ${errors.quantity ? "border-rose-500/50" : ""}`}
               />
               {errors.quantity && (
-                <p className="text-[10px] text-rose-400 mt-1">
-                  {errors.quantity}
-                </p>
+                <p className="text-[10px] text-rose-400 mt-1">{errors.quantity}</p>
               )}
             </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+              <span className="text-xs font-medium text-muted-foreground mb-1.5 block">
                 Find Number
-              </label>
+              </span>
               <Input
                 value={form.findNumber}
                 onChange={(event) =>
@@ -1121,9 +1011,7 @@ function AddNodeModal({
           <DatePicker
             label="Effective From Date"
             value={form.effectiveDate}
-            onChange={(value) =>
-              setForm((current) => ({ ...current, effectiveDate: value }))
-            }
+            onChange={(value) => setForm((current) => ({ ...current, effectiveDate: value }))}
             placeholder="Optional"
           />
         </div>
@@ -1145,14 +1033,10 @@ function BOMProductViewInner() {
   const { productId } = useParams<{ productId: string }>();
   const navigate = useNavigate();
   const draft = productId ? BomDraftService.getById(productId) : null;
-  const product =
-    draft?.product ?? PRODUCTS.find((item) => item.id === productId);
-  const resolvedTree =
-    draft?.tree ?? (productId ? (BOM_TREES[productId] ?? null) : null);
+  const product = draft?.product ?? PRODUCTS.find((item) => item.id === productId);
+  const resolvedTree = draft?.tree ?? (productId ? (BOM_TREES[productId] ?? null) : null);
 
-  const [bom, setBom] = useState<BOMNode[]>(
-    resolvedTree ? cloneTree(resolvedTree) : [],
-  );
+  const [bom, setBom] = useState<BOMNode[]>(resolvedTree ? cloneTree(resolvedTree) : []);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [showAddNode, setShowAddNode] = useState(false);
@@ -1183,9 +1067,7 @@ function BOMProductViewInner() {
   }, [bom, draft]);
 
   const selectedNode = selectedNodeId ? findNode(bom, selectedNodeId) : null;
-  const searchMatches = search.trim()
-    ? searchTree(bom, search)
-    : new Set<string>();
+  const searchMatches = search.trim() ? searchTree(bom, search) : new Set<string>();
   const stats = countNodes(bom);
 
   const toggleExpand = useCallback((id: string) => {
@@ -1213,33 +1095,28 @@ function BOMProductViewInner() {
     setExpanded(bom.length > 0 ? new Set([bom[0].id]) : new Set());
   }, [bom]);
 
-  const handleAddNode = useCallback(
-    (node: BOMNode, parentId: string | null) => {
-      setBom((current) => {
-        const next = cloneTree(current);
-        if (parentId === null) {
-          next.push(node);
-        } else {
-          const parent = findNode(next, parentId);
-          if (parent) parent.children.push(node);
-        }
-        return next;
-      });
+  const handleAddNode = useCallback((node: BOMNode, parentId: string | null) => {
+    setBom((current) => {
+      const next = cloneTree(current);
+      if (parentId === null) {
+        next.push(node);
+      } else {
+        const parent = findNode(next, parentId);
+        if (parent) parent.children.push(node);
+      }
+      return next;
+    });
 
-      setExpanded((current) => {
-        const next = new Set(current);
-        if (parentId) next.add(parentId);
-        return next;
-      });
-    },
-    [],
-  );
+    setExpanded((current) => {
+      const next = new Set(current);
+      if (parentId) next.add(parentId);
+      return next;
+    });
+  }, []);
 
   const handleMoveNode = useCallback(
     (dragId: string, targetId: string | null, placement: MovePlacement) => {
-      setBom((current) =>
-        moveNodeAcrossHierarchy(current, dragId, targetId, placement),
-      );
+      setBom((current) => moveNodeAcrossHierarchy(current, dragId, targetId, placement));
 
       if (targetId && placement === "inside") {
         setExpanded((current) => {
@@ -1254,16 +1131,13 @@ function BOMProductViewInner() {
 
   const handleReorderWithinParent = useCallback(
     (parentId: string | null, fromIndex: number, toIndex: number) => {
-      setBom((current) =>
-        reorderWithinParent(current, parentId, fromIndex, toIndex),
-      );
+      setBom((current) => reorderWithinParent(current, parentId, fromIndex, toIndex));
     },
     [],
   );
 
   const canAcceptDrop = useCallback(
-    (dragId: string, targetId: string) =>
-      canMoveToTarget(bom, dragId, targetId),
+    (dragId: string, targetId: string) => canMoveToTarget(bom, dragId, targetId),
     [bom],
   );
 
@@ -1301,12 +1175,13 @@ function BOMProductViewInner() {
   const isDraftWorkspace = Boolean(draft);
 
   return (
-    <div className="h-[calc(100vh-120px)] flex flex-col">
+    <div className="flex flex-col min-h-0">
       {/* Compact header bar */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-card/50 shrink-0">
         <div className="flex items-center gap-3 min-w-0">
           <nav className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
             <button
+              type="button"
               onClick={() => navigate("/bom")}
               className="hover:text-primary transition-colors flex items-center gap-1"
             >
@@ -1314,9 +1189,7 @@ function BOMProductViewInner() {
             </button>
             <ChevronRight className="w-3 h-3" />
           </nav>
-          <h1 className="text-sm font-bold text-foreground truncate">
-            {product.name}
-          </h1>
+          <h1 className="text-sm font-bold text-foreground truncate">{product.name}</h1>
           {isDraftWorkspace && (
             <Badge variant="info" className="shrink-0">
               Draft
@@ -1338,25 +1211,19 @@ function BOMProductViewInner() {
         <div className="flex items-center gap-2 shrink-0">
           <div className="flex items-center gap-3 text-[10px] text-muted-foreground mr-2">
             <span>
-              Nodes{" "}
-              <strong className="text-primary font-mono">{stats.total}</strong>
+              Nodes <strong className="text-primary font-mono">{stats.total}</strong>
             </span>
             <span>
-              Asm{" "}
-              <strong className="text-foreground font-mono">
-                {stats.assemblies}
-              </strong>
+              Asm <strong className="text-foreground font-mono">{stats.assemblies}</strong>
             </span>
             <span>
-              Parts{" "}
-              <strong className="text-foreground font-mono">
-                {stats.parts}
-              </strong>
+              Parts <strong className="text-foreground font-mono">{stats.parts}</strong>
             </span>
           </div>
           <Tooltip>
             <TooltipTrigger asChild>
               <button
+                type="button"
                 onClick={() => setShowInfoPanel((p) => !p)}
                 className={`px-2 py-1.5 text-xs border rounded-lg transition-colors ${showInfoPanel ? "border-primary/50 text-primary bg-primary/10" : "border-border/60 text-muted-foreground hover:text-primary/90"}`}
               >
@@ -1367,11 +1234,7 @@ function BOMProductViewInner() {
               <p>{showInfoPanel ? "Hide" : "Show"} BOM details panel</p>
             </TooltipContent>
           </Tooltip>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => navigate("/bom")}
-          >
+          <Button variant="secondary" size="sm" onClick={() => navigate("/bom")}>
             <ArrowLeft className="w-3.5 h-3.5" /> All Products
           </Button>
           <Button variant="secondary" size="sm" onClick={() => navigate("/pl")}>
@@ -1384,29 +1247,31 @@ function BOMProductViewInner() {
       </div>
 
       {/* Main content — BOM tree + optional info panel + detail panel */}
-      <div className="flex-1 flex min-h-0">
-        {/* BOM tree — takes all available space */}
-        <GlassCard className="flex flex-col flex-1 min-w-0 rounded-none border-0 border-r border-border">
+      <div className="flex min-h-0">
+        {/* BOM tree — takes all available space, grows with content */}
+        <GlassCard className="flex flex-col flex-1 min-w-0 rounded-none border-0 border-r border-border bg-card/40 backdrop-blur-md">
           <div className="p-3 border-b border-border">
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
                 <Input
                   placeholder="Search by name, PL number, or tag..."
-                  className="pl-9 w-full py-2"
+                  className="pl-9 w-full h-9"
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                 />
               </div>
               <button
+                type="button"
                 onClick={expandAll}
-                className="px-2.5 py-2 text-xs text-muted-foreground hover:text-primary/90 border border-border/60 rounded-lg transition-colors whitespace-nowrap"
+                className="h-9 px-3 text-xs text-muted-foreground hover:text-primary/90 border border-border/60 rounded-lg transition-colors whitespace-nowrap flex items-center justify-center bg-card/40 hover:bg-secondary/40"
               >
                 Expand All
               </button>
               <button
+                type="button"
                 onClick={collapseAll}
-                className="px-2.5 py-2 text-xs text-muted-foreground hover:text-primary/90 border border-border/60 rounded-lg transition-colors"
+                className="h-9 px-3 text-xs text-muted-foreground hover:text-primary/90 border border-border/60 rounded-lg transition-colors flex items-center justify-center bg-card/40 hover:bg-secondary/40"
               >
                 Collapse
               </button>
@@ -1414,21 +1279,17 @@ function BOMProductViewInner() {
             {search && searchMatches.size > 0 && (
               <p className="text-xs text-primary mt-2 flex items-center gap-1">
                 <Search className="w-3 h-3" />
-                {searchMatches.size} match{searchMatches.size !== 1 ? "es" : ""}{" "}
-                for "{search}"
+                {searchMatches.size} match{searchMatches.size !== 1 ? "es" : ""} for "{search}"
               </p>
             )}
           </div>
 
           <div className="border-b border-border px-3 py-2 text-[10px] text-muted-foreground flex flex-wrap items-center gap-2">
             <Sparkles className="w-3.5 h-3.5 text-primary" />
-            <span>
-              Drag a PL above, below, or into another node. Drop hints snap into
-              place.
-            </span>
+            <span>Drag a PL above, below, or into another node. Drop hints snap into place.</span>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
+          <div className="p-3 space-y-1.5">
             <RootDropZone
               label="Top-level drop lane"
               hint="Drop here to promote any dragged PL back to the root of the BOM."
@@ -1442,9 +1303,7 @@ function BOMProductViewInner() {
               toggleExpand={toggleExpand}
               selectedId={selectedNodeId}
               onSelect={(nodeId) =>
-                setSelectedNodeId((current) =>
-                  current === nodeId ? null : nodeId,
-                )
+                setSelectedNodeId((current) => (current === nodeId ? null : nodeId))
               }
               searchMatches={searchMatches}
               onMoveNode={handleMoveNode}
@@ -1464,10 +1323,7 @@ function BOMProductViewInner() {
         {/* Node detail panel — floats above info panel in priority */}
         <AnimatePresence>
           {selectedNode && (
-            <DetailPanel
-              node={selectedNode}
-              onClose={() => setSelectedNodeId(null)}
-            />
+            <DetailPanel node={selectedNode} onClose={() => setSelectedNodeId(null)} />
           )}
         </AnimatePresence>
 
@@ -1479,14 +1335,15 @@ function BOMProductViewInner() {
               animate={{ width: 280, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="shrink-0 border-l border-border bg-card overflow-hidden"
+              className="shrink-0 border-l border-border bg-card/40 backdrop-blur-md overflow-hidden"
             >
-              <div className="w-[280px] h-full overflow-y-auto custom-scrollbar p-4 space-y-4">
+              <div className="w-[280px] overflow-y-auto custom-scrollbar p-4 space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-[10px] uppercase tracking-widest font-bold text-primary">
                     BOM Details
                   </h3>
                   <button
+                    type="button"
                     onClick={() => setShowInfoPanel(false)}
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
@@ -1499,27 +1356,17 @@ function BOMProductViewInner() {
                     <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">
                       Product
                     </p>
-                    <p className="text-sm font-bold text-foreground">
-                      {product.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {product.subtitle}
-                    </p>
+                    <p className="text-sm font-bold text-foreground">{product.name}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{product.subtitle}</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
                     <div className="bg-secondary/30 border border-border/30 rounded-lg p-2.5">
-                      <p className="text-[10px] text-muted-foreground">
-                        Root PL
-                      </p>
-                      <p className="text-xs font-mono font-bold text-primary">
-                        {product.rootPL}
-                      </p>
+                      <p className="text-[10px] text-muted-foreground">Root PL</p>
+                      <p className="text-xs font-mono font-bold text-primary">{product.rootPL}</p>
                     </div>
                     <div className="bg-secondary/30 border border-border/30 rounded-lg p-2.5">
-                      <p className="text-[10px] text-muted-foreground">
-                        Revision
-                      </p>
+                      <p className="text-[10px] text-muted-foreground">Revision</p>
                       <p className="text-xs font-mono font-bold text-foreground">
                         {product.revision}
                       </p>
@@ -1529,9 +1376,7 @@ function BOMProductViewInner() {
                   <div className="grid grid-cols-3 gap-2">
                     <div className="bg-secondary/30 border border-border/30 rounded-lg p-2.5 text-center">
                       <p className="text-[10px] text-muted-foreground">Total</p>
-                      <p className="text-sm font-mono font-bold text-primary">
-                        {stats.total}
-                      </p>
+                      <p className="text-sm font-mono font-bold text-primary">{stats.total}</p>
                     </div>
                     <div className="bg-secondary/30 border border-border/30 rounded-lg p-2.5 text-center">
                       <p className="text-[10px] text-muted-foreground">Asm</p>
@@ -1541,9 +1386,7 @@ function BOMProductViewInner() {
                     </div>
                     <div className="bg-secondary/30 border border-border/30 rounded-lg p-2.5 text-center">
                       <p className="text-[10px] text-muted-foreground">Parts</p>
-                      <p className="text-sm font-mono font-bold text-foreground">
-                        {stats.parts}
-                      </p>
+                      <p className="text-sm font-mono font-bold text-foreground">{stats.parts}</p>
                     </div>
                   </div>
 
@@ -1570,8 +1413,7 @@ function BOMProductViewInner() {
                         Draft Workspace
                       </p>
                       <p className="text-[10px] text-amber-200/70">
-                        Structure changes are saved locally until the backend
-                        contract is finalized.
+                        Structure changes are saved locally until the backend contract is finalized.
                       </p>
                     </div>
                   )}

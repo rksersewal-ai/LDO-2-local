@@ -1,33 +1,14 @@
-import { useState, useEffect } from "react";
-import { GlassCard, Button } from "../components/ui/Shared";
-import { SafeSection } from "../components/ui/SafeSection";
-import {
-  WorkLedgerService,
-  calculateDaysTaken,
-} from "../services/WorkLedgerService";
-import { ExportImportService } from "../services/ExportImportService";
-import {
-  FileBarChart,
-  Download,
-  TrendingUp,
-  AlertCircle,
-  Clock,
-  CheckCircle,
-} from "lucide-react";
+import { AlertCircle, CheckCircle, Clock, Download, FileBarChart, TrendingUp } from "lucide-react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-} from "recharts";
+import { SafeSection } from "../components/ui/SafeSection";
+import { Button, GlassCard } from "../components/ui/Shared";
+import { ExportImportService } from "../services/ExportImportService";
+import { WorkLedgerService } from "../services/WorkLedgerService";
+
+const LedgerWorkVolumeChart = lazy(() => import("../components/charts/LedgerWorkVolumeChart"));
+const LedgerStatusChart = lazy(() => import("../components/charts/LedgerStatusChart"));
+const LedgerAvgDaysChart = lazy(() => import("../components/charts/LedgerAvgDaysChart"));
 
 const CATEGORY_LABEL: Record<string, string> = {
   GENERAL: "General",
@@ -50,43 +31,12 @@ const STATUS_LABEL: Record<string, string> = {
   CLOSED: "Closed",
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  OPEN: "#60a5fa",
-  SUBMITTED: "#fbbf24",
-  VERIFIED: "#34d399",
-  CLOSED: "#94a3b8",
-};
-
-const CATEGORY_COLORS = [
-  "#14b8a6",
-  "#6366f1",
-  "#f59e0b",
-  "#ec4899",
-  "#10b981",
-  "#8b5cf6",
-  "#f97316",
-  "#06b6d4",
-  "#84cc16",
-  "#ef4444",
-  "#a78bfa",
-];
-
-const TOOLTIP_STYLE = {
-  backgroundColor: "#0f172a",
-  border: "1px solid rgba(20, 184, 166, 0.2)",
-  borderRadius: "12px",
-  color: "#e2e8f0",
-  fontSize: "12px",
-};
-
 type Analytics = Awaited<ReturnType<typeof WorkLedgerService.getAnalytics>>;
 
 export default function LedgerReports() {
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [avgDays, setAvgDays] = useState(0);
-  const [last12MonthsByCategory, setLast12MonthsByCategory] = useState<
-    Record<string, number>
-  >({});
+  const [last12MonthsByCategory, setLast12MonthsByCategory] = useState<Record<string, number>>({});
 
   useEffect(() => {
     WorkLedgerService.getAnalytics().then(setAnalytics);
@@ -105,8 +55,7 @@ export default function LedgerReports() {
       const completed = records.filter((r) => r.daysTaken != null);
       if (completed.length > 0) {
         const avg = Math.round(
-          completed.reduce((s, r) => s + (r.daysTaken ?? 0), 0) /
-            completed.length,
+          completed.reduce((s, r) => s + (r.daysTaken ?? 0), 0) / completed.length,
         );
         setAvgDays(avg);
       }
@@ -134,8 +83,7 @@ export default function LedgerReports() {
   const avgDaysData = analytics.avgDaysByType
     .slice(0, 8)
     .map((t) => ({
-      name:
-        t.workType.length > 20 ? t.workType.substring(0, 20) + "…" : t.workType,
+      name: t.workType.length > 20 ? `${t.workType.substring(0, 20)}…` : t.workType,
       avg: t.avgDays,
       target: t.targetDays,
     }))
@@ -158,8 +106,7 @@ export default function LedgerReports() {
       label: "Overdue",
       value: analytics.overdueCount,
       icon: <AlertCircle className="w-4 h-4 text-rose-400" />,
-      color:
-        analytics.overdueCount > 0 ? "text-rose-400" : "text-foreground/90",
+      color: analytics.overdueCount > 0 ? "text-rose-400" : "text-foreground/90",
     },
     {
       label: "Avg Completion",
@@ -174,11 +121,7 @@ export default function LedgerReports() {
       ["Total Records", analytics.totalRecords, "Current dataset"],
       ["On-Time Rate", `${analytics.onTimeRate}%`, "Operational KPI"],
       ["Overdue Count", analytics.overdueCount, "Active backlog"],
-      [
-        "Average Completion",
-        avgDays ? `${avgDays} days` : "—",
-        "Closed records",
-      ],
+      ["Average Completion", avgDays ? `${avgDays} days` : "—", "Closed records"],
       ...avgDaysData.map((entry) => [
         entry.name,
         `${entry.avg} days`,
@@ -199,9 +142,7 @@ export default function LedgerReports() {
     <div className="space-y-6 max-w-7xl mx-auto">
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground mb-2">
-            Work Ledger Reports
-          </h1>
+          <h1 className="text-2xl font-semibold text-foreground mb-2">Work Ledger Reports</h1>
           <p className="text-muted-foreground text-sm">
             Analytics and operational reporting for work records.
           </p>
@@ -216,7 +157,7 @@ export default function LedgerReports() {
         {stats.map((s) => (
           <GlassCard
             key={s.label}
-            className="px-5 py-4 flex items-center gap-3"
+            className="p-3.5 flex items-center gap-3 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-secondary/40 transition-all duration-200"
           >
             <div className="w-9 h-9 rounded-xl bg-secondary/60 flex items-center justify-center shrink-0">
               {s.icon}
@@ -235,43 +176,19 @@ export default function LedgerReports() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Work volume by category */}
         <SafeSection name="Work Volume Chart" minHeight="min-h-[300px]">
-          <GlassCard className="p-6 h-full">
+          <GlassCard className="p-3.5 hover:border-primary/20 transition-all duration-200 h-full">
             <h2 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-              <FileBarChart className="w-4 h-4 text-primary" /> Work Volume by
-              Category (Last 12 Months)
+              <FileBarChart className="w-4 h-4 text-primary" /> Work Volume by Category (Last 12
+              Months)
             </h2>
             {categoryData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={240}>
-                <BarChart
-                  data={categoryData}
-                  margin={{ top: 4, right: 8, left: -16, bottom: 24 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="rgba(71, 85, 105, 0.3)"
-                  />
-                  <XAxis
-                    dataKey="name"
-                    tick={{ fill: "#94a3b8", fontSize: 10 }}
-                    angle={-35}
-                    textAnchor="end"
-                    interval={0}
-                  />
-                  <YAxis
-                    tick={{ fill: "#94a3b8", fontSize: 11 }}
-                    allowDecimals={false}
-                  />
-                  <Tooltip contentStyle={TOOLTIP_STYLE} />
-                  <Bar dataKey="count" radius={[4, 4, 0, 0]} name="Records">
-                    {categoryData.map((_, i) => (
-                      <Cell
-                        key={i}
-                        fill={CATEGORY_COLORS[i % CATEGORY_COLORS.length]}
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <Suspense
+                fallback={
+                  <div className="w-full h-[240px] animate-pulse bg-slate-800/50 rounded-xl" />
+                }
+              >
+                <LedgerWorkVolumeChart data={categoryData} />
+              </Suspense>
             ) : (
               <p className="text-sm text-muted-foreground text-center py-12">
                 No category data yet
@@ -282,43 +199,20 @@ export default function LedgerReports() {
 
         {/* Status distribution donut */}
         <SafeSection name="Status Distribution Chart" minHeight="min-h-[300px]">
-          <GlassCard className="p-6 h-full">
+          <GlassCard className="p-3.5 hover:border-primary/20 transition-all duration-200 h-full">
             <h2 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-primary" /> Records by Status
             </h2>
             {statusData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={240}>
-                <PieChart>
-                  <Pie
-                    data={statusData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={95}
-                    paddingAngle={3}
-                    dataKey="value"
-                    nameKey="name"
-                  >
-                    {statusData.map((entry, i) => (
-                      <Cell
-                        key={i}
-                        fill={STATUS_COLORS[entry.key] ?? "#64748b"}
-                        stroke="transparent"
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip contentStyle={TOOLTIP_STYLE} />
-                  <Legend
-                    iconType="circle"
-                    iconSize={8}
-                    wrapperStyle={{ fontSize: "11px", color: "#94a3b8" }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+              <Suspense
+                fallback={
+                  <div className="w-full h-[240px] animate-pulse bg-slate-800/50 rounded-xl" />
+                }
+              >
+                <LedgerStatusChart data={statusData} />
+              </Suspense>
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-12">
-                No status data yet
-              </p>
+              <p className="text-sm text-muted-foreground text-center py-12">No status data yet</p>
             )}
           </GlassCard>
         </SafeSection>
@@ -326,66 +220,19 @@ export default function LedgerReports() {
 
       {/* Avg days vs target — horizontal bar */}
       <SafeSection name="Completion Time Chart" minHeight="min-h-[300px]">
-        <GlassCard className="p-6 h-full">
+        <GlassCard className="p-3.5 hover:border-primary/20 transition-all duration-200 h-full">
           <h2 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-            <Clock className="w-4 h-4 text-primary" /> Avg Days to Completion vs
-            Target (by Work Type)
+            <Clock className="w-4 h-4 text-primary" /> Avg Days to Completion vs Target (by Work
+            Type)
           </h2>
           {avgDaysData.length > 0 ? (
-            <ResponsiveContainer
-              width="100%"
-              height={Math.max(200, avgDaysData.length * 40)}
+            <Suspense
+              fallback={
+                <div className="w-full h-[240px] animate-pulse bg-slate-800/50 rounded-xl" />
+              }
             >
-              <BarChart
-                data={avgDaysData}
-                layout="vertical"
-                margin={{ top: 4, right: 60, left: 10, bottom: 4 }}
-              >
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="rgba(71, 85, 105, 0.3)"
-                  horizontal={false}
-                />
-                <XAxis
-                  type="number"
-                  tick={{ fill: "#94a3b8", fontSize: 11 }}
-                  unit="d"
-                  allowDecimals={false}
-                />
-                <YAxis
-                  type="category"
-                  dataKey="name"
-                  tick={{ fill: "#94a3b8", fontSize: 11 }}
-                  width={140}
-                />
-                <Tooltip
-                  contentStyle={TOOLTIP_STYLE}
-                  formatter={(v: number, name: string) => [
-                    `${v}d`,
-                    name === "avg" ? "Avg Taken" : "Target",
-                  ]}
-                />
-                <Legend
-                  iconType="square"
-                  iconSize={8}
-                  wrapperStyle={{ fontSize: "11px", color: "#94a3b8" }}
-                />
-                <Bar
-                  dataKey="target"
-                  fill="rgba(71,85,105,0.4)"
-                  radius={[0, 4, 4, 0]}
-                  name="Target"
-                />
-                <Bar dataKey="avg" radius={[0, 4, 4, 0]} name="Avg Taken">
-                  {avgDaysData.map((entry, i) => (
-                    <Cell
-                      key={i}
-                      fill={entry.avg <= entry.target ? "#34d399" : "#f87171"}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+              <LedgerAvgDaysChart data={avgDaysData} />
+            </Suspense>
           ) : (
             <p className="text-sm text-muted-foreground text-center py-12">
               No completed records with day data yet

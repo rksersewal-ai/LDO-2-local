@@ -1,5 +1,3 @@
-import { useEffect, useMemo, useState, type ComponentType } from "react";
-import { useLocation, useNavigate } from "react-router";
 import {
   ArrowLeft,
   ArrowRight,
@@ -19,13 +17,15 @@ import {
   ShieldAlert,
   Sun,
 } from "lucide-react";
-import { useAuth } from "../../lib/auth";
-import { CommandPalette } from "./CommandPalette";
+import { type ComponentType, useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router";
 import { useTheme } from "../../contexts/ThemeContext";
+import { type UserRole, useAuth } from "../../lib/auth";
 import { resolveDocumentPreviewPath } from "../../lib/documentPreview";
 import { DocumentPreviewService } from "../../services/DocumentPreviewService";
 import { NavigationHistoryService } from "../../services/NavigationHistoryService";
-import { Tooltip, TooltipTrigger, TooltipContent } from "./tooltip";
+import { CommandPalette } from "./CommandPalette";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip";
 
 interface PaletteAction {
   id: string;
@@ -34,7 +34,7 @@ interface PaletteAction {
   description: string;
   path?: string;
   icon: ComponentType<{ className?: string }>;
-  roles?: string[];
+  roles?: UserRole[];
   disabled?: boolean;
   action?: () => void;
 }
@@ -72,8 +72,7 @@ export function RightClickPalette() {
   const [open, setOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
   const [position, setPosition] = useState<PalettePosition>({ x: 24, y: 96 });
-  const [contextDocument, setContextDocument] =
-    useState<ContextDocumentInfo | null>(null);
+  const [contextDocument, setContextDocument] = useState<ContextDocumentInfo | null>(null);
 
   const currentPath = `${location.pathname}${location.search}`;
   const previousPath = NavigationHistoryService.getPreviousPath(currentPath);
@@ -180,9 +179,7 @@ export function RightClickPalette() {
           description: recentPreview
             ? `Reopen ${recentPreview.title}`
             : "No recent preview window has been opened yet",
-          path: recentPreview
-            ? resolveDocumentPreviewPath(recentPreview.documentId)
-            : undefined,
+          path: recentPreview ? resolveDocumentPreviewPath(recentPreview.documentId) : undefined,
           icon: Eye,
           disabled: !recentPreview,
         },
@@ -210,7 +207,7 @@ export function RightClickPalette() {
           description: "Browse and manage PL-controlled items",
           path: "/pl",
           icon: Hash,
-          roles: ["admin", "supervisor", "engineer"],
+          roles: ["admin", "supervisor", "engineer"] as UserRole[],
         },
         {
           id: "ledger",
@@ -219,7 +216,7 @@ export function RightClickPalette() {
           description: "Go to the work ledger and create a new entry",
           path: "/ledger",
           icon: Briefcase,
-          roles: ["admin", "supervisor", "engineer"],
+          roles: ["admin", "supervisor", "engineer"] as UserRole[],
         },
         {
           id: "bom",
@@ -228,7 +225,7 @@ export function RightClickPalette() {
           description: "Start a new BOM draft from the guided creation page",
           path: "/bom/new",
           icon: Component,
-          roles: ["admin", "supervisor", "engineer"],
+          roles: ["admin", "supervisor", "engineer"] as UserRole[],
         },
         {
           id: "approvals",
@@ -237,7 +234,7 @@ export function RightClickPalette() {
           description: "Open the approvals queue",
           path: "/approvals",
           icon: CheckSquare,
-          roles: ["admin", "supervisor", "engineer", "reviewer"],
+          roles: ["admin", "supervisor", "engineer", "reviewer"] as UserRole[],
         },
         {
           id: "cases",
@@ -246,7 +243,7 @@ export function RightClickPalette() {
           description: "Open the cases dashboard",
           path: "/cases",
           icon: ShieldAlert,
-          roles: ["admin", "supervisor", "engineer", "reviewer"],
+          roles: ["admin", "supervisor", "engineer", "reviewer"] as UserRole[],
         },
         // ── Tools ──
         {
@@ -265,7 +262,7 @@ export function RightClickPalette() {
           icon: Command,
           action: () => setCommandOpen(true),
         },
-      ].filter((action) => !action.roles || hasPermission(action.roles as any)),
+      ].filter((action) => !action.roles || hasPermission(action.roles)),
     [contextDocument, hasPermission, previousPath, recentPreview, toggleTheme],
   );
 
@@ -286,19 +283,13 @@ export function RightClickPalette() {
           ? event.target.closest<HTMLElement>("[data-document-id]")
           : null;
 
-      if (
-        event.shiftKey ||
-        (isInteractiveTarget(event.target) && !targetDocument)
-      ) {
+      if (event.shiftKey || (isInteractiveTarget(event.target) && !targetDocument)) {
         return;
       }
 
       event.preventDefault();
 
-      const maxX = Math.max(
-        PALETTE_MARGIN,
-        window.innerWidth - PALETTE_WIDTH - PALETTE_MARGIN,
-      );
+      const maxX = Math.max(PALETTE_MARGIN, window.innerWidth - PALETTE_WIDTH - PALETTE_MARGIN);
       const nextX = Math.min(event.clientX, maxX);
       const nextY = Math.min(event.clientY, window.innerHeight - 280);
 
@@ -310,9 +301,7 @@ export function RightClickPalette() {
         targetDocument?.dataset.documentId
           ? {
               id: targetDocument.dataset.documentId,
-              title:
-                targetDocument.dataset.documentTitle ||
-                targetDocument.dataset.documentId,
+              title: targetDocument.dataset.documentTitle || targetDocument.dataset.documentId,
             }
           : null,
       );
@@ -371,6 +360,7 @@ export function RightClickPalette() {
     const Icon = action.icon;
     return (
       <button
+        type="button"
         key={action.id}
         onClick={() => runAction(action)}
         disabled={action.disabled}
@@ -380,12 +370,8 @@ export function RightClickPalette() {
           <Icon className="h-4 w-4" />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-sm font-medium text-foreground">
-            {action.label}
-          </div>
-          <div className="truncate text-[11px] text-muted-foreground">
-            {action.description}
-          </div>
+          <div className="text-sm font-medium text-foreground">{action.label}</div>
+          <div className="truncate text-[11px] text-muted-foreground">{action.description}</div>
         </div>
         <ArrowRight className="h-3.5 w-3.5 text-slate-600" />
       </button>
@@ -410,14 +396,13 @@ export function RightClickPalette() {
 
   return (
     <>
-      <CommandPalette
-        open={commandOpen}
-        onClose={() => setCommandOpen(false)}
-      />
+      <CommandPalette open={commandOpen} onClose={() => setCommandOpen(false)} />
 
       {open && (
         <div
           className="fixed z-[100000] w-80 rounded-2xl border border-cyan-400/18 bg-slate-950/94 shadow-[0_22px_70px_rgba(2,10,20,0.6)] backdrop-blur-xl"
+          role="menu"
+          onKeyDown={(e) => e.key === "Escape" && setOpen(false)}
           style={{ left: position.x, top: position.y }}
           onClick={(event) => event.stopPropagation()}
         >
@@ -427,13 +412,14 @@ export function RightClickPalette() {
                 Mouse Palette
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
-                Hold <span className="font-mono text-foreground/90">Shift</span>{" "}
-                for the browser menu.
+                Hold <span className="font-mono text-foreground/90">Shift</span> for the browser
+                menu.
               </p>
             </div>
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
+                  type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     backAction.go();
@@ -460,8 +446,8 @@ export function RightClickPalette() {
           </div>
 
           <div className="border-t border-white/6 px-4 py-3 text-[11px] text-muted-foreground">
-            Built for quick mouse travel: jump back, reopen previews, or
-            continue a workflow without expanding the sidebar.
+            Built for quick mouse travel: jump back, reopen previews, or continue a workflow without
+            expanding the sidebar.
           </div>
         </div>
       )}

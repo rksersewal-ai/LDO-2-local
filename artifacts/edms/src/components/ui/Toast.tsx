@@ -1,6 +1,5 @@
-import { ReactNode } from "react";
-import { AlertCircle, CheckCircle, Info, AlertTriangle, X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from "lucide-react";
 
 export type ToastType = "success" | "error" | "warning" | "info";
 
@@ -42,14 +41,7 @@ function getToastStyles(type: ToastType) {
   }
 }
 
-export function Toast({
-  id,
-  message,
-  type,
-  duration = 4000,
-  action,
-  onClose,
-}: ToastProps) {
+export function Toast({ id, message, type, duration = 4000, action, onClose }: ToastProps) {
   return (
     <motion.div
       layout
@@ -68,6 +60,7 @@ export function Toast({
       <div className="flex-1 text-sm font-medium">{message}</div>
       {action && (
         <button
+          type="button"
           onClick={action.onClick}
           className="text-xs font-semibold underline opacity-80 hover:opacity-100 transition-opacity"
         >
@@ -75,6 +68,7 @@ export function Toast({
         </button>
       )}
       <button
+        type="button"
         onClick={() => onClose(id)}
         className="p-1 hover:bg-white/10 rounded transition-colors"
       >

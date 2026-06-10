@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { CaseRecord } from "../lib/types";
 import { CaseService } from "../services/CaseService";
 
@@ -7,13 +7,8 @@ interface UseCasesResult {
   loading: boolean;
   error: string | null;
   refetch: () => void;
-  add: (
-    c: Omit<CaseRecord, "id" | "createdAt" | "updatedAt">,
-  ) => Promise<CaseRecord>;
-  update: (
-    id: string,
-    patch: Partial<CaseRecord>,
-  ) => Promise<CaseRecord | null>;
+  add: (c: Omit<CaseRecord, "id" | "createdAt" | "updatedAt">) => Promise<CaseRecord>;
+  update: (id: string, patch: Partial<CaseRecord>) => Promise<CaseRecord | null>;
   remove: (id: string) => Promise<boolean>;
 }
 

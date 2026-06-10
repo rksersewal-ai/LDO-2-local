@@ -3,7 +3,7 @@
  * These verify that core modules load and basic functionality works.
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 describe("Application smoke tests", () => {
   it("localStorage mock works for theme persistence", () => {
@@ -26,21 +26,15 @@ describe("Theme toggle logic", () => {
   it("toggles light-theme class on document element", () => {
     // Start with no theme
     document.documentElement.classList.remove("light-theme");
-    expect(document.documentElement.classList.contains("light-theme")).toBe(
-      false,
-    );
+    expect(document.documentElement.classList.contains("light-theme")).toBe(false);
 
     // Toggle on
     document.documentElement.classList.add("light-theme");
-    expect(document.documentElement.classList.contains("light-theme")).toBe(
-      true,
-    );
+    expect(document.documentElement.classList.contains("light-theme")).toBe(true);
 
     // Toggle off
     document.documentElement.classList.remove("light-theme");
-    expect(document.documentElement.classList.contains("light-theme")).toBe(
-      false,
-    );
+    expect(document.documentElement.classList.contains("light-theme")).toBe(false);
   });
 
   it("persists theme choice to localStorage", () => {

@@ -45,10 +45,7 @@ function isRequest(input: RequestInfo | URL): input is Request {
   return typeof Request !== "undefined" && input instanceof Request;
 }
 
-function resolveMethod(
-  input: RequestInfo | URL,
-  explicitMethod?: string,
-): string {
+function resolveMethod(input: RequestInfo | URL, explicitMethod?: string): string {
   if (explicitMethod) return explicitMethod.toUpperCase();
   if (isRequest(input)) return input.method.toUpperCase();
   return "GET";
@@ -97,19 +94,17 @@ function getMediaType(headers: Headers): string | null {
 }
 
 function isJsonMediaType(mediaType: string | null): boolean {
-  return (
-    mediaType === "application/json" || Boolean(mediaType?.endsWith("+json"))
-  );
+  return mediaType === "application/json" || Boolean(mediaType?.endsWith("+json"));
 }
 
 function isTextMediaType(mediaType: string | null): boolean {
   return Boolean(
     mediaType &&
-    (mediaType.startsWith("text/") ||
-      mediaType === "application/xml" ||
-      mediaType === "text/xml" ||
-      mediaType.endsWith("+xml") ||
-      mediaType === "application/x-www-form-urlencoded"),
+      (mediaType.startsWith("text/") ||
+        mediaType === "application/xml" ||
+        mediaType === "text/xml" ||
+        mediaType.endsWith("+xml") ||
+        mediaType === "application/x-www-form-urlencoded"),
   );
 }
 
@@ -183,11 +178,7 @@ export class ApiError<T = unknown> extends Error {
   readonly method: string;
   readonly url: string;
 
-  constructor(
-    response: Response,
-    data: T | null,
-    requestInfo: { method: string; url: string },
-  ) {
+  constructor(response: Response, data: T | null, requestInfo: { method: string; url: string }) {
     super(buildErrorMessage(response, data));
     Object.setPrototypeOf(this, new.target.prototype);
 
@@ -253,10 +244,7 @@ async function parseJsonBody(
   }
 }
 
-async function parseErrorBody(
-  response: Response,
-  method: string,
-): Promise<unknown> {
+async function parseErrorBody(response: Response, method: string): Promise<unknown> {
   if (hasNoBody(response, method)) {
     return null;
   }
@@ -265,9 +253,7 @@ async function parseErrorBody(
 
   // Fall back to text when blob() is unavailable (e.g. some React Native builds).
   if (mediaType && !isJsonMediaType(mediaType) && !isTextMediaType(mediaType)) {
-    return typeof response.blob === "function"
-      ? response.blob()
-      : response.text();
+    return typeof response.blob === "function" ? response.blob() : response.text();
   }
 
   const raw = await response.text();
@@ -306,8 +292,7 @@ async function parseSuccessBody(
     return null;
   }
 
-  const effectiveType =
-    responseType === "auto" ? inferResponseType(response) : responseType;
+  const effectiveType = responseType === "auto" ? inferResponseType(response) : responseType;
 
   switch (effectiveType) {
     case "json":
@@ -342,16 +327,9 @@ export async function customFetch<T = unknown>(
     throw new TypeError(`customFetch: ${method} requests cannot have a body.`);
   }
 
-  const headers = mergeHeaders(
-    isRequest(input) ? input.headers : undefined,
-    headersInit,
-  );
+  const headers = mergeHeaders(isRequest(input) ? input.headers : undefined, headersInit);
 
-  if (
-    typeof init.body === "string" &&
-    !headers.has("content-type") &&
-    looksLikeJson(init.body)
-  ) {
+  if (typeof init.body === "string" && !headers.has("content-type") && looksLikeJson(init.body)) {
     headers.set("content-type", "application/json");
   }
 

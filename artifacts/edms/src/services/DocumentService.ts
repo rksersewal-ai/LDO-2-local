@@ -1,11 +1,5 @@
-import type {
-  Document,
-  DocumentCategory,
-  DocumentStatus,
-  OcrStatus,
-} from "../lib/types";
-import { validateDocumentList, validateDocument } from "../lib/validation";
 import { MOCK_DOCUMENTS } from "../lib/mock";
+import type { Document, DocumentCategory, DocumentStatus, OcrStatus } from "../lib/types";
 
 function mapMockDocument(d: (typeof MOCK_DOCUMENTS)[0]): Document {
   const categoryMap: Record<string, DocumentCategory> = {
@@ -38,8 +32,7 @@ function mapMockDocument(d: (typeof MOCK_DOCUMENTS)[0]): Document {
     id: d.id,
     documentNumber: d.id,
     title: ((d as Record<string, unknown>).name as string) ?? d.id,
-    category:
-      categoryMap[(d as Record<string, unknown>).category as string] ?? "OTHER",
+    category: categoryMap[(d as Record<string, unknown>).category as string] ?? "OTHER",
     status: statusMap[d.status] ?? "ACTIVE",
     agency: ((d as Record<string, unknown>).owner as string) ?? "CLW",
     revision: d.revision,
@@ -50,9 +43,7 @@ function mapMockDocument(d: (typeof MOCK_DOCUMENTS)[0]): Document {
     tags: d.tags ?? [],
     linkedPlNumbers: d.linkedPL && d.linkedPL !== "N/A" ? [d.linkedPL] : [],
     ocrStatus: ocrStatusMap[d.ocrStatus] ?? "PENDING",
-    ocrConfidence: (d as Record<string, unknown>).ocrConfidence as
-      | number
-      | null,
+    ocrConfidence: (d as Record<string, unknown>).ocrConfidence as number | null,
     uploadedBy: (d as Record<string, unknown>).author as string,
     owner: (d as Record<string, unknown>).owner as string,
     isLatest: (d as Record<string, unknown>).lifecycle !== "Archived",
@@ -116,14 +107,10 @@ export const DocumentService = {
   },
 
   getByPLNumber(plNumber: string): Promise<Document[]> {
-    return Promise.resolve(
-      _store.filter((d) => d.linkedPlNumbers.includes(plNumber)),
-    );
+    return Promise.resolve(_store.filter((d) => d.linkedPlNumbers.includes(plNumber)));
   },
 
-  add(
-    data: Omit<Document, "id" | "createdAt" | "updatedAt">,
-  ): Promise<Document> {
+  add(data: Omit<Document, "id" | "createdAt" | "updatedAt">): Promise<Document> {
     const now = new Date().toISOString().split("T")[0];
     const doc: Document = {
       ...data,

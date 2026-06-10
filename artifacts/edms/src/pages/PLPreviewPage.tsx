@@ -1,20 +1,13 @@
+import { ArrowLeft, CheckCircle2, History, RotateCcw, Save, XCircle } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import {
-  ArrowLeft,
-  CheckCircle2,
-  History,
-  RotateCcw,
-  Save,
-  XCircle,
-} from "lucide-react";
 import { toast } from "sonner";
 import { Badge, Button, GlassCard, PageHeader } from "../components/ui/Shared";
 import { useAuth } from "../lib/auth";
 import type { PLNumber } from "../lib/types";
 import {
-  PLPreviewService,
   type PLPreviewPayload,
+  PLPreviewService,
   type PLRevisionEntry,
 } from "../services/PLPreviewService";
 import { PLService } from "../services/PLService";
@@ -46,10 +39,7 @@ function stringifyValue(value: unknown) {
   return String(value);
 }
 
-function payloadToSnapshot(
-  payload: PLPreviewPayload,
-  baseline?: PLNumber | null,
-): PLNumber {
+function payloadToSnapshot(payload: PLPreviewPayload, baseline?: PLNumber | null): PLNumber {
   const now = new Date().toISOString().split("T")[0];
   return {
     id: baseline?.id ?? payload.plNumber,
@@ -61,9 +51,7 @@ function payloadToSnapshot(
   };
 }
 
-function previewFields(
-  payload: PLPreviewPayload,
-): Array<{ label: string; value: unknown }> {
+function previewFields(payload: PLPreviewPayload): Array<{ label: string; value: unknown }> {
   return [
     { label: "PL Number", value: payload.plNumber },
     { label: "Name", value: payload.name },
@@ -125,11 +113,9 @@ export default function PLPreviewPage() {
             </Button>
           }
         />
-        <GlassCard className="p-8 text-center">
+        <GlassCard className="p-4 text-center hover:border-primary/20 transition-all duration-200">
           <XCircle className="mx-auto h-10 w-10 text-rose-400" />
-          <p className="mt-4 text-sm text-foreground/90">
-            No PL draft is available for review.
-          </p>
+          <p className="mt-4 text-sm text-foreground/90">No PL draft is available for review.</p>
         </GlassCard>
       </div>
     );
@@ -140,11 +126,7 @@ export default function PLPreviewPage() {
     : payloadToSnapshot(draft.draft, draft.baseline);
   const effectivePayload = PLPreviewService.toPreviewPayload(effectiveSnapshot);
   const effectiveChangeLog = activeRevision
-    ? PLPreviewService.buildChangeLog(
-        draft.baseline,
-        effectivePayload,
-        draft.actor,
-      )
+    ? PLPreviewService.buildChangeLog(draft.baseline, effectivePayload, draft.actor)
     : draft.changeLog;
 
   const isRollbackMode = Boolean(activeRevision);
@@ -173,10 +155,7 @@ export default function PLPreviewPage() {
         saved = await PLService.add(effectivePayload);
       } else {
         const { plNumber: _plNumber, ...updatePayload } = effectivePayload;
-        const updated = await PLService.update(
-          draft.baseline?.id ?? draft.plNumber,
-          updatePayload,
-        );
+        const updated = await PLService.update(draft.baseline?.id ?? draft.plNumber, updatePayload);
         if (!updated) {
           throw new Error("Unable to save PL record changes");
         }
@@ -186,12 +165,7 @@ export default function PLPreviewPage() {
       PLPreviewService.recordRevision({
         snapshot: saved,
         actor: user ?? undefined,
-        action:
-          draft.mode === "create"
-            ? "create"
-            : isRollbackMode
-              ? "rollback"
-              : "update",
+        action: draft.mode === "create" ? "create" : isRollbackMode ? "rollback" : "update",
         note: isRollbackMode
           ? `Rolled back from revision ${activeRevision?.id}`
           : "Saved from PL review preview",
@@ -207,9 +181,7 @@ export default function PLPreviewPage() {
       );
       navigate(`/pl/${saved.plNumber}`, { replace: true });
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to save PL record",
-      );
+      toast.error(error instanceof Error ? error.message : "Failed to save PL record");
     } finally {
       setSaving(false);
     }
@@ -218,11 +190,7 @@ export default function PLPreviewPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       <PageHeader
-        title={
-          draft.mode === "create"
-            ? "PL Record Review Preview"
-            : "PL Record Change Preview"
-        }
+        title={draft.mode === "create" ? "PL Record Review Preview" : "PL Record Change Preview"}
         subtitle="Review the proposed PL metadata changes, inspect the user change log, and save or cancel from this dedicated PL preview page."
         breadcrumb={
           <button
@@ -258,7 +226,7 @@ export default function PLPreviewPage() {
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.3fr)_420px]">
         <div className="space-y-6">
-          <GlassCard className="p-6">
+          <GlassCard className="p-3.5 hover:border-primary/20 transition-all duration-200">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/70 pb-4">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
@@ -279,9 +247,7 @@ export default function PLPreviewPage() {
                 <Badge variant={draft.mode === "create" ? "info" : "warning"}>
                   {draft.mode === "create" ? "New record" : "Edit review"}
                 </Badge>
-                {isRollbackMode && (
-                  <Badge variant="danger">Rollback preview</Badge>
-                )}
+                {isRollbackMode && <Badge variant="danger">Rollback preview</Badge>}
               </div>
             </div>
 
@@ -302,14 +268,13 @@ export default function PLPreviewPage() {
             </div>
           </GlassCard>
 
-          <GlassCard className="p-6">
+          <GlassCard className="p-3.5 hover:border-primary/20 transition-all duration-200">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-primary/90" />
               <h2 className="text-sm font-bold text-white">User change log</h2>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              This log shows the exact field-level changes the user is about to
-              save.
+              This log shows the exact field-level changes the user is about to save.
             </p>
             <div className="mt-4 space-y-3">
               {effectiveChangeLog.length > 0 ? (
@@ -319,9 +284,7 @@ export default function PLPreviewPage() {
                     className="rounded-2xl border border-border/70 bg-slate-950/35 px-4 py-3"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-sm font-semibold text-foreground">
-                        {entry.label}
-                      </p>
+                      <p className="text-sm font-semibold text-foreground">{entry.label}</p>
                       <p className="text-[11px] text-muted-foreground">
                         {entry.changedBy} · {formatDateTime(entry.changedAt)}
                       </p>
@@ -339,9 +302,7 @@ export default function PLPreviewPage() {
                         <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
                           Proposed
                         </p>
-                        <p className="mt-1 text-sm text-teal-100 break-words">
-                          {entry.after}
-                        </p>
+                        <p className="mt-1 text-sm text-teal-100 break-words">{entry.after}</p>
                       </div>
                     </div>
                   </div>
@@ -356,14 +317,14 @@ export default function PLPreviewPage() {
         </div>
 
         <div className="space-y-6">
-          <GlassCard className="p-6">
+          <GlassCard className="p-3.5 hover:border-primary/20 transition-all duration-200">
             <div className="flex items-center gap-2">
               <History className="h-4 w-4 text-amber-300" />
               <h2 className="text-sm font-bold text-white">Rollback history</h2>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Restore a previously saved PL snapshot, then save from this page
-              to complete the rollback.
+              Restore a previously saved PL snapshot, then save from this page to complete the
+              rollback.
             </p>
 
             <div className="mt-4 space-y-3">
@@ -379,19 +340,13 @@ export default function PLPreviewPage() {
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-sm font-semibold text-foreground">
-                        Current saved version
-                      </p>
+                      <p className="text-sm font-semibold text-foreground">Current saved version</p>
                       <p className="mt-1 text-[11px] text-muted-foreground">
                         Last updated{" "}
-                        {formatDateTime(
-                          draft.baseline.updatedAt || draft.baseline.createdAt,
-                        )}
+                        {formatDateTime(draft.baseline.updatedAt || draft.baseline.createdAt)}
                       </p>
                     </div>
-                    {!activeRevisionId && (
-                      <Badge variant="success">Active</Badge>
-                    )}
+                    {!activeRevisionId && <Badge variant="success">Active</Badge>}
                   </div>
                 </button>
               )}
@@ -402,9 +357,7 @@ export default function PLPreviewPage() {
                     key={entry.id}
                     type="button"
                     onClick={() =>
-                      setActiveRevisionId((current) =>
-                        current === entry.id ? null : entry.id,
-                      )
+                      setActiveRevisionId((current) => (current === entry.id ? null : entry.id))
                     }
                     className={`w-full rounded-2xl border px-4 py-3 text-left transition-all ${
                       activeRevisionId === entry.id
@@ -430,9 +383,7 @@ export default function PLPreviewPage() {
                       )}
                     </div>
                     {entry.note && (
-                      <p className="mt-2 text-xs text-muted-foreground">
-                        {entry.note}
-                      </p>
+                      <p className="mt-2 text-xs text-muted-foreground">{entry.note}</p>
                     )}
                   </button>
                 ))

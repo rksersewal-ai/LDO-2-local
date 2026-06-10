@@ -1,5 +1,3 @@
-import React from "react";
-
 interface LoadingStateProps {
   message?: string;
   size?: "sm" | "md" | "lg";
@@ -28,29 +26,19 @@ export function LoadingState({
       className={`flex flex-col items-center justify-center gap-3 ${sizeClasses[size]} ${className}`}
     >
       <div className={`${spinnerSizes[size]} relative`}>
-        <div
-          className={`absolute inset-0 rounded-full border-2 border-border`}
-        />
+        <div className={`absolute inset-0 rounded-full border-2 border-border`} />
         <div
           className={`absolute inset-0 rounded-full border-2 border-transparent border-t-teal-500`}
           style={{ animation: "spin 0.8s linear infinite" }}
         />
       </div>
-      {message && (
-        <p className="text-muted-foreground text-sm font-medium">{message}</p>
-      )}
+      {message && <p className="text-muted-foreground text-sm font-medium">{message}</p>}
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
 
-export function LoadingRows({
-  count = 5,
-  className = "",
-}: {
-  count?: number;
-  className?: string;
-}) {
+export function LoadingRows({ count = 5, className = "" }: { count?: number; className?: string }) {
   return (
     <div className={`space-y-2 ${className}`}>
       {Array.from({ length: count }).map((_, i) => (
@@ -66,9 +54,7 @@ export function LoadingRows({
 
 export function LoadingCard({ className = "" }: { className?: string }) {
   return (
-    <div
-      className={`p-4 rounded-xl bg-secondary/40 space-y-3 animate-pulse ${className}`}
-    >
+    <div className={`p-4 rounded-xl bg-secondary/40 space-y-3 animate-pulse ${className}`}>
       <div className="h-4 bg-slate-700/60 rounded w-3/4" />
       <div className="h-3 bg-slate-700/40 rounded w-1/2" />
       <div className="h-3 bg-slate-700/30 rounded w-2/3" />

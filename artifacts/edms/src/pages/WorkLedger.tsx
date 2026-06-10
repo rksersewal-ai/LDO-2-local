@@ -1,69 +1,59 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import {
+  AlertCircle,
+  AlertTriangle,
+  BarChart3,
+  Briefcase,
+  Check,
+  CheckCircle,
+  CheckSquare,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronRight as ChevronRightIcon,
+  Clock,
+  Copy,
+  Download,
+  FileSearch,
+  FileSpreadsheet,
+  FileText,
+  Hash,
+  Layers,
+  Lock,
+  Plus,
+  Shield,
+  TrendingUp,
+  Unlock,
+  Upload,
+  User as UserIcon,
+  X,
+  ZapOff,
+} from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
-import {
-  GlassCard,
-  Badge,
-  Button,
-  Input,
-  Select,
-} from "../components/ui/Shared";
-import { DatePicker } from "../components/ui/DatePicker";
-import { LoadingState } from "../components/ui/LoadingState";
-import { ErrorState } from "../components/ui/ErrorState";
-import { PLNumberSelect } from "../components/ui/PLNumberSelect";
-import { useWorkRecords } from "../hooks/useWorkRecords";
-import { usePLItems } from "../hooks/usePLItems";
-import { useAuth } from "../lib/auth";
-import {
-  WorkLedgerService,
-  getTargetDays,
-  checkDuplicates,
-  getKPIStatus,
-} from "../services/WorkLedgerService";
-import { ExportImportService } from "../services/ExportImportService";
-import {
-  WORK_TYPE_DEFINITIONS,
-  SECTION_TYPES,
-  CONCERNED_OFFICERS,
-} from "../lib/constants";
-import type { PLNumber, WorkRecord, WorkCategory } from "../lib/types";
 import {
   DocumentPreviewButton,
   getDocumentContextAttributes,
 } from "../components/documents/DocumentPreviewActions";
+import { DatePicker } from "../components/ui/DatePicker";
+import { EmptyState } from "../components/ui/EmptyState";
+import { ErrorState } from "../components/ui/ErrorState";
+import { PLNumberSelect } from "../components/ui/PLNumberSelect";
+import { Badge, Button, GlassCard, Input, Select } from "../components/ui/Shared";
+import { TableSkeleton } from "../components/ui/TableSkeleton";
+import { usePLItems } from "../hooks/usePLItems";
+import { useWorkRecords } from "../hooks/useWorkRecords";
+import { useAuth } from "../lib/auth";
+import { CONCERNED_OFFICERS, SECTION_TYPES, WORK_TYPE_DEFINITIONS } from "../lib/constants";
+import type { PLNumber, WorkCategory, WorkRecord } from "../lib/types";
+import { ExportImportService } from "../services/ExportImportService";
 import {
-  Plus,
-  FileSearch,
-  Briefcase,
-  ChevronRight,
-  X,
-  FileText,
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-  Lock,
-  Shield,
-  BarChart3,
-  Layers,
-  Unlock,
-  Hash,
-  ZapOff,
-  TrendingUp,
-  AlertCircle,
-  ChevronDown,
-  CheckSquare,
-  Search,
-  ExternalLink,
-  Download,
-  Upload,
-  Copy,
-  Check,
-  FileSpreadsheet,
-  ChevronLeft,
-  ChevronRight as ChevronRightIcon,
-  User as UserIcon,
-} from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router";
+  checkDuplicates,
+  getKPIStatus,
+  getTargetDays,
+  WorkLedgerService,
+} from "../services/WorkLedgerService";
 
 const STATUS_VARIANT: Record<
   WorkRecord["status"],
@@ -112,9 +102,7 @@ const WORK_CATEGORIES: WorkCategory[] = [
 
 function KPIChip({ record }: { record: WorkRecord }) {
   const kpi = getKPIStatus(record);
-  return (
-    <span className={`text-[10px] font-medium ${kpi.color}`}>{kpi.label}</span>
-  );
+  return <span className={`text-[10px] font-medium ${kpi.color}`}>{kpi.label}</span>;
 }
 
 function AnalyticsPanel({ records }: { records: WorkRecord[] }) {
@@ -128,10 +116,7 @@ function AnalyticsPanel({ records }: { records: WorkRecord[] }) {
 
   if (!analytics) return null;
 
-  const maxCategoryCount = Math.max(
-    ...analytics.byCategory.map((c) => c.count),
-    1,
-  );
+  const maxCategoryCount = Math.max(...analytics.byCategory.map((c) => c.count), 1);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -153,9 +138,7 @@ function AnalyticsPanel({ records }: { records: WorkRecord[] }) {
                     style={{ width: `${(c.count / maxCategoryCount) * 100}%` }}
                   />
                 </div>
-                <span className="text-xs text-primary/90 font-mono w-4">
-                  {c.count}
-                </span>
+                <span className="text-xs text-primary/90 font-mono w-4">{c.count}</span>
               </div>
             ))}
         </div>
@@ -231,7 +214,7 @@ function calcDaysBetween(start: string, end: string): number | undefined {
   if (!start || !end) return undefined;
   const s = new Date(start).getTime();
   const e = new Date(end).getTime();
-  if (isNaN(s) || isNaN(e) || e < s) return undefined;
+  if (Number.isNaN(s) || Number.isNaN(e) || e < s) return undefined;
   return Math.round((e - s) / (1000 * 60 * 60 * 24));
 }
 
@@ -248,9 +231,7 @@ function PlLookupField({
 }) {
   return (
     <div className="space-y-2">
-      <label className="text-xs font-medium text-muted-foreground">
-        Linked PL Number
-      </label>
+      <label className="text-xs font-medium text-muted-foreground">Linked PL Number</label>
       <PLNumberSelect
         value={value}
         onChange={onSelect}
@@ -283,13 +264,35 @@ function CreateWorkModal({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [duplicates, setDuplicates] = useState<WorkRecord[]>([]);
   const [showDuplicates, setShowDuplicates] = useState(false);
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [allUsers, setAllUsers] = useState<
+    { id: string; name: string; designation?: string; role?: string }[]
+  >([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Load users for supervisor dropdown
+  useEffect(() => {
+    import("../services/UserService").then(({ UserService }) => {
+      UserService.getAll().then((users) => {
+        setAllUsers(
+          users
+            .filter((u) => u.isActive)
+            .map((u) => ({
+              id: u.id,
+              name: u.name,
+              designation: u.designation,
+              role: u.role,
+            })),
+        );
+      });
+    });
+  }, []);
 
   const typesForCategory = WORK_TYPE_DEFINITIONS.filter(
     (t) => t.category === form.workCategory && t.isActive,
   );
-  const selectedTypeDef = WORK_TYPE_DEFINITIONS.find(
-    (t) => t.label === form.workType,
-  );
+  const selectedTypeDef = WORK_TYPE_DEFINITIONS.find((t) => t.label === form.workType);
   const targetDays = selectedTypeDef?.disposalDays ?? 7;
 
   useEffect(() => {
@@ -308,8 +311,7 @@ function CreateWorkModal({
     const errs: Record<string, string> = {};
     if (!form.workType) errs.workType = "Work Type is required";
     if (!form.description.trim()) errs.description = "Description is required";
-    if (!form.eOfficeNumber.trim())
-      errs.eOfficeNumber = "e-Office Case No. is required";
+    if (!form.eOfficeNumber.trim()) errs.eOfficeNumber = "e-Office Case No. is required";
     if (!form.date) errs.date = "Start date is required";
     if (!form.closingDate) errs.closingDate = "Closing date is required";
     if (form.date && form.closingDate && form.closingDate < form.date) {
@@ -362,297 +364,433 @@ function CreateWorkModal({
 
   const consentApplicable = selectedTypeDef?.consentApplicable ?? false;
 
-  return (
-    <GlassCard className="w-full p-6">
-      <div className="flex items-center justify-between mb-5">
-        <div>
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <Plus className="w-4 h-4 text-primary" /> Log Work Activity
-          </h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Record a new work item in the Work Ledger with full audit trail
-          </p>
-        </div>
-        <button
-          onClick={onClose}
-          className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground/90 hover:bg-slate-700/50 transition-colors"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
+  // Drag-and-drop handlers
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+  const handleDragLeave = () => setIsDragging(false);
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const dropped = Array.from(e.dataTransfer.files);
+    setAttachedFiles((prev) => [...prev, ...dropped]);
+  };
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const picked = Array.from(e.target.files ?? []);
+    setAttachedFiles((prev) => [...prev, ...picked]);
+    e.target.value = "";
+  };
+  const removeFile = (idx: number) => setAttachedFiles((prev) => prev.filter((_, i) => i !== idx));
 
-      {duplicates.length > 0 && (
-        <button
-          onClick={() => setShowDuplicates((v) => !v)}
-          className="w-full mb-4 flex items-center gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs hover:bg-amber-500/15 transition-colors"
-        >
-          <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-          <span className="flex-1 text-left">
-            Potential duplicate: {duplicates.length} similar record(s) found in
-            last 30 days
-          </span>
-          <ChevronDown
-            className={`w-4 h-4 transition-transform ${showDuplicates ? "rotate-180" : ""}`}
-          />
-        </button>
-      )}
-      {showDuplicates &&
-        duplicates.map((d) => (
-          <div
-            key={d.id}
-            className="mb-2 p-2 rounded-lg bg-secondary/40 border border-amber-500/20 text-xs"
-          >
-            <span className="font-mono text-primary">{d.id}</span> —{" "}
-            {d.description.substring(0, 80)}...
-          </div>
-        ))}
+  const supervisorUsers = allUsers.filter((u) => u.role === "supervisor" || u.role === "admin");
 
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-              Work Category *
-            </label>
-            <Select
-              value={form.workCategory}
-              onChange={(e) =>
-                setForm((f) => ({
-                  ...f,
-                  workCategory: e.target.value as WorkCategory,
-                  workType: "",
-                }))
-              }
-              className="w-full work-ledger-select"
-            >
-              {WORK_CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {CATEGORY_LABEL[c]}
-                </option>
-              ))}
-            </Select>
-          </div>
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-              Work Type *
-            </label>
-            <Select
-              value={form.workType}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, workType: e.target.value }))
-              }
-              className={`w-full work-ledger-select ${errors.workType ? "border-rose-500/50" : ""}`}
-            >
-              <option value="">— Select Type —</option>
-              {typesForCategory.map((t) => (
-                <option key={t.code} value={t.label}>
-                  {t.label}
-                </option>
-              ))}
-            </Select>
-            {errors.workType && (
-              <p className="text-[10px] text-rose-400 mt-1">
-                {errors.workType}
-              </p>
-            )}
-          </div>
-        </div>
+  return createPortal(
+    /* Floating overlay */
+    <div className="fixed inset-0 z-[9000] flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
 
-        {form.workType && (
-          <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-teal-500/8 border border-teal-500/20">
-            <Clock className="w-3.5 h-3.5 text-primary" />
-            <span className="text-xs text-primary/90">
-              Target disposal: <strong>{targetDays} days</strong>
-            </span>
-            {selectedTypeDef?.priority && (
-              <span
-                className={`ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
-                  selectedTypeDef.priority === "CRITICAL"
-                    ? "bg-rose-500/20 text-rose-300"
-                    : selectedTypeDef.priority === "HIGH"
-                      ? "bg-amber-500/20 text-amber-300"
-                      : "bg-slate-700/50 text-muted-foreground"
-                }`}
-              >
-                {selectedTypeDef.priority}
-              </span>
-            )}
-          </div>
-        )}
-
-        <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-            Description / Work Details *
-          </label>
-          <textarea
-            value={form.description}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, description: e.target.value }))
-            }
-            placeholder="Describe the work, item, and any relevant technical context..."
-            rows={3}
-            className={`w-full bg-slate-950/60 border text-foreground text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/30 transition-all placeholder:text-slate-600 resize-none ${errors.description ? "border-rose-500/50" : "border-border"}`}
-          />
-          {errors.description && (
-            <p className="text-[10px] text-rose-400 mt-1">
-              {errors.description}
-            </p>
-          )}
-        </div>
-
-        <PlLookupField
-          plItems={plItems}
-          loading={plItemsLoading}
-          value={form.plNumber}
-          onSelect={(plNumber) => setForm((f) => ({ ...f, plNumber }))}
-        />
-
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-              Tender Number
-            </label>
-            <Input
-              value={form.tenderNumber}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, tenderNumber: e.target.value }))
-              }
-              placeholder="e.g. CLW/TENDER/2026/001"
-              className="w-full font-mono text-xs"
-            />
-          </div>
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-              e-Office Case No. <span className="text-rose-400">*</span>
-            </label>
-            <Input
-              value={form.eOfficeNumber}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, eOfficeNumber: e.target.value }))
-              }
-              placeholder="e.g. CLW/DESIGN/2026/0001"
-              className={`w-full font-mono text-xs ${errors.eOfficeNumber ? "border-rose-500/50" : ""}`}
-            />
-            {errors.eOfficeNumber && (
-              <p className="text-[10px] text-rose-400 mt-1">
-                {errors.eOfficeNumber}
-              </p>
-            )}
-          </div>
-        </div>
-
-        <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-            Remarks / Additional Notes
-          </label>
-          <textarea
-            value={form.remarks}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, remarks: e.target.value }))
-            }
-            placeholder="Any additional remarks, observations, or context for this work record..."
-            rows={2}
-            className="w-full bg-slate-950/60 border border-border text-foreground text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/30 transition-all placeholder:text-slate-600 resize-none"
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-              Section
-            </label>
-            <Select
-              value={form.sectionType}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, sectionType: e.target.value }))
-              }
-              className="w-full work-ledger-select"
-            >
-              {SECTION_TYPES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </Select>
-          </div>
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-              Concerned Officer
-            </label>
-            <Select
-              value={form.concernedOfficer}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, concernedOfficer: e.target.value }))
-              }
-              className="w-full work-ledger-select"
-            >
-              <option value="">— Select —</option>
-              {CONCERNED_OFFICERS.map((o) => (
-                <option key={o} value={o}>
-                  {o}
-                </option>
-              ))}
-            </Select>
-          </div>
-        </div>
-
-        <div
-          className={`grid gap-3 ${consentApplicable ? "grid-cols-3" : "grid-cols-2"}`}
-        >
-          <DatePicker
-            label="Date Received / Started"
-            value={form.date}
-            onChange={(v) => setForm((f) => ({ ...f, date: v }))}
-            required
-          />
-          <DatePicker
-            label="Closing / Completion Date"
-            value={form.closingDate}
-            onChange={(v) => setForm((f) => ({ ...f, closingDate: v }))}
-            minDate={form.date}
-            required
-          />
-          {consentApplicable && (
+      {/* Modal panel */}
+      <div className="relative z-10 w-full max-w-2xl max-h-[90vh] flex flex-col bg-slate-950/95 border border-border/70 rounded-2xl shadow-2xl shadow-black/70 backdrop-blur-xl">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-teal-500/15 border border-teal-500/25 flex items-center justify-center">
+              <Plus className="w-4 h-4 text-primary" />
+            </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-                Consent Given
-              </label>
-              <Select
-                value={form.consentGiven}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, consentGiven: e.target.value }))
-                }
-                className="w-full work-ledger-select"
+              <h2 className="text-sm font-bold text-white leading-tight">Log Work Activity</h2>
+              <p className="text-[11px] text-muted-foreground">
+                Record a new work item with full audit trail
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-slate-700/60 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Scrollable body */}
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4 custom-scrollbar">
+          {/* Duplicate warning */}
+          {duplicates.length > 0 && (
+            <div>
+              <button
+                type="button"
+                onClick={() => setShowDuplicates((v) => !v)}
+                className="w-full flex items-center gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs hover:bg-amber-500/15 transition-colors"
               >
-                <option value="N/A">N/A</option>
-                <option value="Y">Yes</option>
-                <option value="N">No</option>
-              </Select>
+                <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                <span className="flex-1 text-left">
+                  Potential duplicate: {duplicates.length} similar record(s) found in last 30 days
+                </span>
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform ${showDuplicates ? "rotate-180" : ""}`}
+                />
+              </button>
+              {showDuplicates &&
+                duplicates.map((d) => (
+                  <div
+                    key={d.id}
+                    className="mt-1 px-3 py-2 rounded-lg bg-secondary/40 border border-amber-500/20 text-xs"
+                  >
+                    <span className="font-mono text-primary">{d.id}</span> —{" "}
+                    {d.description.substring(0, 80)}
+                  </div>
+                ))}
             </div>
           )}
-        </div>
 
-        {(errors.date || errors.closingDate) && (
-          <div className="rounded-xl border border-rose-500/20 bg-rose-500/8 px-3 py-2 text-[11px] text-rose-300">
-            {errors.date || errors.closingDate}
+          {/* Row 1: Work Category + Work Type */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-1.5 block">
+                Work Category *
+              </label>
+              <Select
+                value={form.workCategory}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    workCategory: e.target.value as WorkCategory,
+                    workType: "",
+                  }))
+                }
+                className="w-full h-9 text-xs"
+              >
+                {WORK_CATEGORIES.map((c) => (
+                  <option key={c} value={c}>
+                    {CATEGORY_LABEL[c]}
+                  </option>
+                ))}
+              </Select>
+            </div>
+            <div>
+              <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-1.5 block">
+                Work Type *
+              </label>
+              <Select
+                value={form.workType}
+                onChange={(e) => setForm((f) => ({ ...f, workType: e.target.value }))}
+                className={`w-full h-9 text-xs ${errors.workType ? "border-rose-500/50" : ""}`}
+              >
+                <option value="">— Select Type —</option>
+                {typesForCategory.map((t) => (
+                  <option key={t.code} value={t.label}>
+                    {t.label}
+                  </option>
+                ))}
+              </Select>
+              {errors.workType && (
+                <p className="text-[10px] text-rose-400 mt-1">{errors.workType}</p>
+              )}
+            </div>
           </div>
-        )}
-      </div>
 
-      <div className="flex gap-3 mt-6 pt-5 border-t border-border">
-        <Button variant="secondary" onClick={onClose} className="flex-1">
-          Cancel
-        </Button>
-        <Button onClick={handleSubmit} disabled={saving} className="flex-1">
-          {saving ? (
-            "Saving..."
-          ) : (
-            <>
-              <Plus className="w-4 h-4" /> Log Activity
-            </>
+          {/* Target days banner */}
+          {form.workType && (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-teal-500/8 border border-teal-500/20">
+              <Clock className="w-3.5 h-3.5 text-primary" />
+              <span className="text-xs text-primary/90">
+                Target disposal: <strong>{targetDays} days</strong>
+              </span>
+              {selectedTypeDef?.priority && (
+                <span
+                  className={`ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
+                    selectedTypeDef.priority === "CRITICAL"
+                      ? "bg-rose-500/20 text-rose-300"
+                      : selectedTypeDef.priority === "HIGH"
+                        ? "bg-amber-500/20 text-amber-300"
+                        : "bg-slate-700/50 text-muted-foreground"
+                  }`}
+                >
+                  {selectedTypeDef.priority}
+                </span>
+              )}
+            </div>
           )}
-        </Button>
+
+          {/* Description */}
+          <div>
+            <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-1.5 block">
+              Description / Work Details *
+            </label>
+            <textarea
+              value={form.description}
+              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+              placeholder="Describe the work, item, and any relevant technical context..."
+              rows={3}
+              className={`w-full bg-background/80 text-foreground text-sm rounded-xl px-4 py-2.5 border focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/30 transition-all placeholder:text-slate-600 resize-none ${errors.description ? "border-rose-500/50" : "border-border"}`}
+            />
+            {errors.description && (
+              <p className="text-[10px] text-rose-400 mt-1">{errors.description}</p>
+            )}
+          </div>
+
+          {/* Row 2: Tender + eOffice */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-1.5 block">
+                Tender Number
+              </label>
+              <Input
+                value={form.tenderNumber}
+                onChange={(e) => setForm((f) => ({ ...f, tenderNumber: e.target.value }))}
+                placeholder="e.g. CLW/TENDER/2026/001"
+                className="w-full h-9 font-mono text-xs"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-1.5 block">
+                e-Office Case No. <span className="text-rose-400">*</span>
+              </label>
+              <Input
+                value={form.eOfficeNumber}
+                onChange={(e) => setForm((f) => ({ ...f, eOfficeNumber: e.target.value }))}
+                placeholder="e.g. CLW/DESIGN/2026/0001"
+                className={`w-full h-9 font-mono text-xs ${errors.eOfficeNumber ? "border-rose-500/50" : ""}`}
+              />
+              {errors.eOfficeNumber && (
+                <p className="text-[10px] text-rose-400 mt-1">{errors.eOfficeNumber}</p>
+              )}
+            </div>
+          </div>
+
+          {/* PL Number */}
+          <PlLookupField
+            plItems={plItems}
+            loading={plItemsLoading}
+            value={form.plNumber}
+            onSelect={(plNumber) => setForm((f) => ({ ...f, plNumber }))}
+          />
+
+          {/* Row 3: Section + Supervisor */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-1.5 block">
+                Section
+              </label>
+              <Select
+                value={form.sectionType}
+                onChange={(e) => setForm((f) => ({ ...f, sectionType: e.target.value }))}
+                className="w-full h-9 text-xs"
+              >
+                {SECTION_TYPES.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </Select>
+            </div>
+            <div>
+              <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-1.5 block">
+                Concerned Supervisor
+                <span className="ml-1 text-[9px] normal-case tracking-normal text-slate-600">
+                  (from user list)
+                </span>
+              </label>
+              <Select
+                value={
+                  form.remarks.startsWith("SUPERVISOR:")
+                    ? (form.remarks.split("SUPERVISOR:")[1]?.split("|")[0] ?? "")
+                    : ""
+                }
+                onChange={(e) => {
+                  const sv = e.target.value;
+                  setForm((f) => ({
+                    ...f,
+                    remarks: sv
+                      ? `SUPERVISOR:${sv}|${f.remarks.replace(/^SUPERVISOR:[^|]*\|?/, "")}`
+                      : f.remarks.replace(/^SUPERVISOR:[^|]*\|?/, ""),
+                  }));
+                }}
+                className="w-full h-9 text-xs"
+              >
+                <option value="">— Select Supervisor —</option>
+                {supervisorUsers.map((u) => (
+                  <option key={u.id} value={u.name}>
+                    {u.name}
+                    {u.designation ? ` — ${u.designation}` : ""}
+                  </option>
+                ))}
+                {/* Fallback if no supervisor/admin users exist yet */}
+                {supervisorUsers.length === 0 &&
+                  allUsers.map((u) => (
+                    <option key={u.id} value={u.name}>
+                      {u.name}
+                      {u.designation ? ` — ${u.designation}` : ""}
+                    </option>
+                  ))}
+              </Select>
+            </div>
+          </div>
+
+          {/* Row 4: Concerned Officer + Consent */}
+          <div className={`grid gap-3 ${consentApplicable ? "grid-cols-2" : "grid-cols-1"}`}>
+            <div>
+              <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-1.5 block">
+                Concerned Officer
+                <span className="ml-1 text-[9px] normal-case tracking-normal text-slate-600">
+                  (reference only)
+                </span>
+              </label>
+              <Select
+                value={form.concernedOfficer}
+                onChange={(e) => setForm((f) => ({ ...f, concernedOfficer: e.target.value }))}
+                className="w-full h-9 text-xs"
+              >
+                <option value="">— Select Officer —</option>
+                {CONCERNED_OFFICERS.map((o) => (
+                  <option key={o} value={o}>
+                    {o}
+                  </option>
+                ))}
+              </Select>
+            </div>
+            {consentApplicable && (
+              <div>
+                <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-1.5 block">
+                  Consent Given
+                </label>
+                <Select
+                  value={form.consentGiven}
+                  onChange={(e) => setForm((f) => ({ ...f, consentGiven: e.target.value }))}
+                  className="w-full h-9 text-xs"
+                >
+                  <option value="N/A">N/A</option>
+                  <option value="Y">Yes</option>
+                  <option value="N">No</option>
+                </Select>
+              </div>
+            )}
+          </div>
+
+          {/* Row 5: Dates */}
+          <div className="grid grid-cols-2 gap-3">
+            <DatePicker
+              label="Date Received / Started *"
+              value={form.date}
+              onChange={(v) => setForm((f) => ({ ...f, date: v }))}
+              required
+            />
+            <DatePicker
+              label="Closing / Completion Date *"
+              value={form.closingDate}
+              onChange={(v) => setForm((f) => ({ ...f, closingDate: v }))}
+              minDate={form.date}
+              required
+            />
+          </div>
+          {(errors.date || errors.closingDate) && (
+            <div className="rounded-xl border border-rose-500/20 bg-rose-500/8 px-3 py-2 text-[11px] text-rose-300">
+              {errors.date || errors.closingDate}
+            </div>
+          )}
+
+          {/* Remarks */}
+          <div>
+            <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-1.5 block">
+              Remarks / Additional Notes
+            </label>
+            <textarea
+              value={form.remarks.replace(/^SUPERVISOR:[^|]*\|?/, "")}
+              onChange={(e) => {
+                const base = e.target.value;
+                const svPrefix = form.remarks.match(/^SUPERVISOR:[^|]*\|/)?.[0] ?? "";
+                setForm((f) => ({ ...f, remarks: svPrefix + base }));
+              }}
+              placeholder="Any additional remarks, observations, or context..."
+              rows={2}
+              className="w-full bg-background/80 border border-border text-foreground text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/30 transition-all placeholder:text-slate-600 resize-none"
+            />
+          </div>
+
+          {/* Document Attachment */}
+          <div>
+            <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-1.5 block">
+              Related Documents
+            </label>
+            <div
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+              className={`relative flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-xl py-6 px-4 cursor-pointer transition-all ${
+                isDragging
+                  ? "border-teal-400/60 bg-teal-500/10 text-primary"
+                  : "border-border/50 hover:border-teal-500/40 hover:bg-teal-500/5 text-muted-foreground"
+              }`}
+            >
+              <Upload className="w-6 h-6 opacity-60" />
+              <p className="text-xs font-medium">Drag & drop files here, or click to browse</p>
+              <p className="text-[10px] opacity-60">PDF, DOCX, XLSX, images supported</p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.tiff"
+                className="hidden"
+                onChange={handleFileInput}
+              />
+            </div>
+            {attachedFiles.length > 0 && (
+              <div className="mt-2 space-y-1.5">
+                {attachedFiles.map((file, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary/40 border border-border/40"
+                  >
+                    <FileText className="w-3.5 h-3.5 text-primary shrink-0" />
+                    <span className="flex-1 text-xs text-foreground/90 truncate">{file.name}</span>
+                    <span className="text-[10px] text-muted-foreground shrink-0">
+                      {(file.size / 1024).toFixed(0)} KB
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeFile(idx);
+                      }}
+                      className="text-muted-foreground hover:text-rose-400 transition-colors"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        {/* end scrollable body */}
+
+        {/* Footer */}
+        <div className="flex items-center gap-3 px-6 py-4 border-t border-border/50 shrink-0 bg-slate-950/60">
+          {attachedFiles.length > 0 && (
+            <span className="text-[11px] text-muted-foreground mr-auto">
+              {attachedFiles.length} file{attachedFiles.length !== 1 ? "s" : ""} attached
+            </span>
+          )}
+          <Button variant="secondary" onClick={onClose} className="flex-1">
+            Cancel
+          </Button>
+          <Button onClick={handleSubmit} disabled={saving} className="flex-1">
+            {saving ? (
+              "Saving..."
+            ) : (
+              <>
+                <Plus className="w-4 h-4" /> Log Activity
+              </>
+            )}
+          </Button>
+        </div>
       </div>
-    </GlassCard>
+    </div>,
+    document.body
   );
 }
 
@@ -670,178 +808,216 @@ function RecordDetail({
   const navigate = useNavigate();
   const kpi = getKPIStatus(record);
 
-  return (
-    <GlassCard className="p-6">
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1 flex-wrap">
-            {record.isLocked ? (
-              <Lock className="w-4 h-4 text-muted-foreground" />
-            ) : (
-              <Briefcase className="w-4 h-4 text-primary" />
-            )}
-            <h2 className="text-base font-bold text-white">
-              {record.description}
-            </h2>
-            <Badge variant={STATUS_VARIANT[record.status]}>
-              {STATUS_LABEL[record.status]}
-            </Badge>
-            {record.isLocked && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-700/60 text-muted-foreground border border-slate-600/40 flex items-center gap-1">
-                <Lock className="w-2.5 h-2.5" /> Locked
-              </span>
-            )}
+  return createPortal(
+    <div className="fixed inset-0 z-[9000] flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+
+      {/* Modal panel */}
+      <div className="relative z-10 w-full max-w-xl max-h-[85vh] flex flex-col bg-slate-950/95 border border-border/70 rounded-2xl shadow-2xl shadow-black/70 backdrop-blur-xl">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-teal-500/15 border border-teal-500/25 flex items-center justify-center">
+              {record.isLocked ? (
+                <Lock className="w-4 h-4 text-muted-foreground" />
+              ) : (
+                <Briefcase className="w-4 h-4 text-primary" />
+              )}
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-bold text-white leading-tight">Work Record Details</h2>
+                <Badge variant={STATUS_VARIANT[record.status]}>{STATUS_LABEL[record.status]}</Badge>
+              </div>
+              <p className="text-[10px] font-mono text-primary mt-0.5">{record.id}</p>
+            </div>
           </div>
-          <p className="font-mono text-xs text-primary">{record.id}</p>
-        </div>
-        <button
-          onClick={onClose}
-          className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground/90 transition-colors"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
-        {((): { label: string; value: string; icon?: React.ReactNode }[] => [
-          {
-            label: "Category",
-            value: CATEGORY_LABEL[record.workCategory] ?? record.workCategory,
-          },
-          { label: "Type", value: record.workType },
-          { label: "Assignee", value: record.userName },
-          {
-            label: "Section",
-            value: record.userSection ?? record.sectionType ?? "—",
-          },
-          { label: "Date Started", value: record.date },
-          {
-            label: "Closing Date",
-            value: record.closingDate ?? record.completionDate ?? "Pending",
-            icon: <CheckSquare className="w-3 h-3 text-emerald-400" />,
-          },
-          {
-            label: "Target Days",
-            value: record.targetDays ? `${record.targetDays}d` : "—",
-          },
-          {
-            label: "Days Taken",
-            value:
-              record.daysTaken != null
-                ? `${record.daysTaken}d`
-                : record.closingDate
-                  ? `${calcDaysBetween(record.date, record.closingDate) ?? "—"}d`
-                  : "—",
-          },
-        ])().map((f) => (
-          <div key={f.label}>
-            <p className="text-[10px] text-muted-foreground mb-0.5 flex items-center gap-1">
-              {f.icon}
-              {f.label}
-            </p>
-            <p className="text-sm text-foreground font-medium">{f.value}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* KPI status */}
-      <div
-        className={`flex items-center gap-2 px-3 py-2.5 rounded-xl mb-4 ${kpi.isOnTime ? "bg-emerald-500/8 border border-emerald-500/20" : "bg-rose-500/8 border border-rose-500/20"}`}
-      >
-        {kpi.isOnTime ? (
-          <CheckCircle className="w-4 h-4 text-emerald-400" />
-        ) : (
-          <ZapOff className="w-4 h-4 text-rose-400" />
-        )}
-        <span className={`text-xs font-medium ${kpi.color}`}>{kpi.label}</span>
-      </div>
-
-      {/* References */}
-      <div className="flex flex-wrap gap-2 mb-4">
-        {record.eOfficeNumber && (
-          <span className="flex items-center gap-1.5 px-2.5 py-1 bg-secondary/50 border border-border/40 rounded-lg text-xs text-muted-foreground">
-            <Hash className="w-3 h-3 text-primary" /> {record.eOfficeNumber}
-          </span>
-        )}
-        {record.plNumber && (
           <button
-            onClick={() => navigate(`/pl/${record.plNumber}`)}
-            className="flex items-center gap-1.5 px-2.5 py-1 bg-indigo-500/10 border border-indigo-500/30 rounded-lg text-xs text-indigo-300 hover:bg-indigo-500/15 transition-colors"
+            type="button"
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-slate-700/60 transition-colors"
           >
-            <Layers className="w-3 h-3" /> {record.plNumber}
+            <X className="w-4 h-4" />
           </button>
-        )}
-        {record.documentRef && (
-          <div
-            {...getDocumentContextAttributes(
-              record.documentRef,
-              record.documentRef,
-            )}
-            className="flex items-center gap-1.5 rounded-lg border border-teal-500/30 bg-teal-500/10 px-1.5 py-1"
-          >
-            <button
-              onClick={() => navigate(`/documents/${record.documentRef}`)}
-              className="flex items-center gap-1.5 px-1 text-xs text-primary/90 hover:bg-teal-500/15 transition-colors rounded-md"
-            >
-              <FileText className="w-3 h-3" /> {record.documentRef}
-            </button>
-            <DocumentPreviewButton
-              documentId={record.documentRef}
-              title={record.documentRef}
-              iconOnly
-              className="h-7 min-h-0 px-2 text-foreground hover:text-white"
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Verification info */}
-      {record.verifiedBy && (
-        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/8 border border-emerald-500/20 mb-4">
-          <Shield className="w-4 h-4 text-emerald-400" />
-          <p className="text-xs text-emerald-300">
-            Verified by <strong>{record.verifiedBy}</strong> on{" "}
-            {record.verificationDate}
-          </p>
         </div>
-      )}
 
-      {/* Actions */}
-      {!record.isLocked &&
-        (record.status === "OPEN" || record.status === "SUBMITTED") &&
-        canVerify && (
-          <div className="flex gap-2">
-            <Button size="sm" onClick={onVerify}>
-              <CheckCircle className="w-3.5 h-3.5" /> Mark as Verified
-            </Button>
+        {/* Scrollable body */}
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5 custom-scrollbar">
+          {/* Description */}
+          <div>
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1">
+              Description / Work Details
+            </span>
+            <p className="text-sm text-foreground font-medium bg-secondary/20 p-3.5 border border-border/30 rounded-xl leading-relaxed">
+              {record.description}
+            </p>
           </div>
-        )}
-    </GlassCard>
+
+          {/* Grid fields */}
+          <div className="grid grid-cols-2 gap-4">
+            {((): { label: string; value: string; icon?: React.ReactNode }[] => [
+              {
+                label: "Category",
+                value: CATEGORY_LABEL[record.workCategory] ?? record.workCategory,
+              },
+              { label: "Type", value: record.workType },
+              { label: "Assignee", value: record.userName },
+              {
+                label: "Section",
+                value: record.userSection ?? record.sectionType ?? "—",
+              },
+              { label: "Date Started", value: record.date },
+              {
+                label: "Closing Date",
+                value: record.closingDate ?? record.completionDate ?? "Pending",
+                icon: <CheckSquare className="w-3 h-3 text-emerald-400" />,
+              },
+              {
+                label: "Target Days",
+                value: record.targetDays ? `${record.targetDays}d` : "—",
+              },
+              {
+                label: "Days Taken",
+                value:
+                  record.daysTaken != null
+                    ? `${record.daysTaken}d`
+                    : record.closingDate
+                      ? `${calcDaysBetween(record.date, record.closingDate) ?? "—"}d`
+                      : "—",
+              },
+            ])().map((f) => (
+              <div key={f.label} className="bg-secondary/10 border border-border/35 rounded-xl p-3">
+                <p className="text-[10px] text-muted-foreground mb-0.5 flex items-center gap-1">
+                  {f.icon}
+                  {f.label}
+                </p>
+                <p className="text-xs text-foreground font-semibold truncate">{f.value}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* KPI status */}
+          <div
+            className={`flex items-center gap-2.5 px-4 py-3 rounded-xl ${
+              kpi.isOnTime
+                ? "bg-emerald-500/8 border border-emerald-500/20"
+                : "bg-rose-500/8 border border-rose-500/20"
+            }`}
+          >
+            {kpi.isOnTime ? (
+              <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+            ) : (
+              <ZapOff className="w-4 h-4 text-rose-400 shrink-0" />
+            )}
+            <div>
+              <p className="text-[10px] text-muted-foreground leading-none mb-0.5">
+                KPI SLA Status
+              </p>
+              <span className={`text-xs font-semibold ${kpi.color}`}>{kpi.label}</span>
+            </div>
+          </div>
+
+          {/* References */}
+          <div className="space-y-2">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block">
+              Reference Links
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {record.eOfficeNumber && (
+                <span className="flex items-center gap-1.5 px-3 py-1.5 bg-secondary/50 border border-border/40 rounded-xl text-xs text-muted-foreground font-mono">
+                  <Hash className="w-3.5 h-3.5 text-primary" /> {record.eOfficeNumber}
+                </span>
+              )}
+              {record.plNumber && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigate(`/pl/${record.plNumber}`);
+                    onClose();
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500/10 border border-indigo-500/30 rounded-xl text-xs text-indigo-300 hover:bg-indigo-500/15 transition-colors font-mono"
+                >
+                  <Layers className="w-3.5 h-3.5" /> {record.plNumber}
+                </button>
+              )}
+              {record.documentRef && (
+                <div
+                  {...getDocumentContextAttributes(record.documentRef, record.documentRef)}
+                  className="flex items-center gap-1.5 rounded-xl border border-teal-500/30 bg-teal-500/10 px-2 py-1"
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigate(`/documents/${record.documentRef}`);
+                      onClose();
+                    }}
+                    className="flex items-center gap-1.5 text-xs text-primary/90 hover:bg-teal-500/15 transition-colors rounded-lg font-mono px-1 py-0.5"
+                  >
+                    <FileText className="w-3.5 h-3.5" /> {record.documentRef}
+                  </button>
+                  <DocumentPreviewButton
+                    documentId={record.documentRef}
+                    title={record.documentRef}
+                    iconOnly
+                    className="h-7 min-h-0 px-2 text-foreground hover:text-white"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Verification info */}
+          {record.verifiedBy && (
+            <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-500/8 border border-emerald-500/20">
+              <Shield className="w-4 h-4 text-emerald-400 shrink-0" />
+              <div>
+                <p className="text-[10px] text-muted-foreground leading-none mb-0.5">
+                  Verification Log
+                </p>
+                <p className="text-xs text-emerald-300">
+                  Verified by <strong>{record.verifiedBy}</strong> on {record.verificationDate}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer actions */}
+        <div className="flex items-center gap-3 px-6 py-4 border-t border-border/50 shrink-0 bg-slate-950/60">
+          <Button variant="secondary" onClick={onClose} className="flex-1">
+            Close
+          </Button>
+          {!record.isLocked &&
+            (record.status === "OPEN" || record.status === "SUBMITTED") &&
+            canVerify && (
+              <Button
+                onClick={() => {
+                  onVerify();
+                  onClose();
+                }}
+                className="flex-1"
+              >
+                <CheckCircle className="w-4 h-4" /> Mark as Verified
+              </Button>
+            )}
+        </div>
+      </div>
+    </div>
   );
 }
 
 export default function WorkLedger() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const {
-    data: records,
-    loading,
-    error,
-    refetch,
-    add,
-    verify,
-  } = useWorkRecords();
+  const { data: records, loading, error, refetch, add, verify } = useWorkRecords();
   const { data: plItems, loading: plItemsLoading } = usePLItems();
   const { user, hasPermission } = useAuth();
   const canCreate = hasPermission(["admin", "supervisor", "engineer"]);
   const canVerify = hasPermission(["admin", "supervisor"]);
 
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<
-    WorkRecord["status"] | "ALL"
-  >("ALL");
-  const [categoryFilter, setCategoryFilter] = useState<WorkCategory | "ALL">(
-    "ALL",
-  );
+  const [statusFilter, setStatusFilter] = useState<WorkRecord["status"] | "ALL">("ALL");
+  const [categoryFilter, setCategoryFilter] = useState<WorkCategory | "ALL">("ALL");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -854,9 +1030,7 @@ export default function WorkLedger() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showImportModal, setShowImportModal] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
-  const [importPreview, setImportPreview] = useState<Record<string, string>[]>(
-    [],
-  );
+  const [importPreview, setImportPreview] = useState<Record<string, string>[]>([]);
   const [importing, setImporting] = useState(false);
   const importInputRef = useRef<HTMLInputElement>(null);
 
@@ -882,12 +1056,10 @@ export default function WorkLedger() {
         (w.tenderNumber ?? "").toLowerCase().includes(q) ||
         (w.concernedOfficer ?? "").toLowerCase().includes(q);
       const matchStatus = statusFilter === "ALL" || w.status === statusFilter;
-      const matchCategory =
-        categoryFilter === "ALL" || w.workCategory === categoryFilter;
+      const matchCategory = categoryFilter === "ALL" || w.workCategory === categoryFilter;
       const matchDateFrom = !dateFrom || w.date >= dateFrom;
       const matchDateTo = !dateTo || w.date <= dateTo;
-      const matchMine =
-        !showMine || w.userId === user?.id || w.userName === user?.name;
+      const matchMine = !showMine || w.userId === user?.id || w.userName === user?.name;
       const matchOverdue =
         !showOverdue ||
         (() => {
@@ -922,33 +1094,21 @@ export default function WorkLedger() {
 
   useEffect(() => {
     setPage(1);
-  }, [
-    search,
-    statusFilter,
-    categoryFilter,
-    dateFrom,
-    dateTo,
-    showMine,
-    showOverdue,
-  ]);
+  }, [search, statusFilter, categoryFilter, dateFrom, dateTo, showMine, showOverdue]);
 
   const stats = useMemo(() => {
-    const today = new Date().toISOString().split("T")[0];
+    const _today = new Date().toISOString().split("T")[0];
     const overdueCount = records.filter((w) => {
       if (w.status === "VERIFIED" || w.status === "CLOSED") return false;
       const kpi = getKPIStatus(w);
       return !kpi.isOnTime;
     }).length;
-    const completed = records.filter(
-      (w) => w.status === "VERIFIED" || w.status === "CLOSED",
-    );
+    const completed = records.filter((w) => w.status === "VERIFIED" || w.status === "CLOSED");
     const onTime = completed.filter(
       (w) => (w.daysTaken ?? 0) <= (w.targetDays ?? getTargetDays(w.workType)),
     );
     const onTimeRate =
-      completed.length > 0
-        ? Math.round((onTime.length / completed.length) * 100)
-        : 0;
+      completed.length > 0 ? Math.round((onTime.length / completed.length) * 100) : 0;
     return {
       total: records.length,
       open: records.filter((w) => w.status === "OPEN").length,
@@ -995,37 +1155,22 @@ export default function WorkLedger() {
     return await add(data);
   };
 
-  if (loading) return <LoadingState message="Loading Work Ledger..." />;
   if (error)
-    return (
-      <ErrorState
-        variant="server"
-        message="Failed to load work records"
-        onRetry={refetch}
-      />
-    );
+    return <ErrorState variant="server" message="Failed to load work records" onRetry={refetch} />;
 
   return (
     <div className="space-y-5 max-w-[1400px] mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground mb-1">
-            Work Ledger
-          </h1>
+          <h1 className="text-2xl font-semibold text-foreground mb-1">Work Ledger</h1>
           <p className="text-muted-foreground text-sm">
-            Track and manage engineering work records with immutable audit
-            history.
+            Track and manage engineering work records with immutable audit history.
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setShowAnalytics((v) => !v)}
-          >
-            <BarChart3 className="w-4 h-4" />{" "}
-            {showAnalytics ? "Hide" : "Analytics"}
+          <Button variant="secondary" size="sm" onClick={() => setShowAnalytics((v) => !v)}>
+            <BarChart3 className="w-4 h-4" /> {showAnalytics ? "Hide" : "Analytics"}
           </Button>
           <Button
             variant="secondary"
@@ -1044,18 +1189,13 @@ export default function WorkLedger() {
             <FileSpreadsheet className="w-4 h-4" /> Excel
           </Button>
           {canCreate && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setShowImportModal(true)}
-            >
+            <Button variant="secondary" size="sm" onClick={() => setShowImportModal(true)}>
               <Upload className="w-4 h-4" /> Import
             </Button>
           )}
           {canCreate && (
             <Button size="sm" onClick={() => setShowForm((v) => !v)}>
-              <Plus className="w-4 h-4" />{" "}
-              {showForm ? "Cancel" : "Log Work Activity"}
+              <Plus className="w-4 h-4" /> {showForm ? "Cancel" : "Log Work Activity"}
             </Button>
           )}
         </div>
@@ -1103,7 +1243,7 @@ export default function WorkLedger() {
         ].map((s) => (
           <GlassCard
             key={s.label}
-            className={`px-4 py-3 flex items-center gap-3 ${s.color}`}
+            className={`px-4 py-3 flex items-center gap-3 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-secondary/40 transition-all duration-200 ${s.color}`}
           >
             <div className="w-8 h-8 rounded-lg bg-secondary/60 flex items-center justify-center shrink-0">
               {s.icon}
@@ -1120,7 +1260,7 @@ export default function WorkLedger() {
 
       {/* Analytics Panel */}
       {showAnalytics && (
-        <GlassCard className="p-6">
+        <GlassCard className="p-3.5 hover:border-primary/20 transition-all duration-200">
           <h2 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
             <BarChart3 className="w-4 h-4 text-primary" /> Work Ledger Analytics
           </h2>
@@ -1129,31 +1269,28 @@ export default function WorkLedger() {
       )}
 
       {/* Main Table Card */}
-      <GlassCard className="p-4">
+      <GlassCard className="p-3.5 hover:border-primary/20 transition-all duration-200">
         <div className="flex flex-wrap gap-2 mb-4">
           <div className="relative flex-1 min-w-[220px]">
             <FileSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Search ID, description, type, PL, eOffice, tender, officer..."
-              className="pl-9 w-full"
+              className="pl-9 w-full h-9"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            {(["ALL", "OPEN", "SUBMITTED", "VERIFIED", "CLOSED"] as const).map(
-              (s) => (
-                <button
-                  key={s}
-                  onClick={() => setStatusFilter(s)}
-                  className={`px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${statusFilter === s ? "bg-teal-500/20 border-teal-500/40 text-primary/90" : "bg-secondary/50 border-border text-muted-foreground hover:text-foreground"}`}
-                >
-                  {s === "ALL"
-                    ? "All"
-                    : STATUS_LABEL[s as WorkRecord["status"]]}
-                </button>
-              ),
-            )}
+            {(["ALL", "OPEN", "SUBMITTED", "VERIFIED", "CLOSED"] as const).map((s) => (
+              <button
+                type="button"
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                className={`px-3 h-9 rounded-md text-xs font-medium border transition-colors ${statusFilter === s ? "bg-teal-500/20 border-teal-500/40 text-primary/90" : "bg-secondary/50 border-border text-muted-foreground hover:text-foreground"}`}
+              >
+                {s === "ALL" ? "All" : STATUS_LABEL[s as WorkRecord["status"]]}
+              </button>
+            ))}
           </div>
         </div>
         {/* Date range filter */}
@@ -1162,19 +1299,12 @@ export default function WorkLedger() {
             Date:
           </span>
           <div className="flex items-center gap-1.5">
-            <DatePicker
-              value={dateFrom}
-              onChange={setDateFrom}
-              placeholder="From date"
-            />
+            <DatePicker value={dateFrom} onChange={setDateFrom} placeholder="From date" />
             <span className="text-slate-600 text-xs">—</span>
-            <DatePicker
-              value={dateTo}
-              onChange={setDateTo}
-              placeholder="To date"
-            />
+            <DatePicker value={dateTo} onChange={setDateTo} placeholder="To date" />
             {(dateFrom || dateTo) && (
               <button
+                type="button"
                 onClick={() => {
                   setDateFrom("");
                   setDateTo("");
@@ -1190,6 +1320,7 @@ export default function WorkLedger() {
         {/* Category filter row */}
         <div className="flex flex-wrap gap-1.5 mb-4">
           <button
+            type="button"
             onClick={() => setCategoryFilter("ALL")}
             className={`px-2 py-1 rounded-md text-[10px] font-medium border transition-colors ${categoryFilter === "ALL" ? "bg-teal-500/20 border-teal-500/40 text-primary/90" : "bg-secondary/40 border-border/40 text-muted-foreground hover:text-foreground/90"}`}
           >
@@ -1197,6 +1328,7 @@ export default function WorkLedger() {
           </button>
           {WORK_CATEGORIES.map((c) => (
             <button
+              type="button"
               key={c}
               onClick={() => setCategoryFilter(c)}
               className={`px-2 py-1 rounded-md text-[10px] font-medium border transition-colors ${categoryFilter === c ? "bg-teal-500/20 border-teal-500/40 text-primary/90" : "bg-secondary/40 border-border/40 text-muted-foreground hover:text-foreground/90"}`}
@@ -1212,12 +1344,14 @@ export default function WorkLedger() {
             Quick:
           </span>
           <button
+            type="button"
             onClick={() => setShowMine((v) => !v)}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${showMine ? "bg-teal-500/20 border-teal-500/40 text-primary/90" : "bg-secondary/40 border-border/40 text-muted-foreground hover:text-foreground/90"}`}
           >
             <UserIcon className="w-3 h-3" /> My Records
           </button>
           <button
+            type="button"
             onClick={() => setShowOverdue((v) => !v)}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${showOverdue ? "bg-rose-500/20 border-rose-500/40 text-rose-300" : "bg-secondary/40 border-border/40 text-muted-foreground hover:text-foreground/90"}`}
           >
@@ -1225,6 +1359,7 @@ export default function WorkLedger() {
           </button>
           {(showMine || showOverdue) && (
             <button
+              type="button"
               onClick={() => {
                 setShowMine(false);
                 setShowOverdue(false);
@@ -1235,11 +1370,8 @@ export default function WorkLedger() {
             </button>
           )}
           <span className="ml-auto text-xs text-muted-foreground">
-            Showing{" "}
-            <span className="text-primary font-semibold">
-              {filtered.length}
-            </span>{" "}
-            of {records.length} records
+            Showing <span className="text-primary font-semibold">{filtered.length}</span> of{" "}
+            {records.length} records
             {totalPages > 1 && (
               <>
                 {" "}
@@ -1252,164 +1384,156 @@ export default function WorkLedger() {
           </span>
         </div>
 
-        <div className="overflow-x-auto -mx-1">
-          <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead>
-              <tr className="border-b border-border text-muted-foreground">
-                <th className="pb-3 pl-3 font-semibold text-[11px] uppercase tracking-wide">
-                  Work ID
-                </th>
-                <th className="pb-3 font-semibold text-[11px] uppercase tracking-wide">
-                  Description
-                </th>
-                <th className="pb-3 font-semibold text-[11px] uppercase tracking-wide">
-                  Category / Type
-                </th>
-                <th className="pb-3 font-semibold text-[11px] uppercase tracking-wide">
-                  PL / eOffice
-                </th>
-                <th className="pb-3 font-semibold text-[11px] uppercase tracking-wide">
-                  Status
-                </th>
-                <th className="pb-3 font-semibold text-[11px] uppercase tracking-wide">
-                  KPI
-                </th>
-                <th className="pb-3 font-semibold text-[11px] uppercase tracking-wide">
-                  Days / Target
-                </th>
-                <th className="pb-3 font-semibold text-[11px] uppercase tracking-wide">
-                  Officer
-                </th>
-                <th className="pb-3 font-semibold text-[11px] uppercase tracking-wide">
-                  Date
-                </th>
-                <th className="pb-3" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/[0.03]">
-              {paginated.map((w) => (
-                <tr
-                  key={w.id}
-                  className={`cursor-pointer transition-colors group ${selectedId === w.id ? "bg-teal-500/5 border-l-2 border-teal-500/30" : "hover:bg-secondary/30"}`}
-                  onClick={() => openRecord(selectedId === w.id ? null : w.id)}
-                >
-                  <td className="py-3 pl-3">
-                    <div className="flex items-center gap-1.5">
-                      {w.isLocked ? (
-                        <Lock className="w-3 h-3 text-slate-600" />
-                      ) : (
-                        <Unlock className="w-3 h-3 text-slate-700" />
-                      )}
-                      <span className="font-mono text-primary text-xs">
-                        {w.id}
-                      </span>
-                      <button
-                        onClick={(e) => copyId(w.id, e)}
-                        title="Copy ID"
-                        className="opacity-0 group-hover:opacity-100 transition-opacity ml-0.5 text-slate-600 hover:text-primary"
-                      >
-                        {copiedId === w.id ? (
-                          <Check className="w-3 h-3 text-emerald-400" />
-                        ) : (
-                          <Copy className="w-3 h-3" />
-                        )}
-                      </button>
-                    </div>
-                  </td>
-                  <td className="py-3 max-w-[240px]">
-                    <p className="text-foreground font-medium text-sm truncate">
-                      {w.description}
-                    </p>
-                  </td>
-                  <td className="py-3">
-                    <p className="text-xs text-muted-foreground">
-                      {CATEGORY_LABEL[w.workCategory]}
-                    </p>
-                    <p className="text-[10px] text-slate-600">{w.workType}</p>
-                  </td>
-                  <td className="py-3">
-                    {w.plNumber && (
-                      <p className="font-mono text-[11px] text-primary/80 leading-tight">
-                        {w.plNumber}
-                      </p>
-                    )}
-                    {w.eOfficeNumber && (
-                      <p className="font-mono text-[10px] text-muted-foreground leading-tight">
-                        {w.eOfficeNumber}
-                      </p>
-                    )}
-                    {!w.plNumber && !w.eOfficeNumber && (
-                      <span className="text-slate-700 text-xs">—</span>
-                    )}
-                  </td>
-                  <td className="py-3">
-                    <Badge variant={STATUS_VARIANT[w.status]}>
-                      {STATUS_LABEL[w.status]}
-                    </Badge>
-                  </td>
-                  <td className="py-3">
-                    <KPIChip record={w} />
-                  </td>
-                  <td className="py-3 text-xs font-mono">
-                    {w.daysTaken != null ? (
-                      <span
-                        className={
-                          w.targetDays && w.daysTaken > w.targetDays
-                            ? "text-rose-400"
-                            : "text-emerald-400"
-                        }
-                      >
-                        {w.daysTaken}d
-                      </span>
-                    ) : (
-                      <span className="text-slate-700">—</span>
-                    )}
-                    {w.targetDays != null && (
-                      <span className="text-slate-600"> / {w.targetDays}d</span>
-                    )}
-                  </td>
-                  <td className="py-3 text-muted-foreground text-xs truncate max-w-[100px]">
-                    {w.concernedOfficer || w.userName || "—"}
-                  </td>
-                  <td className="py-3 text-muted-foreground text-xs">
-                    {w.date}
-                  </td>
-                  <td className="py-3 pr-3">
-                    <ChevronRight
-                      className={`w-4 h-4 transition-all ${selectedId === w.id ? "rotate-90 text-primary" : "text-slate-600 group-hover:text-primary"}`}
-                    />
-                  </td>
+        {loading ? (
+          <TableSkeleton columns={10} rows={8} className="my-2" />
+        ) : (
+          <div className="overflow-x-auto -mx-1">
+            <table className="w-full text-left text-sm whitespace-nowrap">
+              <thead>
+                <tr className="border-b border-border text-muted-foreground">
+                  <th className="pb-3 pl-3 font-semibold text-[11px] uppercase tracking-wide">
+                    Work ID
+                  </th>
+                  <th className="pb-3 font-semibold text-[11px] uppercase tracking-wide">
+                    Description
+                  </th>
+                  <th className="pb-3 font-semibold text-[11px] uppercase tracking-wide">
+                    Category / Type
+                  </th>
+                  <th className="pb-3 font-semibold text-[11px] uppercase tracking-wide">
+                    PL / eOffice
+                  </th>
+                  <th className="pb-3 font-semibold text-[11px] uppercase tracking-wide">Status</th>
+                  <th className="pb-3 font-semibold text-[11px] uppercase tracking-wide">KPI</th>
+                  <th className="pb-3 font-semibold text-[11px] uppercase tracking-wide">
+                    Days / Target
+                  </th>
+                  <th className="pb-3 font-semibold text-[11px] uppercase tracking-wide">
+                    Officer
+                  </th>
+                  <th className="pb-3 font-semibold text-[11px] uppercase tracking-wide">Date</th>
+                  <th className="pb-3" />
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          {filtered.length === 0 && (
-            <div className="text-center py-14 text-muted-foreground">
-              <Briefcase className="w-10 h-10 mx-auto mb-3 opacity-20" />
-              <p className="font-medium text-muted-foreground mb-1">
-                No work records found
-              </p>
-              <p className="text-sm mb-4">
-                Try adjusting the search or category filter
-              </p>
-              {canCreate && (
-                <Button size="sm" onClick={() => setShowForm(true)}>
-                  <Plus className="w-3.5 h-3.5" /> Create First Record
-                </Button>
-              )}
-            </div>
-          )}
-        </div>
+              </thead>
+              <tbody className="divide-y divide-white/[0.03]">
+                {paginated.map((w) => (
+                  <tr
+                    key={w.id}
+                    className={`cursor-pointer transition-colors group ${selectedId === w.id ? "bg-teal-500/5 border-l-2 border-teal-500/30" : "hover:bg-secondary/30"}`}
+                    onClick={() => openRecord(selectedId === w.id ? null : w.id)}
+                  >
+                    <td className="py-3 pl-3">
+                      <div className="flex items-center gap-1.5">
+                        {w.isLocked ? (
+                          <Lock className="w-3 h-3 text-slate-600" />
+                        ) : (
+                          <Unlock className="w-3 h-3 text-slate-700" />
+                        )}
+                        <span className="font-mono text-primary text-xs">{w.id}</span>
+                        <button
+                          type="button"
+                          onClick={(e) => copyId(w.id, e)}
+                          title="Copy ID"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity ml-0.5 text-slate-600 hover:text-primary"
+                        >
+                          {copiedId === w.id ? (
+                            <Check className="w-3 h-3 text-emerald-400" />
+                          ) : (
+                            <Copy className="w-3 h-3" />
+                          )}
+                        </button>
+                      </div>
+                    </td>
+                    <td className="py-3 max-w-[240px]">
+                      <p className="text-foreground font-medium text-sm truncate">
+                        {w.description}
+                      </p>
+                    </td>
+                    <td className="py-3">
+                      <p className="text-xs text-muted-foreground">
+                        {CATEGORY_LABEL[w.workCategory]}
+                      </p>
+                      <p className="text-[10px] text-slate-600">{w.workType}</p>
+                    </td>
+                    <td className="py-3">
+                      {w.plNumber && (
+                        <p className="font-mono text-[11px] text-primary/80 leading-tight">
+                          {w.plNumber}
+                        </p>
+                      )}
+                      {w.eOfficeNumber && (
+                        <p className="font-mono text-[10px] text-muted-foreground leading-tight">
+                          {w.eOfficeNumber}
+                        </p>
+                      )}
+                      {!w.plNumber && !w.eOfficeNumber && (
+                        <span className="text-slate-700 text-xs">—</span>
+                      )}
+                    </td>
+                    <td className="py-3">
+                      <Badge variant={STATUS_VARIANT[w.status]}>{STATUS_LABEL[w.status]}</Badge>
+                    </td>
+                    <td className="py-3">
+                      <KPIChip record={w} />
+                    </td>
+                    <td className="py-3 text-xs font-mono">
+                      {w.daysTaken != null ? (
+                        <span
+                          className={
+                            w.targetDays && w.daysTaken > w.targetDays
+                              ? "text-rose-400"
+                              : "text-emerald-400"
+                          }
+                        >
+                          {w.daysTaken}d
+                        </span>
+                      ) : (
+                        <span className="text-slate-700">—</span>
+                      )}
+                      {w.targetDays != null && (
+                        <span className="text-slate-600"> / {w.targetDays}d</span>
+                      )}
+                    </td>
+                    <td className="py-3 text-muted-foreground text-xs truncate max-w-[100px]">
+                      {w.concernedOfficer || w.userName || "—"}
+                    </td>
+                    <td className="py-3 text-muted-foreground text-xs">{w.date}</td>
+                    <td className="py-3 pr-3">
+                      <ChevronRight
+                        className={`w-4 h-4 transition-all ${selectedId === w.id ? "rotate-90 text-primary" : "text-slate-600 group-hover:text-primary"}`}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {filtered.length === 0 && (
+              <EmptyState
+                icon={Briefcase}
+                title="No work records found"
+                description="Try adjusting the search or category filter"
+                action={
+                  canCreate && (
+                    <Button size="sm" onClick={() => setShowForm(true)}>
+                      <Plus className="w-3.5 h-3.5" /> Create First Record
+                    </Button>
+                  )
+                }
+              />
+            )}
+          </div>
+        )}
 
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between pt-4 border-t border-border mt-2">
             <span className="text-xs text-muted-foreground tabular-nums">
-              {(page - 1) * pageSize + 1}–
-              {Math.min(page * pageSize, filtered.length)} of {filtered.length}
+              {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, filtered.length)} of{" "}
+              {filtered.length}
             </span>
             <div className="flex items-center gap-1">
               <button
+                type="button"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
                 className="w-7 h-7 rounded-lg bg-secondary/50 border border-border text-muted-foreground hover:text-white disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
@@ -1418,11 +1542,10 @@ export default function WorkLedger() {
               </button>
               {Array.from({ length: Math.min(7, totalPages) }, (_, i) => {
                 const p =
-                  totalPages <= 7
-                    ? i + 1
-                    : i + Math.max(1, Math.min(page - 3, totalPages - 6));
+                  totalPages <= 7 ? i + 1 : i + Math.max(1, Math.min(page - 3, totalPages - 6));
                 return (
                   <button
+                    type="button"
                     key={p}
                     onClick={() => setPage(p)}
                     className={`w-7 h-7 rounded-lg text-xs font-medium transition-colors ${p === page ? "bg-teal-500/20 border border-teal-500/40 text-primary/90" : "bg-secondary/50 border border-border text-muted-foreground hover:text-white"}`}
@@ -1432,6 +1555,7 @@ export default function WorkLedger() {
                 );
               })}
               <button
+                type="button"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
                 className="w-7 h-7 rounded-lg bg-secondary/50 border border-border text-muted-foreground hover:text-white disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
@@ -1446,8 +1570,9 @@ export default function WorkLedger() {
       {/* Import Modal */}
       {showImportModal && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <GlassCard className="w-full max-w-2xl p-6 relative">
+          <GlassCard className="w-full max-w-2xl p-4 relative hover:border-primary/20 transition-all duration-200">
             <button
+              type="button"
               onClick={() => {
                 setShowImportModal(false);
                 setImportFile(null);
@@ -1462,9 +1587,7 @@ export default function WorkLedger() {
                 <Upload className="w-4 h-4 text-primary" />
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-white">
-                  Import Work Records
-                </h3>
+                <h3 className="text-sm font-semibold text-white">Import Work Records</h3>
                 <p className="text-xs text-muted-foreground">
                   Upload a CSV or Excel file with work records
                 </p>
@@ -1496,17 +1619,14 @@ export default function WorkLedger() {
                 <p className="text-sm text-muted-foreground mb-1">
                   Click to upload CSV or Excel file
                 </p>
-                <p className="text-xs text-slate-600">
-                  Supported: .csv, .xlsx, .xls
-                </p>
+                <p className="text-xs text-slate-600">Supported: .csv, .xlsx, .xls</p>
               </div>
             ) : (
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm text-foreground/90">
-                    {importFile.name}
-                  </span>
+                  <span className="text-sm text-foreground/90">{importFile.name}</span>
                   <button
+                    type="button"
                     onClick={() => {
                       setImportFile(null);
                       setImportPreview([]);
@@ -1565,8 +1685,7 @@ export default function WorkLedger() {
                   if (!importFile) return;
                   setImporting(true);
                   try {
-                    const rows =
-                      await ExportImportService.parseCSVFile(importFile);
+                    const rows = await ExportImportService.parseCSVFile(importFile);
                     let count = 0;
                     for (const row of rows) {
                       const data = ExportImportService.mapRowToWorkRecord(

@@ -1,13 +1,5 @@
+import { Eye, EyeOff, Loader2, Lock, Shield } from "lucide-react";
 import { useState } from "react";
-import {
-  Shield,
-  Loader2,
-  AlertCircle,
-  Eye,
-  EyeOff,
-  Lock,
-  Clock,
-} from "lucide-react";
 
 export function RefinedGlow() {
   const [username, setUsername] = useState("");
@@ -29,9 +21,7 @@ export function RefinedGlow() {
             <span className="text-white font-bold text-2xl">L2</span>
           </div>
           <h1 className="text-3xl font-bold text-white mb-1">LDO-2 EDMS</h1>
-          <p className="text-slate-400 text-sm">
-            Enterprise Document Management System
-          </p>
+          <p className="text-slate-400 text-sm">Enterprise Document Management System</p>
         </div>
 
         <div className="bg-slate-900/60 backdrop-blur-xl border border-white/8 rounded-2xl p-8 shadow-[0_0_80px_-10px_rgba(20,184,166,0.15),0_25px_50px_-12px_rgba(0,0,0,0.7)]">
@@ -39,9 +29,7 @@ export function RefinedGlow() {
             <div className="w-7 h-7 rounded-lg bg-teal-500/10 flex items-center justify-center">
               <Shield className="w-4 h-4 text-teal-400" />
             </div>
-            <h2 className="text-lg font-semibold text-slate-100">
-              Secure Sign In
-            </h2>
+            <h2 className="text-lg font-semibold text-slate-100">Secure Sign In</h2>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -74,11 +62,7 @@ export function RefinedGlow() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300 transition-colors"
                 >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>

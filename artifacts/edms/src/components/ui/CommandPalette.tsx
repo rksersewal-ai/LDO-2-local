@@ -1,26 +1,26 @@
-import { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router";
-import { useAuth } from "../../lib/auth";
 import {
-  Search,
-  FileText,
-  Briefcase,
-  Component,
-  ShieldAlert,
-  CheckSquare,
-  ServerCog,
-  BarChart3,
-  Settings,
-  Users,
-  Bell,
-  FileSearch,
-  ArrowRight,
-  Hash,
-  BookOpen,
   AlertTriangle,
-  X,
+  ArrowRight,
+  BarChart3,
+  Bell,
+  BookOpen,
+  Briefcase,
+  CheckSquare,
+  Component,
+  FileSearch,
+  FileText,
+  Hash,
+  Search,
+  ServerCog,
+  Settings,
+  ShieldAlert,
   UserRound,
+  Users,
+  X,
 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router";
+import { type UserRole, useAuth } from "../../lib/auth";
 import { SearchHistoryService } from "../../services/SearchHistoryService";
 
 interface Command {
@@ -31,7 +31,7 @@ interface Command {
   action: () => void;
   category: string;
   keywords?: string[];
-  roles?: string[];
+  roles?: UserRole[];
 }
 
 interface CommandPaletteProps {
@@ -225,7 +225,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
 
   const commands = ALL_COMMANDS.filter(
     (cmd) =>
-      (!cmd.roles || hasPermission(cmd.roles as any)) &&
+      (!cmd.roles || hasPermission(cmd.roles)) &&
       (!query ||
         cmd.label.toLowerCase().includes(query.toLowerCase()) ||
         cmd.description?.toLowerCase().includes(query.toLowerCase()) ||
@@ -277,19 +277,25 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
   let flatIdx = 0;
 
   return (
-    <div
+    <button
+      type="button"
       className="fixed inset-0 z-[99999] flex items-start justify-center pt-24"
       onClick={onClose}
     >
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
       <div
         className="relative w-full max-w-xl bg-card/95 backdrop-blur-xl border border-border rounded-2xl shadow-2xl overflow-hidden"
+        role="dialog"
+        onKeyDown={(e) => {
+          if (e.key === "Escape") {
+            e.stopPropagation();
+          }
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-3 px-4 py-3 border-b border-white/8">
           <Search className="w-4 h-4 text-muted-foreground shrink-0" />
           <input
-            autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -298,6 +304,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
           />
           {query && (
             <button
+              type="button"
               onClick={() => setQuery("")}
               className="text-muted-foreground hover:text-white"
             >
@@ -317,6 +324,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
               </div>
               {recentSearches.map((item) => (
                 <button
+                  type="button"
                   key={`${item.query}-${item.scope}`}
                   onClick={() => {
                     navigate(`/search?q=${encodeURIComponent(item.query)}`);
@@ -326,9 +334,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
                 >
                   <Search className="w-3.5 h-3.5 text-muted-foreground" />
                   <span>{item.query}</span>
-                  <span className="ml-auto text-xs text-slate-600">
-                    {item.scope}
-                  </span>
+                  <span className="ml-auto text-xs text-slate-600">{item.scope}</span>
                 </button>
               ))}
             </div>
@@ -344,6 +350,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
                 const Icon = cmd.icon;
                 return (
                   <button
+                    type="button"
                     key={cmd.id}
                     onClick={cmd.action}
                     className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm transition-colors ${
@@ -358,9 +365,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
                     <div className="flex-1 text-left">
                       <div className="font-medium">{cmd.label}</div>
                       {cmd.description && (
-                        <div className="text-xs text-muted-foreground">
-                          {cmd.description}
-                        </div>
+                        <div className="text-xs text-muted-foreground">{cmd.description}</div>
                       )}
                     </div>
                     <ArrowRight className="w-3.5 h-3.5 text-slate-600" />
@@ -383,6 +388,6 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
           <span>esc close</span>
         </div>
       </div>
-    </div>
+    </button>
   );
 }

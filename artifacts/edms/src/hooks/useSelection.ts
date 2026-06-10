@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 /**
  * useSelection — shared multi-select state management for tables.
@@ -63,10 +63,7 @@ export function useSelection<T extends { id: string }>(items: T[]) {
     [items.length, selected.size],
   );
 
-  const selectedItems = useMemo(
-    () => items.filter((i) => selected.has(i.id)),
-    [items, selected],
-  );
+  const selectedItems = useMemo(() => items.filter((i) => selected.has(i.id)), [items, selected]);
 
   const selectedIds = useMemo(() => Array.from(selected), [selected]);
 

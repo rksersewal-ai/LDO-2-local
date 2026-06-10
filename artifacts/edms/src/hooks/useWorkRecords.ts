@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { WorkRecord } from "../lib/types";
 import { WorkLedgerService } from "../services/WorkLedgerService";
 
@@ -8,10 +8,7 @@ interface UseWorkRecordsResult {
   error: string | null;
   refetch: () => void;
   add: (record: Omit<WorkRecord, "id" | "createdAt">) => Promise<WorkRecord>;
-  update: (
-    id: string,
-    patch: Partial<WorkRecord>,
-  ) => Promise<WorkRecord | null>;
+  update: (id: string, patch: Partial<WorkRecord>) => Promise<WorkRecord | null>;
   verify: (id: string, verifierName: string) => Promise<WorkRecord | null>;
   remove: (id: string) => Promise<boolean>;
 }
@@ -37,9 +34,7 @@ export function useWorkRecords(): UseWorkRecordsResult {
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(
-            err instanceof Error ? err.message : "Failed to load work records",
-          );
+          setError(err instanceof Error ? err.message : "Failed to load work records");
           setLoading(false);
         }
       });

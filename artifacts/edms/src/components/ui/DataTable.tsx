@@ -5,26 +5,14 @@
  * Eliminates duplicated table patterns across WorkLedger, DocumentHub,
  * SearchExplorer, and AuditLog pages.
  */
-import React, { useState, useCallback } from "react";
-import {
-  ChevronUp,
-  ChevronDown,
-  ChevronsUpDown,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronsUpDown, ChevronUp } from "lucide-react";
+import type React from "react";
+import { useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
 import { Checkbox } from "./checkbox";
 import { Spinner } from "./spinner";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableHead,
-  TableRow,
-  TableCell,
-} from "./table";
 
 // ─── Column Definition ────────────────────────────────────────────────────────
 
@@ -57,6 +45,7 @@ export interface DataTableProps<T extends { id: string }> {
   isLoading?: boolean;
   error?: string | null;
   emptyMessage?: string;
+  emptyState?: React.ReactNode;
 
   // Sorting
   sort?: SortState;
@@ -79,6 +68,7 @@ export interface DataTableProps<T extends { id: string }> {
 
   // Row click
   onRowClick?: (row: T) => void;
+  getRowClassName?: (row: T) => string;
 
   className?: string;
 }
@@ -86,13 +76,9 @@ export interface DataTableProps<T extends { id: string }> {
 // ─── Sort Icon ────────────────────────────────────────────────────────────────
 
 function SortIcon({ direction }: { direction: SortDirection }) {
-  if (direction === "asc")
-    return <ChevronUp className="h-3.5 w-3.5 ml-1 inline-block" />;
-  if (direction === "desc")
-    return <ChevronDown className="h-3.5 w-3.5 ml-1 inline-block" />;
-  return (
-    <ChevronsUpDown className="h-3.5 w-3.5 ml-1 inline-block opacity-40" />
-  );
+  if (direction === "asc") return <ChevronUp className="h-3.5 w-3.5 ml-1 inline-block" />;
+  if (direction === "desc") return <ChevronDown className="h-3.5 w-3.5 ml-1 inline-block" />;
+  return <ChevronsUpDown className="h-3.5 w-3.5 ml-1 inline-block opacity-40" />;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -103,6 +89,7 @@ export function DataTable<T extends { id: string }>({
   isLoading = false,
   error = null,
   emptyMessage = "No records found.",
+  emptyState,
   sort,
   onSort,
   selectable = false,
@@ -115,27 +102,21 @@ export function DataTable<T extends { id: string }>({
   onPageChange,
   density = "normal",
   onRowClick,
+  getRowClassName,
   className,
 }: DataTableProps<T>) {
-  const rowHeight = density === "dense" ? "h-9" : "h-11";
+  const rowHeight = density === "dense" ? "h-9" : "h-10";
   const visibleCols = columns.filter((c) => !c.hidden);
-  const totalPages =
-    totalCount != null ? Math.ceil(totalCount / pageSize) : undefined;
-  const isAllSelected =
-    selectable && data.length > 0 && selectedIds?.size === data.length;
-  const isPartial =
-    selectable && (selectedIds?.size ?? 0) > 0 && !isAllSelected;
+  const totalPages = totalCount != null ? Math.ceil(totalCount / pageSize) : undefined;
+  const isAllSelected = selectable && data.length > 0 && selectedIds?.size === data.length;
+  const isPartial = selectable && (selectedIds?.size ?? 0) > 0 && !isAllSelected;
 
   const handleSort = useCallback(
     (col: DataTableColumn<T>) => {
       if (!col.sortable || !onSort) return;
       if (sort?.key === col.key) {
         const next: SortDirection =
-          sort.direction === "asc"
-            ? "desc"
-            : sort.direction === "desc"
-              ? null
-              : "asc";
+          sort.direction === "asc" ? "desc" : sort.direction === "desc" ? null : "asc";
         onSort({ key: col.key, direction: next });
       } else {
         onSort({ key: col.key, direction: "asc" });
@@ -147,17 +128,15 @@ export function DataTable<T extends { id: string }>({
   return (
     <div className={cn("flex flex-col gap-0", className)}>
       {/* Table */}
-      <div className="relative w-full overflow-auto rounded-md border">
+      <div className="relative w-full overflow-auto rounded-xl border bg-card shadow-sm">
         <table className="w-full caption-bottom text-sm">
           {/* Sticky header */}
-          <thead className="sticky top-0 z-10 bg-card border-b">
+          <thead className="sticky top-0 z-10 border-b bg-muted/50">
             <tr>
               {selectable && (
-                <th className="w-10 px-3 py-2">
+                <th className="w-9 px-2 py-1.5">
                   <Checkbox
-                    checked={
-                      isAllSelected ? true : isPartial ? "indeterminate" : false
-                    }
+                    checked={isAllSelected ? true : isPartial ? "indeterminate" : false}
                     onCheckedChange={onToggleSelectAll}
                     aria-label="Select all"
                   />
@@ -168,21 +147,16 @@ export function DataTable<T extends { id: string }>({
                   key={col.key}
                   style={{ width: col.width }}
                   className={cn(
-                    "px-3 py-2 text-left text-xs font-medium text-muted-foreground tracking-wide select-none",
+                    "select-none px-2.5 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground",
                     col.align === "center" && "text-center",
                     col.align === "right" && "text-right",
-                    col.sortable &&
-                      "cursor-pointer hover:text-foreground transition-colors",
+                    col.sortable && "cursor-pointer hover:text-foreground transition-colors",
                   )}
                   onClick={() => handleSort(col)}
                 >
                   {col.header}
                   {col.sortable && (
-                    <SortIcon
-                      direction={
-                        sort?.key === col.key ? (sort.direction ?? null) : null
-                      }
-                    />
+                    <SortIcon direction={sort?.key === col.key ? (sort.direction ?? null) : null} />
                   )}
                 </th>
               ))}
@@ -194,16 +168,16 @@ export function DataTable<T extends { id: string }>({
               <tr>
                 <td
                   colSpan={visibleCols.length + (selectable ? 1 : 0)}
-                  className="py-16 text-center"
+                  className="py-12 text-center"
                 >
-                  <Spinner className="mx-auto h-6 w-6" />
+                  <Spinner className="mx-auto h-5 w-5" />
                 </td>
               </tr>
             ) : error ? (
               <tr>
                 <td
                   colSpan={visibleCols.length + (selectable ? 1 : 0)}
-                  className="py-12 text-center text-sm text-destructive"
+                  className="py-10 text-center text-sm text-destructive"
                 >
                   {error}
                 </td>
@@ -212,29 +186,33 @@ export function DataTable<T extends { id: string }>({
               <tr>
                 <td
                   colSpan={visibleCols.length + (selectable ? 1 : 0)}
-                  className="py-12 text-center text-sm text-muted-foreground"
+                  className={cn(
+                    "text-center text-sm text-muted-foreground",
+                    emptyState ? "p-4" : "py-10",
+                  )}
                 >
-                  {emptyMessage}
+                  {emptyState ?? emptyMessage}
                 </td>
               </tr>
             ) : (
+              // Pagination is the current DOM-size safeguard; virtualization can be added here if large unpaged datasets appear.
               data.map((row, index) => {
-                const isRowSelected =
-                  selectable && (selectedIds?.has(row.id) ?? false);
+                const isRowSelected = selectable && (selectedIds?.has(row.id) ?? false);
                 return (
                   <tr
                     key={row.id}
                     data-state={isRowSelected ? "selected" : undefined}
                     className={cn(
-                      "border-b transition-colors",
+                      "border-b text-[13px] transition-colors",
                       rowHeight,
-                      isRowSelected ? "bg-accent/60" : "hover:bg-muted/40",
+                      isRowSelected ? "bg-accent" : "hover:bg-muted/50",
                       onRowClick && "cursor-pointer",
+                      getRowClassName?.(row),
                     )}
                     onClick={() => onRowClick?.(row)}
                   >
                     {selectable && (
-                      <td className="w-10 px-3 py-0">
+                      <td className="w-9 px-2 py-0">
                         <Checkbox
                           checked={isRowSelected}
                           onCheckedChange={() => onToggleSelect?.(row.id)}
@@ -247,7 +225,7 @@ export function DataTable<T extends { id: string }>({
                       <td
                         key={col.key}
                         className={cn(
-                          "px-3 py-0 align-middle",
+                          "px-2.5 py-0 align-middle",
                           col.align === "center" && "text-center",
                           col.align === "right" && "text-right",
                         )}
@@ -265,7 +243,7 @@ export function DataTable<T extends { id: string }>({
 
       {/* Pagination */}
       {totalPages != null && totalPages > 1 && onPageChange && (
-        <div className="flex items-center justify-between px-2 py-2 text-sm text-muted-foreground">
+        <div className="flex items-center justify-between px-2 py-2 text-xs text-muted-foreground">
           <span>
             {totalCount != null &&
               `${Math.min((page - 1) * pageSize + 1, totalCount)}–${Math.min(page * pageSize, totalCount)} of ${totalCount}`}

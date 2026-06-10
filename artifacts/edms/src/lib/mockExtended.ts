@@ -123,8 +123,7 @@ export const MOCK_CASES = [
     linkedDocs: ["DOC-2025-1104"],
     created: "2025-10-01",
     updated: "2026-01-15",
-    description:
-      "Formal EOL disposition and archival workflow for MK-I actuator documentation.",
+    description: "Formal EOL disposition and archival workflow for MK-I actuator documentation.",
   },
   {
     id: "CAS-209",
@@ -149,8 +148,7 @@ export const MOCK_CASES = [
     linkedDocs: ["DOC-2026-9023"],
     created: "2026-03-22",
     updated: "2026-03-23",
-    description:
-      "CAD output uploaded without completing the standard approval workflow.",
+    description: "CAD output uploaded without completing the standard approval workflow.",
   },
 ];
 
@@ -250,8 +248,7 @@ export const MOCK_OCR_JOBS = [
     startTime: "2026-03-22 14:01",
     endTime: "2026-03-22 14:02",
     extractedRefs: 0,
-    failureReason:
-      "Image resolution below minimum threshold (150 DPI required). Detected: 72 DPI.",
+    failureReason: "Image resolution below minimum threshold (150 DPI required). Detected: 72 DPI.",
   },
   {
     id: "OCR-8804",
@@ -441,8 +438,7 @@ export const MOCK_BANNERS = [
   {
     id: "BNR-001",
     title: "System Maintenance",
-    message:
-      "OCR Engine Restart scheduled for 03:00 AM UTC. Expect minor delays in processing.",
+    message: "OCR Engine Restart scheduled for 03:00 AM UTC. Expect minor delays in processing.",
     link: null,
     active: true,
     validFrom: "2026-03-23",
@@ -462,8 +458,7 @@ export const MOCK_BANNERS = [
   {
     id: "BNR-003",
     title: "New BOM Module Available",
-    message:
-      "The BOM Explorer has been upgraded with version comparison capabilities.",
+    message: "The BOM Explorer has been upgraded with version comparison capabilities.",
     link: "/bom",
     active: false,
     validFrom: "2026-03-10",
@@ -487,8 +482,7 @@ export const MOCK_REPORTS = [
     category: "OCR",
     generated: "2026-03-23",
     status: "Ready",
-    description:
-      "Weekly OCR pipeline performance and extraction accuracy metrics.",
+    description: "Weekly OCR pipeline performance and extraction accuracy metrics.",
   },
   {
     id: "RPT-003",
@@ -512,7 +506,6 @@ export const MOCK_REPORTS = [
     category: "Admin",
     generated: "2026-03-20",
     status: "Ready",
-    description:
-      "Login frequency, session durations, and access pattern analysis.",
+    description: "Login frequency, session durations, and access pattern analysis.",
   },
 ];

@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import type React from "react";
+import { createContext, useCallback, useContext, useState } from "react";
 
 export interface TabDoc {
   id: string;
@@ -32,9 +33,7 @@ export function DocTabsProvider({ children }: { children: React.ReactNode }) {
           return prev;
         }
 
-        return prev.map((tab) =>
-          tab.id === docId ? { ...tab, name: nextName } : tab,
-        );
+        return prev.map((tab) => (tab.id === docId ? { ...tab, name: nextName } : tab));
       }
 
       return [...prev, { id: docId, name: nextName }];

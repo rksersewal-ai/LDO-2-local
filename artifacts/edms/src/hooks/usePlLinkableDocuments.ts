@@ -24,16 +24,28 @@ function formatSize(size: number | null | undefined): string {
   return `${value.toFixed(unit === 0 ? 0 : 1)} ${units[unit]}`;
 }
 
-function mapApiDocument(doc: any): PlLinkableDocument {
+interface RawApiDocument {
+  id: string | number;
+  name?: string;
+  title?: string;
+  category?: string;
+  revision?: string | number;
+  status?: string;
+  size?: string | number;
+  ocr_status?: string;
+  updated_at?: string;
+  date?: string;
+  created_at?: string;
+}
+
+function mapApiDocument(doc: RawApiDocument): PlLinkableDocument {
   return {
     id: String(doc.id),
     name: doc.name ?? doc.title ?? String(doc.id),
     category: doc.category ?? "OTHER",
     revision: String(doc.revision ?? ""),
     status: doc.status ?? "Draft",
-    size: formatSize(
-      typeof doc.size === "number" ? doc.size : Number(doc.size ?? 0),
-    ),
+    size: formatSize(typeof doc.size === "number" ? doc.size : Number(doc.size ?? 0)),
     ocrStatus: doc.ocr_status,
     date: doc.updated_at ?? doc.date ?? doc.created_at ?? "",
   };

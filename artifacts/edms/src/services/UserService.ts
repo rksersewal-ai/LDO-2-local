@@ -6,6 +6,7 @@ export interface ManagedUser extends AuthUser {
   isActive: boolean;
   lastLogin?: string;
   initials?: string;
+  password?: string;
 }
 
 const STORAGE_KEY = "ldo2_managed_users";
@@ -24,6 +25,7 @@ const DEFAULT_USERS: ManagedUser[] = [
     isActive: true,
     lastLogin: "2026-03-27T09:15:00.000Z",
     initials: "RA",
+    password: "admin123",
   },
   {
     id: "USR-0002",
@@ -38,6 +40,7 @@ const DEFAULT_USERS: ManagedUser[] = [
     isActive: true,
     lastLogin: "2026-03-27T08:40:00.000Z",
     initials: "MC",
+    password: "ldo2pass",
   },
   {
     id: "USR-0003",
@@ -52,6 +55,7 @@ const DEFAULT_USERS: ManagedUser[] = [
     isActive: true,
     lastLogin: "2026-03-27T07:55:00.000Z",
     initials: "AK",
+    password: "ldo2pass",
   },
   {
     id: "USR-0004",
@@ -66,6 +70,7 @@ const DEFAULT_USERS: ManagedUser[] = [
     isActive: true,
     lastLogin: "2026-03-26T17:20:00.000Z",
     initials: "SV",
+    password: "ldo2pass",
   },
   {
     id: "USR-0005",
@@ -80,6 +85,7 @@ const DEFAULT_USERS: ManagedUser[] = [
     isActive: true,
     lastLogin: "2026-03-26T13:10:00.000Z",
     initials: "OV",
+    password: "ldo2pass",
   },
 ];
 
@@ -142,9 +148,7 @@ function nextUserId() {
 
 export const UserService = {
   getAll(): Promise<ManagedUser[]> {
-    return Promise.resolve(
-      [..._store].sort((left, right) => left.name.localeCompare(right.name)),
-    );
+    return Promise.resolve([..._store].sort((left, right) => left.name.localeCompare(right.name)));
   },
 
   getById(id: string): Promise<ManagedUser | null> {
@@ -154,9 +158,7 @@ export const UserService = {
   ensureSessionUser(user: AuthUser): Promise<ManagedUser> {
     const existing = _store.find(
       (entry) =>
-        entry.id === user.id ||
-        entry.username === user.username ||
-        entry.email === user.email,
+        entry.id === user.id || entry.username === user.username || entry.email === user.email,
     );
     const next = normalize({
       ...existing,

@@ -1,9 +1,4 @@
-export type UserRole =
-  | "admin"
-  | "supervisor"
-  | "engineer"
-  | "reviewer"
-  | "viewer";
+export type UserRole = "admin" | "supervisor" | "engineer" | "reviewer" | "viewer";
 
 export type DocumentCategory =
   | "DRAWING"
@@ -20,12 +15,7 @@ export type DocumentCategory =
   | "PROCEDURE"
   | "OTHER";
 
-export type DocumentStatus =
-  | "ACTIVE"
-  | "OBSOLETE"
-  | "UNDER_REVIEW"
-  | "DRAFT"
-  | "APPROVED";
+export type DocumentStatus = "ACTIVE" | "OBSOLETE" | "UNDER_REVIEW" | "DRAFT" | "APPROVED";
 
 export type OcrStatus =
   | "PENDING"
@@ -318,10 +308,10 @@ export interface SearchDocumentFacets {
 }
 
 export interface SearchBucketsResponse {
-  documents: any[];
-  work_records: any[];
-  pl_items: any[];
-  cases: any[];
+  documents: Document[];
+  work_records: WorkRecord[];
+  pl_items: PLNumber[];
+  cases: CaseRecord[];
   total: number;
   facets?: {
     documents: SearchDocumentFacets;

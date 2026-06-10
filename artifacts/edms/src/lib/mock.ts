@@ -419,8 +419,7 @@ export const MOCK_PL_RECORDS = [
     lifecycle: "Prototyping",
     owner: "A. Kowalski",
     lastUpdated: "2026-03-22",
-    description:
-      "Next-gen propulsion mechanics including new aerodynamic CAD outputs.",
+    description: "Next-gen propulsion mechanics including new aerodynamic CAD outputs.",
     linkedDocs: ["DOC-2026-9023"],
     linkedBOMs: ["ASSY-1000"],
     cases: [],

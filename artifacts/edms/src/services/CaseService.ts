@@ -1,5 +1,5 @@
-import type { CaseRecord, CaseStatus, CaseSeverity } from "../lib/types";
 import { MOCK_CASES } from "../lib/mockExtended";
+import type { CaseRecord, CaseSeverity, CaseStatus } from "../lib/types";
 
 const STORAGE_KEY = "ldo2_cases";
 
@@ -58,12 +58,8 @@ function loadStore(): CaseRecord[] {
 
     return parsed.map((record) => ({
       ...record,
-      linkedDocumentIds: Array.isArray(record.linkedDocumentIds)
-        ? record.linkedDocumentIds
-        : [],
-      linkedWorkIds: Array.isArray(record.linkedWorkIds)
-        ? record.linkedWorkIds
-        : [],
+      linkedDocumentIds: Array.isArray(record.linkedDocumentIds) ? record.linkedDocumentIds : [],
+      linkedWorkIds: Array.isArray(record.linkedWorkIds) ? record.linkedWorkIds : [],
     }));
   } catch {
     const fallback = buildDefaultStore();
@@ -94,9 +90,7 @@ export const CaseService = {
   },
 
   getById(id: string): Promise<CaseRecord | null> {
-    return Promise.resolve(
-      _store.find((c) => c.id === id || c.caseNumber === id) ?? null,
-    );
+    return Promise.resolve(_store.find((c) => c.id === id || c.caseNumber === id) ?? null);
   },
 
   add(

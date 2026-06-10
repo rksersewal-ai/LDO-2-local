@@ -1,9 +1,4 @@
-import {
-  cloneTree,
-  countNodes,
-  type BOMNode,
-  type Product,
-} from "../lib/bomData";
+import { type BOMNode, cloneTree, countNodes, type Product } from "../lib/bomData";
 
 const BOM_DRAFTS_KEY = "ldo2_bom_drafts";
 
@@ -20,10 +15,7 @@ interface CreateBomDraftInput {
   tree: BOMNode[];
 }
 
-type DraftProductBase = Omit<
-  Product,
-  "assemblies" | "parts" | "total" | "lastModified"
->;
+type DraftProductBase = Omit<Product, "assemblies" | "parts" | "total" | "lastModified">;
 
 function safeReadDrafts(): BomDraftRecord[] {
   try {
@@ -66,17 +58,15 @@ function buildProduct(product: DraftProductBase, tree: BOMNode[]): Product {
 
 export class BomDraftService {
   static getAll(): BomDraftRecord[] {
-    return safeReadDrafts().sort((a, b) =>
-      b.updatedAt.localeCompare(a.updatedAt),
-    );
+    return safeReadDrafts().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   }
 
   static getById(id: string): BomDraftRecord | null {
-    return this.getAll().find((draft) => draft.id === id) ?? null;
+    return BomDraftService.getAll().find((draft) => draft.id === id) ?? null;
   }
 
   static create(input: CreateBomDraftInput): BomDraftRecord {
-    const drafts = this.getAll();
+    const drafts = BomDraftService.getAll();
     const baseId = slugifyProductName(input.product.name) || "custom-bom";
     let nextId = `draft-${baseId}`;
     let suffix = 2;
@@ -100,7 +90,7 @@ export class BomDraftService {
   }
 
   static saveTree(id: string, tree: BOMNode[]): BomDraftRecord | null {
-    const drafts = this.getAll();
+    const drafts = BomDraftService.getAll();
     const index = drafts.findIndex((draft) => draft.id === id);
     if (index === -1) return null;
 
@@ -131,6 +121,6 @@ export class BomDraftService {
   }
 
   static delete(id: string) {
-    safeWriteDrafts(this.getAll().filter((draft) => draft.id !== id));
+    safeWriteDrafts(BomDraftService.getAll().filter((draft) => draft.id !== id));
   }
 }

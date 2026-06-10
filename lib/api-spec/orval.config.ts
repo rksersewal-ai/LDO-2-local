@@ -1,5 +1,5 @@
-import { defineConfig, InputTransformerFn } from "orval";
-import path from "path";
+import path from "node:path";
+import { defineConfig, type InputTransformerFn } from "orval";
 
 const root = path.resolve(__dirname, "..", "..");
 const apiClientReactSrc = path.resolve(root, "lib", "api-client-react", "src");

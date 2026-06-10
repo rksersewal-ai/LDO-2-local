@@ -14,7 +14,7 @@
  * - Filter/search state changes significantly
  */
 
-import { useEffect, useRef, useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useLocation } from "react-router";
 
 /**

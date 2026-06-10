@@ -1,4 +1,4 @@
-import type { WorkTypeDefinition, DropdownSettings } from "./types";
+import type { DropdownSettings, WorkTypeDefinition } from "./types";
 
 export const API_BASE_URL = "/api";
 
@@ -402,12 +402,7 @@ export const ROLE_LABELS: Record<string, string> = {
   viewer: "Viewer",
 };
 
-export const INSPECTION_CATEGORIES = [
-  "CAT-A",
-  "CAT-B",
-  "CAT-C",
-  "CAT-D",
-] as const;
+export const INSPECTION_CATEGORIES = ["CAT-A", "CAT-B", "CAT-C", "CAT-D"] as const;
 
 export const INSPECTION_CATEGORY_LABELS: Record<string, string> = {
   "CAT-A": "Category A — Safety Critical",
