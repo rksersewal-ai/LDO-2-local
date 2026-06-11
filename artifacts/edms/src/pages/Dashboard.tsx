@@ -375,6 +375,7 @@ function DashboardDrilldownDialog({
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Filter drilldown rows..."
+              aria-label="Filter drilldown rows"
               className="h-9 w-full rounded-md border bg-background pl-9 pr-3 text-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
             />
           </div>
