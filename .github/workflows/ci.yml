@@ -61,7 +61,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest pytest-django pytest-cov factory_boy
+          pip install pytest pytest-django pytest-cov factory_boy ruff
 
       - name: Lint (ruff)
         run: python -m ruff check .
@@ -160,7 +160,7 @@ jobs:
       - name: Install pnpm
         run: |
           corepack enable
-          corepack prepare pnpm@latest --activate
+          corepack prepare pnpm@10.30.3 --activate
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
