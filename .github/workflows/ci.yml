@@ -62,6 +62,9 @@ jobs:
           pip install -r requirements.txt
           pip install pytest pytest-django pytest-cov factory_boy
 
+      - name: Lint (ruff)
+        run: python -m ruff check .
+
       - name: Check migrations
         env:
           EDMS_DB_ENGINE: postgresql
@@ -87,7 +90,7 @@ jobs:
           name: backend-coverage
           path: backend/coverage.xml
 
-  # ─── Frontend Lint, Type-Check & Build ─────────────────────────────────────
+  # ─── Frontend Lint, Type-Check, Test & Build ───────────────────────────────
   frontend:
     runs-on: ubuntu-latest
     defaults:
@@ -110,14 +113,67 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # CI-001: These steps now FAIL the build on errors (no || echo suppression)
       - name: Type check
-        run: pnpm run typecheck || echo "::warning::TypeScript type check had errors"
+        run: pnpm run typecheck
+
+      - name: Lint
+        run: pnpm run lint:frontend
+
+      # CI-002: Run frontend unit tests
+      - name: Unit tests
+        run: pnpm --filter @workspace/edms run test
 
       - name: Build
         run: pnpm run build
 
-      - name: Lint
-        run: pnpm run lint || echo "::warning::Linting had errors"
+      # CI-003: Report bundle size as artifact
+      - name: Report bundle size
+        run: |
+          echo "## Bundle Size Report" > bundle-report.md
+          echo '```' >> bundle-report.md
+          du -sh artifacts/edms/dist/public/assets/*.js | sort -rh >> bundle-report.md
+          echo '```' >> bundle-report.md
+          echo "" >> bundle-report.md
+          echo "**Total:** $(du -sh artifacts/edms/dist/public/ | cut -f1)" >> bundle-report.md
+          cat bundle-report.md
+
+      - name: Upload bundle report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-report
+          path: bundle-report.md
+
+  # SEC-003: Dependency Security Scanning ─────────────────────────────────────
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Audit frontend dependencies
+        run: pnpm audit --audit-level=high || true
+        # NOTE: Set to `|| true` initially to not block on existing advisories.
+        # Remove `|| true` once all high/critical advisories are resolved.
+
+      - name: Check for known vulnerabilities (pip-audit)
+        working-directory: backend
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements.txt --desc || true
 
   # ─── Docker Build Test ─────────────────────────────────────────────────────
   docker:
@@ -143,5 +199,10 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Deploy notification
-        run: echo "Deploy would happen here. Add your deployment steps."
-        # Example: SSH deploy, kubectl apply, or cloud provider CLI
+        run: |
+          echo "──────────────────────────────────────────────────────────────"
+          echo "  STAGING DEPLOY PLACEHOLDER"
+          echo "  Replace this step with your deployment commands:"
+          echo "  - docker push to registry"
+          echo "  - kubectl apply / ecs update-service / ssh deploy"
+          echo "──────────────────────────────────────────────────────────────"
