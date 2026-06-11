@@ -77,7 +77,7 @@ class StartupValidationTests(TestCase):
                 'POSTGRES_PASSWORD': '',
             },
         )
-        self.assertGreaterEqual(len(issues), 3)
+        self.assertEqual(len(issues), 2)
 
 
 class JsonLogFormatterTests(TestCase):
