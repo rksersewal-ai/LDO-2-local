@@ -629,6 +629,7 @@ export default function DocumentHub() {
               <input
                 type="text"
                 placeholder="Search name, ID, PL, author, tags..."
+                aria-label="Search"
                 className="w-full pl-9 pr-3 h-9 text-xs bg-background/60 border border-border/60 rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary/50 transition-colors"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}

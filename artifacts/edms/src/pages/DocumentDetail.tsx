@@ -321,6 +321,7 @@ function OcrPanel({ text, query, onQueryChange, onNavigate }: OcrPanelProps) {
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
           placeholder="Search OCR text..."
+          aria-label="Search OCR text"
           className="w-full pl-8 pr-3 text-xs bg-background/80 border border-border/50 rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary/40 h-9"
         />
       </div>
@@ -813,6 +814,7 @@ function EditMetadataSlideOver({
             <input
               value={form.revision}
               onChange={(e) => setForm((f) => ({ ...f, revision: e.target.value }))}
+              aria-label="Revision"
               className="w-full px-3 py-2 bg-secondary/60 border border-border/60 focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/30 rounded-xl text-sm text-foreground font-mono outline-none transition-all"
               placeholder="e.g. C.2"
             />
