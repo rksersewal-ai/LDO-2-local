@@ -25,7 +25,6 @@ def fix_semantic_divs(file_path: Path) -> tuple[str, int]:
     This is complex and needs careful handling.
     """
     content = file_path.read_text(encoding='utf-8')
-    original = content
     fixes = 0
 
     # Pattern: <div ... onClick={...} ...> that should be a button
