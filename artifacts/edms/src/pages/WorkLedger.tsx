@@ -1003,7 +1003,8 @@ function RecordDetail({
             )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

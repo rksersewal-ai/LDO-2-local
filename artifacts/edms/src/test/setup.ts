@@ -1,10 +1,56 @@
 /**
  * Vitest setup file for @workspace/edms
- * Runs before each test suite to mock browser APIs
+ * Runs before each test suite to mock browser APIs and extend matchers
  */
-import "@testing-library/jest-dom";
+import { afterEach, expect } from "vitest";
 
-// Mock localStorage
+// ── Custom DOM matchers (replaces @testing-library/jest-dom) ────────────────
+
+interface CustomMatchers<R = unknown> {
+  toBeInTheDocument(): R;
+  toHaveClass(...classNames: string[]): R;
+}
+
+declare module "vitest" {
+  // biome-ignore lint/suspicious/noExplicitAny: extending vitest matcher types requires any
+  interface Assertion<T = any> extends CustomMatchers<T> {}
+  interface AsymmetricMatchersContaining extends CustomMatchers {}
+}
+
+expect.extend({
+  toBeInTheDocument(received: unknown) {
+    const element = received as Element | null;
+    const pass = element !== null && element !== undefined && document.contains(element);
+    return {
+      pass,
+      message: () =>
+        pass
+          ? `expected element not to be in the document`
+          : `expected element to be in the document`,
+    };
+  },
+  toHaveClass(received: unknown, ...classNames: string[]) {
+    const element = received as Element | null;
+    if (!element || !element.classList) {
+      return {
+        pass: false,
+        message: () => `expected element to have classes [${classNames.join(", ")}], but element is null or has no classList`,
+      };
+    }
+    const missing = classNames.filter((c) => !element.classList.contains(c));
+    const pass = missing.length === 0;
+    return {
+      pass,
+      message: () =>
+        pass
+          ? `expected element not to have classes [${classNames.join(", ")}]`
+          : `expected element to have classes [${classNames.join(", ")}], but missing [${missing.join(", ")}]`,
+    };
+  },
+});
+
+// ── Mock localStorage ──────────────────────────────────────────────────────
+
 const localStorageMock = (() => {
   let store: Record<string, string> = {};
   return {
@@ -27,7 +73,8 @@ const localStorageMock = (() => {
 
 Object.defineProperty(window, "localStorage", { value: localStorageMock });
 
-// Mock matchMedia
+// ── Mock matchMedia ────────────────────────────────────────────────────────
+
 Object.defineProperty(window, "matchMedia", {
   value: (query: string) => ({
     matches: false,
@@ -41,7 +88,8 @@ Object.defineProperty(window, "matchMedia", {
   }),
 });
 
-// Mock IntersectionObserver
+// ── Mock IntersectionObserver ──────────────────────────────────────────────
+
 class MockIntersectionObserver {
   observe() {}
   unobserve() {}
@@ -51,7 +99,8 @@ Object.defineProperty(window, "IntersectionObserver", {
   value: MockIntersectionObserver,
 });
 
-// Mock ResizeObserver
+// ── Mock ResizeObserver ────────────────────────────────────────────────────
+
 class MockResizeObserver {
   observe() {}
   unobserve() {}
@@ -61,7 +110,8 @@ Object.defineProperty(window, "ResizeObserver", {
   value: MockResizeObserver,
 });
 
-// Clean up after each test
+// ── Clean up after each test ───────────────────────────────────────────────
+
 afterEach(() => {
   document.body.innerHTML = "";
   document.documentElement.className = "";
