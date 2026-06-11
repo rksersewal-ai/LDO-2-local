@@ -1,0 +1,33 @@
+{
+  "project_type": "Monorepo EDMS (Engineering Document Management System) with React 19 + Vite 7 frontend and Django 5.2 + DRF backend",
+  "language": "TypeScript (frontend), Python (backend)",
+  "build_system": "pnpm workspace with catalog dependencies. Node 22+ required. Biome for linting/formatting. Backend uses pip with requirements.txt.",
+  "test_framework": "Vitest with jsdom for frontend (only 1 smoke test file currently). pytest for backend (configured in CI).",
+  "build_command": "export PATH=\"$HOME/.local/share/mise/installs/node/22.22.3/bin:$PATH\" && cd /projects/sandbox/LDO-2-local && pnpm run build",
+  "test_command": "export PATH=\"$HOME/.local/share/mise/installs/node/22.22.3/bin:$PATH\" && cd /projects/sandbox/LDO-2-local && pnpm run test",
+  "verification_instructions": "1. Run pnpm run build (must pass). 2. Run pnpm run typecheck (check for new errors). 3. Run pnpm run lint:frontend (check error count not increased). 4. Run pnpm run test (all tests pass).",
+  "snapshot_or_generated_files": null,
+  "setup_instructions": "export PATH=\"$HOME/.local/share/mise/installs/node/22.22.3/bin:$PATH\" && cd /projects/sandbox/LDO-2-local && pnpm install && pnpm approve-builds esbuild",
+  "environment_constraints": "INTEGRATIONS_ONLY network - no external package installation. Must use existing pnpm-lock.yaml dependencies. Node 22.22.3 installed via mise. pnpm 11.5.3. No Docker daemon available.",
+  "contribution_requirements": "Conventional commits enforced. No file >800 lines. Use semantic CSS variables (no hardcoded colors). Import page-level UI from @/components/ui/Shared. Test with both dark/light themes.",
+  "key_patterns": "Lazy-loaded pages via React.lazy. ProtectedRoute with role arrays. Services in src/services/. Hooks in src/hooks/. Backend uses modular app structure (shared, documents, config_mgmt, work). Standardized API responses (success_response/error_response). Correlation ID middleware. Celery for background tasks.",
+  "relevant_files": [
+    "docs/ROADMAP_8_TO_10.md",
+    "docs/ISSUE_REGISTER.md",
+    "artifacts/edms/src/App.tsx",
+    "artifacts/edms/src/lib/auth.tsx",
+    "artifacts/edms/src/test/setup.ts",
+    "artifacts/edms/src/components/ui/ErrorBoundary.test.tsx",
+    "artifacts/edms/src/components/ui/LoadingState.test.tsx",
+    "artifacts/edms/src/pages/WorkLedger.tsx",
+    "backend/shared/views.py",
+    "backend/shared/exceptions.py",
+    "backend/documents/views.py",
+    "backend/edms/settings.py",
+    "biome.json",
+    "vitest.config.ts",
+    ".github/workflows/ci.yml",
+    "docker-compose.yml"
+  ],
+  "directory_structure": "Root: pnpm workspace. artifacts/edms/: production frontend (React 19 + Vite 7 + Radix UI + TailwindCSS 4). artifacts/api-server/: mock Express API. backend/: Django 5.2 backend with apps (shared, documents, config_mgmt, work, edms_api, integrations, services). lib/: shared packages (api-spec, api-zod, api-client-react). docs/: documentation (adr/, audits/). scripts/: utility scripts."
+}

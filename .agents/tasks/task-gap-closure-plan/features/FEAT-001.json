@@ -1,0 +1,33 @@
+{
+  "id": "FEAT-001",
+  "type": "docs",
+  "description": "Create the comprehensive Gap Closure Plan document (docs/GAP_CLOSURE_PLAN.md) with all 16 required sections, and create 8 Architecture Decision Record files in docs/decisions/. The plan must reference actual findings from the codebase: 88 lint errors, 16 typecheck errors, 1 smoke test file, existing health check endpoint, existing error handling patterns, etc.",
+  "status": "completed",
+  "steps": [
+    "Create docs/GAP_CLOSURE_PLAN.md with 16 sections: (1) Executive summary, (2) Current strengths to preserve (document existing working systems from App.tsx, backend views, docker-compose), (3) Production gaps to fix (reference actual lint/typecheck errors, missing tests), (4) Engineering-document intelligence improvements, (5) User experience improvements, (6) Admin experience improvements, (7) Performance and scale improvements, (8) OCR/tiled drawing improvements, (9) Reliability and crash-protection improvements, (10) Security improvements, (11) Storage and search improvements, (12) Testing and verification plan, (13) Rollout strategy, (14) Risk register, (15) Decision table, (16) Acceptance criteria for 10/10 production readiness.",
+    "Create docs/decisions/ directory (may need to distinguish from existing docs/adr/ - use docs/decisions/ as specified in requirements).",
+    "Create docs/decisions/ADR-001-search-architecture.md covering PostgreSQL GIN/tsvector vs Elasticsearch, with all required sections (Context, Problem, Current implementation, Options considered, Recommended decision, etc.)",
+    "Create docs/decisions/ADR-002-ocr-and-tiled-processing.md covering tiled OCR pipeline architecture for A0/A1 drawings.",
+    "Create docs/decisions/ADR-003-large-drawing-viewer.md covering OpenSeadragon-style tiled viewer vs alternatives.",
+    "Create docs/decisions/ADR-004-storage-architecture.md covering content-addressed storage, tiering, and 6 lakh document capacity.",
+    "Create docs/decisions/ADR-005-auth-security-mfa.md covering Keycloak/OIDC, MFA, and role-based access enhancements.",
+    "Create docs/decisions/ADR-006-deployment-model.md covering Docker Compose first vs Kubernetes, HA strategy.",
+    "Create docs/decisions/ADR-007-monitoring-backup-recovery.md covering Prometheus/Grafana/Loki stack and backup verification.",
+    "Create docs/decisions/ADR-008-open-source-adoption-policy.md covering criteria for adopting open source tools in the EDMS context."
+  ],
+  "acceptance_criteria": [
+    "docs/GAP_CLOSURE_PLAN.md exists with all 16 sections populated",
+    "All 8 ADR files exist in docs/decisions/ with complete content",
+    "Each ADR includes all required sections: Context, Problem, Current implementation, Options considered, Recommended decision, Why this decision is best, Why alternatives are rejected or deferred, Impact on current app, Migration strategy, Rollback strategy, Performance impact, Security impact, Operational complexity, Acceptance tests",
+    "Plan references actual codebase findings (real file paths, real error counts, real patterns)",
+    "Plan preserves existing strengths listed explicitly",
+    "Feature flags are specified for risky additions"
+  ],
+  "verification": [
+    "export PATH=\"$HOME/.local/share/mise/installs/node/22.22.3/bin:$PATH\" && cd /projects/sandbox/LDO-2-local && pnpm run build",
+    "test -f docs/GAP_CLOSURE_PLAN.md && wc -l docs/GAP_CLOSURE_PLAN.md",
+    "ls docs/decisions/ADR-00*.md | wc -l"
+  ],
+  "blocked_reason": null,
+  "findings": "All 9 documentation files created and committed successfully. Build passes. No code changes - documentation only. Commit: 688eee5. The GAP_CLOSURE_PLAN.md is 677 lines with all 16 required sections. All 8 ADRs include every required section (Context, Problem, Current implementation, Options considered, Recommended decision, Why this decision is best, Why alternatives are rejected or deferred, Impact on current app, Migration strategy, Rollback strategy, Performance impact, Security impact, Operational complexity, Acceptance tests). Feature flags specified for all risky additions. References actual codebase findings throughout."
+}
