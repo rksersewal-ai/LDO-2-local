@@ -2,7 +2,7 @@
   "id": "FEAT-003",
   "type": "feat",
   "description": "Phase 12 - Storage Architecture: Create 6 new storage utility modules with comprehensive tests in artifacts/edms/src/lib/storage/",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "Create directory artifacts/edms/src/lib/storage/ for all storage modules",
     "Create artifacts/edms/src/lib/storage/contentAddressedStorage.ts - SHA-256 path generation utility. Given a file hash string, generate storage path in format /aa/bb/<full-hash> where aa = first 2 chars, bb = next 2 chars. Methods: generateStoragePath(hash), parseStoragePath(path), validateHash(hash). Pure functions, no side effects. Include hashFile(content: ArrayBuffer) using a simple non-crypto hash (since Web Crypto is async and may not be available in test env, use a deterministic string hash function).",
