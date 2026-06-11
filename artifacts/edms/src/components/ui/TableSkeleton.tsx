@@ -10,20 +10,14 @@ interface TableSkeletonProps {
 export function TableSkeleton({ columns, rows = 5, className = "" }: TableSkeletonProps) {
   return (
     <div
-      className={cn(
-        "w-full overflow-hidden rounded-lg border border-border bg-card",
-        className,
-      )}
+      className={cn("w-full overflow-hidden rounded-lg border border-border bg-card", className)}
       role="status"
       aria-label="Loading table"
     >
       <div className="w-full">
         <div className="flex gap-4 border-b border-border bg-muted/50 px-4 py-3">
           {Array.from({ length: columns }).map((_, i) => (
-            <Skeleton
-              key={i}
-              className={cn("h-3.5", i === 0 ? "w-1/4" : "w-1/6")}
-            />
+            <Skeleton key={i} className={cn("h-3.5", i === 0 ? "w-1/4" : "w-1/6")} />
           ))}
         </div>
         <div className="divide-y divide-border">

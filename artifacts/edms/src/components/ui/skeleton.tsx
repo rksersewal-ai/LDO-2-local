@@ -25,7 +25,10 @@ function TableSkeleton({
       aria-label="Loading table"
       className={cn("overflow-hidden rounded-lg border border-border bg-card", className)}
     >
-      <div className="grid gap-3 border-b border-border bg-muted/50 p-3" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
+      <div
+        className="grid gap-3 border-b border-border bg-muted/50 p-3"
+        style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+      >
         {Array.from({ length: columns }).map((_, index) => (
           <Skeleton key={`header-${index}`} className="h-3" />
         ))}
@@ -69,13 +72,7 @@ function CardSkeleton({ className }: { className?: string }) {
   );
 }
 
-function ListSkeleton({
-  rows = 5,
-  className,
-}: {
-  rows?: number;
-  className?: string;
-}) {
+function ListSkeleton({ rows = 5, className }: { rows?: number; className?: string }) {
   return (
     <div role="status" aria-label="Loading list" className={cn("space-y-2", className)}>
       {Array.from({ length: rows }).map((_, index) => (

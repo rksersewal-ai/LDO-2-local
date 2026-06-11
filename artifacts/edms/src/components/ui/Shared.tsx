@@ -96,8 +96,7 @@ export function Button({
   const variantCls: Record<string, string> = {
     primary: "cursor-pointer",
     secondary: "cursor-pointer",
-    ghost:
-      "cursor-pointer",
+    ghost: "cursor-pointer",
     danger: "cursor-pointer",
     "teal-outline": "cursor-pointer",
   };

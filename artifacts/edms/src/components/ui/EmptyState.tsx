@@ -28,14 +28,15 @@ export function EmptyState({
   secondaryAction,
   className = "",
 }: EmptyStateProps) {
-  const actions = primaryAction || secondaryAction ? (
-    <div className="flex flex-wrap items-center justify-center gap-2">
-      {primaryAction}
-      {secondaryAction}
-    </div>
-  ) : (
-    action
-  );
+  const actions =
+    primaryAction || secondaryAction ? (
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        {primaryAction}
+        {secondaryAction}
+      </div>
+    ) : (
+      action
+    );
 
   return (
     <Empty role="status" aria-live="polite" className={className}>

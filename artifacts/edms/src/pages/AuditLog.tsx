@@ -387,7 +387,6 @@ export default function AuditLog() {
             </div>
           </div>
         )}
-
       </GlassCard>
     </div>
   );
