@@ -34,6 +34,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../components/ui/dialog";
 import { EmptyState } from "../components/ui/EmptyState";
 import { Badge, Button, GlassCard, PageHeader } from "../components/ui/Shared";
+import { OcrStatusBadge } from "../components/ui/OcrStatusBadge";
 import { TableSkeleton } from "../components/ui/TableSkeleton";
 import { MOCK_DOCUMENTS } from "../lib/mock";
 import { ExportImportService } from "../services/ExportImportService";
@@ -52,6 +53,13 @@ const ocrVariant = (s: string) => {
   if (s === "Processing") return "processing" as const;
   if (s === "Failed") return "danger" as const;
   return "default" as const;
+};
+
+const lifecycleDotColor = (lifecycle: string) => {
+  if (lifecycle === "Active") return "bg-emerald-500";
+  if (lifecycle === "Draft") return "bg-amber-500";
+  if (lifecycle === "Archived") return "bg-gray-400";
+  return "bg-gray-400";
 };
 
 const FileIcon = ({ type }: { type: string }) => {
@@ -1186,12 +1194,15 @@ export default function DocumentHub() {
                           )}
                           {visibleCols.has("status") && (
                             <td className="py-3">
-                              <Badge variant={statusVariant(doc.status)}>{doc.status}</Badge>
+                              <div className="flex items-center gap-1.5">
+                                <span className={`h-2 w-2 rounded-full shrink-0 ${lifecycleDotColor(doc.lifecycle)}`} />
+                                <Badge variant={statusVariant(doc.status)}>{doc.status}</Badge>
+                              </div>
                             </td>
                           )}
                           {visibleCols.has("ocr") && (
                             <td className="py-3">
-                              <Badge variant={ocrVariant(doc.ocrStatus)}>{doc.ocrStatus}</Badge>
+                              <OcrStatusBadge status={doc.ocrStatus} confidence={doc.ocrConfidence} />
                             </td>
                           )}
                           {visibleCols.has("linkedPL") && (
@@ -1307,7 +1318,10 @@ export default function DocumentHub() {
                             <FileIcon type={doc.type} />
                           </div>
                         </div>
-                        <Badge variant={statusVariant(doc.status)}>{doc.status}</Badge>
+                        <div className="flex items-center gap-1.5">
+                          <span className={`h-2 w-2 rounded-full shrink-0 ${lifecycleDotColor(doc.lifecycle)}`} />
+                          <Badge variant={statusVariant(doc.status)}>{doc.status}</Badge>
+                        </div>
                       </div>
                       <p className="text-sm font-medium text-foreground mb-1 line-clamp-2 group-hover:text-white transition-colors">
                         {doc.name}
@@ -1343,9 +1357,7 @@ export default function DocumentHub() {
                       )}
 
                       <div className="mt-2 pt-2 border-t border-border flex items-center justify-between">
-                        <Badge variant={ocrVariant(doc.ocrStatus)} className="text-[10px]">
-                          {doc.ocrStatus}
-                        </Badge>
+                        <OcrStatusBadge status={doc.ocrStatus} confidence={doc.ocrConfidence} />
                         <div className="flex items-center gap-2">
                           <span className="text-[10px] text-muted-foreground">{doc.date}</span>
                           <DocumentPreviewButton
