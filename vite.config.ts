@@ -1,4 +1,8 @@
-
+/**
+ * @deprecated — This config serves the legacy `src/` sandbox only.
+ * The production frontend uses `artifacts/edms/vite.config.ts`.
+ * Do NOT modify this file for production changes.
+ */
   import { defineConfig } from 'vite';
   import react from '@vitejs/plugin-react';
   import tailwindcss from '@tailwindcss/vite';

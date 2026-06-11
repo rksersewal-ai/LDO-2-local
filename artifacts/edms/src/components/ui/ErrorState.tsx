@@ -16,10 +16,10 @@ export function ErrorState({
   className = "",
 }: ErrorStateProps) {
   const icons = {
-    network: <WifiOff className="w-8 h-8 text-amber-400" />,
-    server: <ServerCrash className="w-8 h-8 text-rose-400" />,
+    network: <WifiOff className="w-8 h-8 text-[color:var(--status-warning)]" />,
+    server: <ServerCrash className="w-8 h-8 text-[color:var(--status-danger)]" />,
     notfound: <AlertTriangle className="w-8 h-8 text-muted-foreground" />,
-    generic: <AlertTriangle className="w-8 h-8 text-rose-400" />,
+    generic: <AlertTriangle className="w-8 h-8 text-[color:var(--status-danger)]" />,
   };
 
   const defaultMessages = {
@@ -66,7 +66,7 @@ export function ErrorState({
 export function InlineError({ message, className = "" }: { message: string; className?: string }) {
   return (
     <div
-      className={`flex items-center gap-2 px-3 py-2 rounded-xl bg-rose-900/20 border border-rose-500/20 text-rose-300 text-sm ${className}`}
+      className={`flex items-center gap-2 px-3 py-2 rounded-xl bg-[color:var(--status-danger)]/10 border border-[color:var(--status-danger)]/20 text-[color:var(--status-danger)] text-sm ${className}`}
     >
       <AlertTriangle className="w-4 h-4 flex-shrink-0" />
       <span>{message}</span>

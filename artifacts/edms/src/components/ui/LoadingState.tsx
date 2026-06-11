@@ -1,3 +1,14 @@
+/**
+ * LoadingState — Section/page-level loading indicator with message.
+ *
+ * Use this when an entire section, card, or page is loading data.
+ * Provides a centered spinner with optional message text.
+ *
+ * For inline/button-level loading, use `<Spinner />` instead.
+ *
+ * @example
+ * if (isLoading) return <LoadingState message="Loading documents..." />;
+ */
 interface LoadingStateProps {
   message?: string;
   size?: "sm" | "md" | "lg";

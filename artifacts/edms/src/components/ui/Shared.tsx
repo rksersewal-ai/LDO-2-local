@@ -1,3 +1,18 @@
+/**
+ * Shared UI Components — Canonical Public API
+ *
+ * This module is the SINGLE import point for standardized UI primitives used
+ * across all EDMS pages. It wraps the low-level shadcn/ui primitives with:
+ * - Consistent sizing scale (sm / md / lg)
+ * - Application-specific variant names (primary / secondary / ghost / danger / teal-outline)
+ * - Theme-aware defaults (cursor-pointer, transition durations)
+ *
+ * Usage:
+ *   import { Button, Badge, GlassCard, Input, Select, PageHeader } from "@/components/ui/Shared";
+ *
+ * Do NOT import from ui/button.tsx or ui/badge.tsx directly in page components
+ * unless building a new low-level primitive. Use this module instead.
+ */
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Badge as CanonicalBadge } from "./badge";

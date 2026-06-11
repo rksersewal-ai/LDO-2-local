@@ -12,6 +12,7 @@
 
 import { AlertTriangle } from "lucide-react";
 import React, { type ReactNode } from "react";
+import { reportError } from "@/lib/logger";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -37,8 +38,11 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // Log error details
-    console.error(`[ErrorBoundary] ${this.props.name} crashed:`, error, errorInfo);
+    // Report to observability stack
+    reportError(error, {
+      component: this.props.name,
+      componentStack: errorInfo.componentStack ?? undefined,
+    });
 
     // Call user-provided error handler
     this.props.onError?.(error, errorInfo);
@@ -56,22 +60,22 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
         return this.props.fallback(this.state.error);
       }
 
-      // Default error UI
+      // Default error UI — theme-aware using semantic status tokens
       return (
-        <div className="flex flex-col items-center justify-center py-8 px-4 bg-rose-900/10 border border-rose-500/20 rounded-lg">
+        <div className="flex flex-col items-center justify-center py-8 px-4 bg-[color:var(--status-danger)]/10 border border-[color:var(--status-danger)]/20 rounded-lg">
           <div className="flex items-center gap-3 mb-3">
-            <AlertTriangle className="w-5 h-5 text-rose-400 flex-shrink-0" />
-            <h3 className="text-sm font-semibold text-rose-300">
+            <AlertTriangle className="w-5 h-5 text-[color:var(--status-danger)] flex-shrink-0" />
+            <h3 className="text-sm font-semibold text-[color:var(--status-danger)]">
               {this.props.name} encountered an error
             </h3>
           </div>
-          <p className="text-xs text-rose-300/70 mb-4 max-w-md text-center">
+          <p className="text-xs text-muted-foreground mb-4 max-w-md text-center">
             {this.state.error?.message || "An unexpected error occurred"}
           </p>
           <button
             type="button"
             onClick={this.handleReset}
-            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 transition-colors"
+            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-[color:var(--status-danger)]/15 hover:bg-[color:var(--status-danger)]/25 text-[color:var(--status-danger)] border border-[color:var(--status-danger)]/30 transition-colors"
           >
             Retry
           </button>

@@ -1,0 +1,84 @@
+# OCR Pipeline Configuration
+# ==========================
+# Parameters for the tiled OCR processing pipeline used to handle
+# large-format engineering drawings (A0/A1) and multi-page documents.
+#
+# This configuration is consumed by the backend OCR worker service.
+# Override values via environment variables prefixed with OCR_PIPELINE_
+# (e.g., OCR_PIPELINE_TILE_SIZE=8192).
+
+# ── Tiling Parameters ──────────────────────────────────────────────────────
+# Controls how large images are split into tiles for parallel OCR processing.
+
+# Size of each tile in pixels (square tiles: tile_size x tile_size)
+tile_size: 4096
+
+# Percentage overlap between adjacent tiles to prevent text at boundaries
+# from being split. Value is a percentage of tile_size.
+overlap_percent: 15
+
+# Target DPI for rasterization of vector formats (PDF, DWG).
+# Higher values improve OCR accuracy but increase processing time.
+dpi_target: 400
+
+# Minimum dimension (width or height in pixels) before tiling is applied.
+# Images smaller than this are processed as a single unit.
+min_dimension_for_tiling: 5000
+
+# ── Resource Limits ────────────────────────────────────────────────────────
+# Hard limits to prevent runaway resource consumption.
+
+# Maximum number of pages to process per document
+max_pages: 100
+
+# Maximum file size in megabytes accepted for OCR processing
+max_file_size_mb: 500
+
+# Maximum total pixels (width * height) for a single page/image.
+# Documents exceeding this are rejected to prevent memory exhaustion.
+max_pixels: 200000000
+
+# ── Concurrency and Timeouts ──────────────────────────────────────────────
+# Controls parallel processing behavior and time boundaries.
+
+# Number of concurrent OCR worker threads per task
+worker_concurrency: 4
+
+# Maximum time in seconds for OCR processing of a single tile/page
+ocr_timeout_seconds: 300
+
+# Number of retry attempts for failed tiles before marking as failed
+retry_count: 3
+
+# ── Storage and Cleanup ───────────────────────────────────────────────────
+# Temporary file management during tile processing.
+
+# Directory for storing intermediate tile images during processing
+temp_directory: /tmp/ocr_tiles
+
+# When to clean up temporary tile files:
+#   on_success - delete only after successful processing
+#   always     - delete regardless of outcome
+#   never      - retain for debugging (requires manual cleanup)
+cleanup_policy: on_success
+
+# ── Error Handling ────────────────────────────────────────────────────────
+# Behavior when individual tiles or pages fail processing.
+
+# What to do when a single tile fails OCR:
+#   skip_tile   - continue processing, mark tile region as unrecognized
+#   retry       - retry up to retry_count times, then skip
+#   fail_document - abort entire document processing on any tile failure
+fallback_behavior: skip_tile
+
+# ── Quality Thresholds ────────────────────────────────────────────────────
+# Minimum quality levels for accepting OCR results.
+
+# Similarity threshold (0.0-1.0) for detecting duplicate text across
+# overlapping tile regions. Text blocks with similarity above this
+# threshold in overlap zones are deduplicated.
+dedup_threshold: 0.6
+
+# Minimum OCR confidence score (0-100) to accept a text block.
+# Blocks below this threshold are flagged for manual review.
+confidence_threshold: 60

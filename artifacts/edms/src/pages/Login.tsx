@@ -21,12 +21,14 @@ import { Label } from "../components/ui/label";
 import { useAuth } from "../lib/auth";
 import { PreferencesService } from "../services/PreferencesService";
 
-const DEMO_CREDENTIALS = [
-  { u: "admin", p: "admin123", r: "Administrator" },
-  { u: "a.kowalski", p: "ldo2pass", r: "Engineering" },
-  { u: "m.chen", p: "ldo2pass", r: "Review" },
-  { u: "s.patel", p: "ldo2pass", r: "Supervisor" },
-];
+const DEMO_CREDENTIALS = import.meta.env.DEV
+  ? [
+      { u: "admin", p: "admin123", r: "Administrator" },
+      { u: "a.kowalski", p: "ldo2pass", r: "Engineering" },
+      { u: "m.chen", p: "ldo2pass", r: "Review" },
+      { u: "s.patel", p: "ldo2pass", r: "Supervisor" },
+    ]
+  : [];
 
 const STATIONS = [
   {
@@ -429,7 +431,8 @@ export default function Login() {
             </div>
           </form>
 
-          {/* Quick Demo Access Roles */}
+          {/* Quick Demo Access Roles — only visible in development */}
+          {DEMO_CREDENTIALS.length > 0 && (
           <div className="pt-4 border-t">
             <h3 className="text-xs font-semibold text-muted-foreground mb-3 text-center lg:text-left">
               Quick Role Authentication (Demo)
@@ -457,6 +460,7 @@ export default function Login() {
               ))}
             </div>
           </div>
+          )}
         </div>
       </div>
     </div>

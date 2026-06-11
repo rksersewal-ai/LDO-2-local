@@ -332,10 +332,18 @@ export default function DocumentIngestion() {
             {/* Drop zone */}
             <div
               ref={dropRef}
+              role="button"
+              tabIndex={0}
               onDragOver={onDragOver}
               onDragLeave={onDragLeave}
               onDrop={onDrop}
               onClick={() => !uploadedFile && fileInputRef.current?.click()}
+              onKeyDown={(e) => {
+                if ((e.key === "Enter" || e.key === " ") && !uploadedFile) {
+                  e.preventDefault();
+                  fileInputRef.current?.click();
+                }
+              }}
               className={`relative border-2 border-dashed rounded-xl transition-all duration-200 ${
                 isDraggingOver
                   ? "border-teal-400/70 bg-teal-500/10"
@@ -464,10 +472,11 @@ export default function DocumentIngestion() {
           <div className="space-y-4">
             {/* Document Name */}
             <div>
-              <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
+              <label htmlFor="doc-name-input" className="block text-xs font-semibold text-muted-foreground mb-1.5">
                 Document Name <span className="text-rose-400">*</span>
               </label>
               <Input
+                id="doc-name-input"
                 placeholder="e.g. Bogie Frame Stress Analysis Report"
                 value={docName}
                 onChange={(e) => {
@@ -487,10 +496,11 @@ export default function DocumentIngestion() {
             {/* Type + Revision row */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
+                <label htmlFor="doc-type-select" className="block text-xs font-semibold text-muted-foreground mb-1.5">
                   Document Type <span className="text-rose-400">*</span>
                 </label>
                 <Select
+                  id="doc-type-select"
                   value={docType}
                   onChange={(e) => {
                     setDocType(e.target.value);
@@ -513,10 +523,11 @@ export default function DocumentIngestion() {
                 )}
               </div>
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
+                <label htmlFor="doc-revision-input" className="block text-xs font-semibold text-muted-foreground mb-1.5">
                   Revision <span className="text-rose-400">*</span>
                 </label>
                 <Input
+                  id="doc-revision-input"
                   placeholder="A.0"
                   value={revision}
                   onChange={(e) => {
@@ -536,10 +547,11 @@ export default function DocumentIngestion() {
 
             {/* Category */}
             <div>
-              <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
+              <label htmlFor="doc-category-select" className="block text-xs font-semibold text-muted-foreground mb-1.5">
                 Category <span className="text-rose-400">*</span>
               </label>
               <Select
+                id="doc-category-select"
                 value={category}
                 onChange={(e) => {
                   setCategory(e.target.value);
@@ -564,12 +576,13 @@ export default function DocumentIngestion() {
 
             {/* PL Number */}
             <div>
-              <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
+              <label htmlFor="doc-pl-number" className="block text-xs font-semibold text-muted-foreground mb-1.5">
                 <span className="flex items-center gap-1.5">
                   <Hash className="w-3 h-3 text-primary" /> Link to PL Number
                 </span>
               </label>
               <PLNumberSelect
+                id="doc-pl-number"
                 value={plNumber}
                 onChange={(next) => {
                   setPlNumber(next);

@@ -1,7 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * See https://playwright.dev/docs/test-configuration.
+ * E2E test configuration for LDO-2 EDMS.
+ * Tests run against the Vite dev server with mock API enabled.
  */
 export default defineConfig({
   testDir: './tests-e2e',
@@ -13,12 +14,12 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
+  reporter: process.env.CI ? 'github' : 'html',
   use: {
-    actionTimeout: 0,
+    actionTimeout: 10000,
     trace: 'on-first-retry',
     video: 'on-first-retry',
-    baseURL: 'http://localhost:5173', // Adjust this if the local dev server port differs
+    baseURL: 'http://localhost:5173',
   },
 
   projects: [
@@ -28,10 +29,12 @@ export default defineConfig({
     },
   ],
 
-  /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run dev',
-  //   port: 5173,
-  //   reuseExistingServer: !process.env.CI,
-  // },
+  webServer: {
+    command: 'pnpm --filter @workspace/edms dev',
+    port: 5173,
+    reuseExistingServer: !process.env.CI,
+    env: {
+      VITE_ENABLE_DEV_MOCK_API: 'true',
+    },
+  },
 });

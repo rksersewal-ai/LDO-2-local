@@ -8,6 +8,7 @@ import { useAuth } from "../../lib/auth";
 import { NavigationHistoryService } from "../../services/NavigationHistoryService";
 import { PreferencesService } from "../../services/PreferencesService";
 import { getDocumentContextAttributes } from "../documents/DocumentPreviewActions";
+import { ErrorBoundary } from "../ui/ErrorBoundary";
 import { RightClickPalette } from "../ui/RightClickPalette";
 import { Header } from "./Header";
 import { PageContainer } from "./PageContainer";
@@ -222,18 +223,20 @@ export default function AppLayout() {
           <div className="flex-1 overflow-hidden flex">
             <div className="custom-scrollbar flex-1 overflow-auto px-3 pb-4 pt-3 md:px-4">
               <PageContainer maxWidth="full">
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={location.pathname}
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.1, ease: "easeOut" }}
-                    className="h-full"
-                  >
-                    <Outlet />
-                  </motion.div>
-                </AnimatePresence>
+                <ErrorBoundary name="PageContent" onError={(error) => console.error("[AppLayout] Page crashed:", error)}>
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.div
+                      key={location.pathname}
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.1, ease: "easeOut" }}
+                      className="h-full"
+                    >
+                      <Outlet />
+                    </motion.div>
+                  </AnimatePresence>
+                </ErrorBoundary>
               </PageContainer>
             </div>
 

@@ -8,7 +8,10 @@
     "build": "vite build --config vite.config.ts",
     "build:preview": "vite build --config vite.config.ts --mode preview",
     "serve": "pnpm run build:preview && vite preview --config vite.config.ts --mode preview --host 0.0.0.0",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --config vitest.config.ts",
+    "test:watch": "vitest --config vitest.config.ts",
+    "test:coverage": "vitest run --config vitest.config.ts --coverage"
   },
   "devDependencies": {
     "@hookform/resolvers": "3.10.0",
@@ -62,13 +65,11 @@
     "input-otp": "1.4.2",
     "jsdom": "29.0.1",
     "lucide-react": "catalog:",
-    "next-themes": "0.4.6",
     "playwright": "1.58.2",
     "react": "catalog:",
     "react-day-picker": "9.11.1",
     "react-dom": "catalog:",
     "react-hook-form": "7.55.0",
-    "react-icons": "5.4.0",
     "react-resizable-panels": "2.1.7",
     "recharts": "2.15.2",
     "sonner": "2.0.7",
@@ -78,13 +79,11 @@
     "vaul": "1.1.2",
     "vite": "catalog:",
     "vitest": "4.1.2",
-    "wouter": "3.3.5",
     "zod": "catalog:"
   },
   "dependencies": {
     "@types/xlsx": "0.0.36",
     "axios": "1.13.6",
-    "motion": "12.38.0",
     "react-dnd": "16.0.1",
     "react-dnd-html5-backend": "16.0.1",
     "react-router": "7.13.1",
