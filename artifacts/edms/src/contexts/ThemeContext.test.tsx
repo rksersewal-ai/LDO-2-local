@@ -56,7 +56,7 @@ describe("ThemeContext", () => {
       result.current.setTheme("dark");
     });
 
-    const stored = window.localStorage.getItem("edms_preferences");
+    const stored = window.localStorage.getItem("ldo2_preferences");
     expect(stored).toBeTruthy();
     const prefs = JSON.parse(stored!);
     expect(prefs.theme).toBe("dark");

@@ -62,6 +62,10 @@ describe("useOverloadProtection hooks", () => {
 
       // Next update should apply immediately as interval elapsed
       rerender({ value: "updated", delay: 300 });
+
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
       expect(result.current).toBe("updated");
     });
   });
