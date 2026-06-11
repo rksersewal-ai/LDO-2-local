@@ -2,7 +2,7 @@
   "id": "FEAT-001",
   "type": "feat",
   "description": "Phase 4 - Engineering Document Intelligence utilities: regex-based extractors for drawing numbers, revision codes, PL numbers, title block fields; OCR confidence scoring utility; metadata validation rules; and engineering-specific search filter definitions. All pure-logic utility modules with comprehensive tests.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Create artifacts/edms/src/lib/engineeringExtractors.ts with pure functions: extractDrawingNumbers (patterns: DWG-XXXXX, DWG/XXXXX, SK-NNNNN, CLW/ED/..., RDSO/..., numeric 5-6 digit prefixed), extractRevisions (REV A, Rev. 2, R03, Revision 1, -R1 suffix), extractPLNumbers (8-digit PL numbers like 12345678, PL-12345678), extractTitleBlockFields (title, scale, material, drawn-by, date patterns from OCR text).",
     "Create artifacts/edms/src/lib/ocrConfidenceScoring.ts with: calculatePageConfidence (aggregate word confidences), calculateDocumentConfidence (weight by page), classifyConfidenceLevel (HIGH >85, MEDIUM 60-85, LOW <60 matching config/ocr_pipeline.yaml confidence_threshold:60), flagLowConfidenceRegions.",
@@ -29,5 +29,5 @@
     "cd /projects/sandbox/LDO-2-local/artifacts/edms && npx vite build"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All 94 new tests pass. 2 pre-existing test failures in other files (ThemeContext.test.tsx and useOverloadProtection.test.ts) confirmed unrelated to this change. Vitest in artifacts/edms must be run via 'cd artifacts/edms && npx vitest run' since it has its own vitest.config.ts."
 }
