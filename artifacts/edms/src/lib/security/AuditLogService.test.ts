@@ -127,6 +127,30 @@ describe("AuditLogService", () => {
       const trail = smallService.getAuditTrail();
       expect(trail).toHaveLength(3);
     });
+
+    it("maintains chain integrity after truncation", () => {
+      const smallService = new AuditLogService({
+        storageKey: "test_audit_truncation",
+        maxEntries: 3,
+      });
+
+      // Add more entries than maxEntries to trigger truncation
+      for (let i = 0; i < 6; i++) {
+        smallService.logOperation({
+          userId: "user-1",
+          operation: "view",
+          documentId: `doc-${i}`,
+        });
+      }
+
+      const trail = smallService.getAuditTrail();
+      expect(trail).toHaveLength(3);
+
+      // Chain verification should still pass after truncation
+      const result = smallService.verifyChainIntegrity();
+      expect(result.valid).toBe(true);
+      expect(result.entriesChecked).toBe(3);
+    });
   });
 
   describe("getAuditTrail", () => {

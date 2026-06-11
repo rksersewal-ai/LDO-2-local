@@ -1,9 +1,16 @@
 /**
  * Audit Log Service
  *
- * Provides an immutable, append-only audit log with hash chain integrity
- * for tracking document operations. Each entry is cryptographically linked
- * to its predecessor via a deterministic hash, enabling tamper detection.
+ * Provides an immutable, append-only audit log with hash chain consistency
+ * verification for tracking document operations. Each entry is deterministically
+ * linked to its predecessor via a hash, enabling detection of accidental
+ * corruption or unintended modifications.
+ *
+ * NOTE: The hash function (FNV-1a) is NOT cryptographic. It detects accidental
+ * data corruption but does NOT provide tamper resistance against adversarial
+ * modification. An attacker with localStorage access can recompute valid hashes
+ * for forged entries. For true tamper detection, use a cryptographic hash
+ * (e.g., SubtleCrypto/SHA-256) with server-side verification.
  *
  * Gated behind the AUDIT_HASH_CHAIN feature flag.
  * Storage: localStorage (serialized JSON).
@@ -67,15 +74,15 @@ export interface AuditLogConfig {
   maxEntries?: number;
 }
 
-/** Result of a chain integrity verification */
+/** Result of a chain consistency verification */
 export interface ChainVerificationResult {
-  /** Whether the entire chain is valid */
+  /** Whether the stored chain is consistent */
   valid: boolean;
   /** Total entries checked */
   entriesChecked: number;
   /** Index of the first invalid entry, or -1 if all valid */
   firstInvalidIndex: number;
-  /** Description of the integrity issue, if any */
+  /** Description of the consistency issue, if any */
   error?: string;
 }
 
@@ -88,8 +95,12 @@ const GENESIS_HASH = "";
 // ─── Hash Function ────────────────────────────────────────────────────────────
 
 /**
- * Deterministic hash function using a simple but effective string hashing algorithm.
- * Uses FNV-1a variant for consistent, synchronous hashing without Web Crypto dependency.
+ * Deterministic hash function using FNV-1a variant for consistent, synchronous
+ * hashing without Web Crypto dependency.
+ *
+ * NOTE: This is NOT a cryptographic hash. It provides consistency verification
+ * (detecting accidental corruption) but offers no resistance to intentional
+ * forgery. Do not rely on this for security-critical tamper detection.
  *
  * @param input - The string to hash
  * @returns A hexadecimal hash string
@@ -116,10 +127,14 @@ export function deterministicHash(input: string): string {
 // ─── Service ──────────────────────────────────────────────────────────────────
 
 /**
- * Immutable append-only audit log with hash chain integrity.
+ * Immutable append-only audit log with hash chain consistency verification.
  *
  * All operations are gated behind the AUDIT_HASH_CHAIN feature flag.
  * When the flag is disabled, methods return safe defaults (empty arrays, true for verification).
+ *
+ * When the log exceeds maxEntries, oldest entries are truncated. The chain
+ * verification accounts for this by accepting the first stored entry's
+ * previousHash as-is (since its predecessor may have been pruned).
  */
 export class AuditLogService {
   private readonly storageKey: string;
@@ -185,11 +200,15 @@ export class AuditLogService {
   }
 
   /**
-   * Verify the integrity of the entire hash chain.
+   * Verify the consistency of the hash chain for all stored entries.
    * Checks that each entry's previousHash matches the preceding entry's currentHash,
    * and that each entry's currentHash is correctly computed.
    *
-   * @returns Verification result with details about any integrity issues
+   * The first stored entry's previousHash is accepted as-is because log truncation
+   * (when maxEntries is exceeded) removes older entries whose hashes can no longer
+   * be verified. Verification starts from the linkage between entry 0 and entry 1.
+   *
+   * @returns Verification result with details about any consistency issues
    */
   verifyChainIntegrity(): ChainVerificationResult {
     if (!isFeatureEnabled("AUDIT_HASH_CHAIN")) {
@@ -204,19 +223,23 @@ export class AuditLogService {
 
     for (let i = 0; i < entries.length; i++) {
       const entry = entries[i];
-      const expectedPreviousHash = i === 0 ? GENESIS_HASH : entries[i - 1].currentHash;
 
-      // Check previous hash linkage
-      if (entry.previousHash !== expectedPreviousHash) {
-        return {
-          valid: false,
-          entriesChecked: i + 1,
-          firstInvalidIndex: i,
-          error: `Entry ${i} has invalid previousHash. Expected "${expectedPreviousHash}", got "${entry.previousHash}"`,
-        };
+      // For the first stored entry, accept its previousHash as-is since
+      // the predecessor may have been removed by truncation.
+      // For subsequent entries, verify linkage to the previous stored entry.
+      if (i > 0) {
+        const expectedPreviousHash = entries[i - 1].currentHash;
+        if (entry.previousHash !== expectedPreviousHash) {
+          return {
+            valid: false,
+            entriesChecked: i + 1,
+            firstInvalidIndex: i,
+            error: `Entry ${i} has invalid previousHash. Expected "${expectedPreviousHash}", got "${entry.previousHash}"`,
+          };
+        }
       }
 
-      // Verify current hash
+      // Verify current hash is correctly computed from the entry's own fields
       const contentToHash = `${entry.id}|${entry.timestamp}|${entry.userId}|${entry.operation}|${entry.documentId}|${entry.previousHash}`;
       const expectedHash = deterministicHash(contentToHash);
 

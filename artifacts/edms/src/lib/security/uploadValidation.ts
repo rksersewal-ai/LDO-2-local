@@ -126,7 +126,7 @@ export const DANGEROUS_EXTENSIONS: Set<string> = new Set([
 const SCRIPT_PATTERNS: RegExp[] = [
   /<script[\s>]/i,
   /javascript:/i,
-  /on\w+\s*=/i,
+  /on(click|dblclick|load|error|mouse\w+|key\w+|focus|blur|change|submit|reset|select|drag\w*|drop|copy|cut|paste|touch\w*|pointer\w*|wheel|scroll|resize|abort|unload|beforeunload|animationend|animationstart|transitionend)\s*=/i,
   /eval\s*\(/i,
   /<iframe[\s>]/i,
   /<object[\s>]/i,

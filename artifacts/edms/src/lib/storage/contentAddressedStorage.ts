@@ -1,12 +1,18 @@
 /**
  * Content-Addressed Storage
  *
- * Provides SHA-256-style path generation for content-addressed file storage.
+ * Provides path generation for content-addressed file storage.
  * Given a hex hash string, generates a hierarchical storage path in the format
  * /aa/bb/<full-hash> where aa = first 2 chars, bb = next 2 chars of the hash.
  *
  * Also includes a synchronous deterministic hash function (FNV-1a based)
  * for hashing file content without requiring Web Crypto APIs.
+ *
+ * NOTE: The hash function is NOT cryptographically secure. It uses multiple
+ * rounds of FNV-1a to produce 256 bits of output, which is sufficient for
+ * deduplication of non-adversarial inputs but trivially forgeable. Intentional
+ * collisions can be constructed. For production use where collision resistance
+ * matters (e.g., untrusted inputs), prefer SubtleCrypto with SHA-256.
  *
  * Usage:
  *   import { generateStoragePath, validateHash, hashContent } from "@/lib/storage/contentAddressedStorage";
@@ -46,8 +52,10 @@ const PATH_PATTERN = /^\/([0-9a-f]{2})\/([0-9a-f]{2})\/([0-9a-f]{64})$/;
  * Produces a 64-character hex string (simulating SHA-256 length) for
  * compatibility with the content-addressed storage path format.
  *
- * This is NOT cryptographically secure; it is used for deterministic
- * content addressing in a client-side context.
+ * This is NOT cryptographically secure and is NOT collision-resistant against
+ * adversarial inputs. It is suitable for deterministic content addressing and
+ * deduplication of non-adversarial data in a client-side context. For production
+ * systems requiring collision resistance, prefer SubtleCrypto/SHA-256.
  *
  * @param content - The string content to hash
  * @returns A 64-character lowercase hexadecimal hash string
