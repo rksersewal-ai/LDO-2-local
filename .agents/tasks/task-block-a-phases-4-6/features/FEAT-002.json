@@ -2,7 +2,7 @@
   "id": "FEAT-002",
   "type": "feat",
   "description": "Phase 5 - Tiled OCR Pipeline Interfaces: parse ocr_pipeline.yaml config, define TiledOcrJob/TileResult/OcrPipelineStatus types, define merge/dedup algorithm interface, create frontend OCR job status polling hook. All gated behind VITE_FF_TILED_OCR feature flag.",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "Create artifacts/edms/src/lib/ocrPipelineConfig.ts: define OcrPipelineConfig interface matching config/ocr_pipeline.yaml fields (tile_size, overlap_percent, dpi_target, min_dimension_for_tiling, max_pages, max_file_size_mb, max_pixels, worker_concurrency, ocr_timeout_seconds, retry_count, temp_directory, cleanup_policy, fallback_behavior, dedup_threshold, confidence_threshold). Export a DEFAULT_OCR_PIPELINE_CONFIG constant with the values from the YAML. Export a getOcrPipelineConfig() function that returns the config (frontend cannot read YAML at runtime, so it uses the compiled-in defaults - note this in JSDoc).",
     "Create artifacts/edms/src/lib/tiledOcrTypes.ts: define TileCoordinates {x, y, width, height, overlapPx}, TileResult {tileId, coordinates: TileCoordinates, ocrText, confidence, wordCount, processingTimeMs, status: 'pending'|'processing'|'completed'|'failed'|'skipped'}, TiledOcrJob {jobId, documentId, documentTitle, status: OcrPipelineStatus, tileSize, overlapPercent, totalTiles, completedTiles, failedTiles, tiles: TileResult[], startedAt, completedAt, errorMessage?}, OcrPipelineStatus = 'queued'|'tiling'|'processing'|'merging'|'deduplicating'|'completed'|'failed'|'cancelled'. Export MergeStrategy interface {mergeTileResults(tiles: TileResult[]): string, deduplicateOverlaps(tiles: TileResult[], threshold: number): TileResult[]}.",
