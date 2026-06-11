@@ -1,0 +1,31 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Phase 6 - Large Drawing Viewer: TiledDrawingViewer component with pan/zoom/rotate, tile pyramid status indicator, OCR text overlay toggle, fit-to-width/fit-to-page controls, page navigation for multi-page documents. All gated behind VITE_FF_LARGE_DRAWING_VIEWER feature flag.",
+  "status": "pending",
+  "steps": [
+    "Create artifacts/edms/src/components/documents/TiledDrawingViewer.tsx: A React component gated by isFeatureEnabled('LARGE_DRAWING_VIEWER'). Props: documentId, fileUrl?, totalPages?, ocrOverlayData?. State: zoom (0.1-5.0), rotation (0/90/180/270), panOffset {x, y}, currentPage, showOcrOverlay, fitMode ('width'|'page'|'none'). Implements mouse-drag panning (onMouseDown/Move/Up), wheel zoom (onWheel with ctrl), keyboard shortcuts (+ zoom in, - zoom out, r rotate, o toggle overlay). Renders a container div with overflow:hidden containing a transform div. Uses Lucide icons (ZoomIn, ZoomOut, RotateCw, Maximize, Layers, ChevronLeft, ChevronRight).",
+    "Create artifacts/edms/src/components/documents/TilePyramidStatus.tsx: Shows tile generation progress. Props: totalTiles, completedTiles, failedTiles, status (OcrPipelineStatus from tiledOcrTypes.ts). Renders a progress bar (using Radix Progress), status text, and tile grid visualization (small colored squares: green=complete, yellow=processing, red=failed, gray=pending). Gated behind LARGE_DRAWING_VIEWER flag.",
+    "Create artifacts/edms/src/components/documents/OcrTextOverlay.tsx: Renders OCR text regions as positioned overlays on the drawing viewer. Props: regions (array of {text, x, y, width, height, confidence}), visible (boolean), zoom (number). Each region is an absolutely-positioned div with semi-transparent background, shows text on hover. Color-coded by confidence (green >85, yellow 60-85, red <60).",
+    "Create artifacts/edms/src/components/documents/DrawingViewerControls.tsx: Toolbar for the viewer. Props: zoom, rotation, fitMode, currentPage, totalPages, showOcrOverlay, onZoomIn, onZoomOut, onRotate, onFitWidth, onFitPage, onPageChange, onToggleOverlay. Renders a horizontal toolbar with Button components (from ui/Shared), page number input, zoom percentage display.",
+    "Create artifacts/edms/src/components/documents/LargeDrawingViewerPage.tsx: Page-level component that composes TiledDrawingViewer + TilePyramidStatus + DrawingViewerControls. Fetches document data using existing DocumentService, gets OCR job status from TiledOcrService. If feature flag disabled, shows a message 'Large drawing viewer is not enabled'. Exports as default for potential route registration.",
+    "Ensure all new components compile cleanly, use only existing UI primitives (Button, Badge, GlassCard from components/ui/Shared, Progress from @radix-ui/react-progress), and follow existing code conventions."
+  ],
+  "acceptance_criteria": [
+    "npx tsc --noEmit passes with zero errors",
+    "npx vitest run passes (no regressions)",
+    "cd artifacts/edms && npx vite build succeeds",
+    "TiledDrawingViewer component renders without errors when feature flag is disabled (shows nothing or fallback)",
+    "TiledDrawingViewer component renders viewer UI when feature flag would be enabled",
+    "All zoom/pan/rotate state management is self-contained in the component",
+    "Page navigation supports 1 to totalPages range with boundary checks",
+    "OcrTextOverlay positions regions absolutely within the viewer container"
+  ],
+  "verification": [
+    "cd /projects/sandbox/LDO-2-local && npx tsc --noEmit",
+    "cd /projects/sandbox/LDO-2-local && npx vitest run",
+    "cd /projects/sandbox/LDO-2-local/artifacts/edms && npx vite build"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

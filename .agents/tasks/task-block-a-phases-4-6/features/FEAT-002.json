@@ -1,0 +1,29 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Phase 5 - Tiled OCR Pipeline Interfaces: parse ocr_pipeline.yaml config, define TiledOcrJob/TileResult/OcrPipelineStatus types, define merge/dedup algorithm interface, create frontend OCR job status polling hook. All gated behind VITE_FF_TILED_OCR feature flag.",
+  "status": "pending",
+  "steps": [
+    "Create artifacts/edms/src/lib/ocrPipelineConfig.ts: define OcrPipelineConfig interface matching config/ocr_pipeline.yaml fields (tile_size, overlap_percent, dpi_target, min_dimension_for_tiling, max_pages, max_file_size_mb, max_pixels, worker_concurrency, ocr_timeout_seconds, retry_count, temp_directory, cleanup_policy, fallback_behavior, dedup_threshold, confidence_threshold). Export a DEFAULT_OCR_PIPELINE_CONFIG constant with the values from the YAML. Export a getOcrPipelineConfig() function that returns the config (frontend cannot read YAML at runtime, so it uses the compiled-in defaults - note this in JSDoc).",
+    "Create artifacts/edms/src/lib/tiledOcrTypes.ts: define TileCoordinates {x, y, width, height, overlapPx}, TileResult {tileId, coordinates: TileCoordinates, ocrText, confidence, wordCount, processingTimeMs, status: 'pending'|'processing'|'completed'|'failed'|'skipped'}, TiledOcrJob {jobId, documentId, documentTitle, status: OcrPipelineStatus, tileSize, overlapPercent, totalTiles, completedTiles, failedTiles, tiles: TileResult[], startedAt, completedAt, errorMessage?}, OcrPipelineStatus = 'queued'|'tiling'|'processing'|'merging'|'deduplicating'|'completed'|'failed'|'cancelled'. Export MergeStrategy interface {mergeTileResults(tiles: TileResult[]): string, deduplicateOverlaps(tiles: TileResult[], threshold: number): TileResult[]}.",
+    "Create artifacts/edms/src/services/TiledOcrService.ts: localStorage-backed mock service (following AdminMetricsService.ts pattern). Methods: getJob(jobId), getJobsForDocument(documentId), getAllJobs(), getJobStatus(jobId), createJob(documentId, config), cancelJob(jobId). Include 3-4 mock jobs in different states. Gate all operations with isFeatureEnabled('TILED_OCR') check - return null/empty when disabled.",
+    "Create artifacts/edms/src/hooks/useTiledOcrPolling.ts: a React hook that polls TiledOcrService for job status updates at a configurable interval (default 5s). Returns {job, isPolling, error, startPolling, stopPolling}. Uses useEffect cleanup to prevent leaks. Only activates when TILED_OCR flag is enabled. Follow the pattern from useOverloadProtection.ts (useRef for timers, cleanup on unmount).",
+    "Create artifacts/edms/src/lib/tiledOcrTypes.test.ts: test that type guards work, test OcrPipelineConfig defaults match expected values from YAML.",
+    "Create artifacts/edms/src/services/TiledOcrService.test.ts: test CRUD operations, test feature flag gating (returns empty when disabled), test mock data shape."
+  ],
+  "acceptance_criteria": [
+    "npx tsc --noEmit passes with zero errors",
+    "npx vitest run passes all new tests",
+    "cd artifacts/edms && npx vite build succeeds",
+    "TiledOcrService.getAllJobs() returns mock jobs when TILED_OCR flag logic is present",
+    "OcrPipelineConfig fields match config/ocr_pipeline.yaml values (tile_size:4096, overlap_percent:15, confidence_threshold:60, dedup_threshold:0.6)",
+    "useTiledOcrPolling hook compiles without errors and cleans up intervals on unmount"
+  ],
+  "verification": [
+    "cd /projects/sandbox/LDO-2-local && npx tsc --noEmit",
+    "cd /projects/sandbox/LDO-2-local && npx vitest run",
+    "cd /projects/sandbox/LDO-2-local/artifacts/edms && npx vite build"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

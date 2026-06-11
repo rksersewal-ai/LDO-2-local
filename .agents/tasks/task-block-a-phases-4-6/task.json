@@ -1,0 +1,7 @@
+{
+  "task_id": "task-block-a-phases-4-6",
+  "task_description": "Block A implementation: Phase 4 (Engineering Document Intelligence utilities), Phase 5 (Tiled OCR Pipeline Interfaces), Phase 6 (Large Drawing Viewer). Creates pure utility modules with tests, service interfaces with mock backends, and viewer components - all gated behind feature flags.",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}

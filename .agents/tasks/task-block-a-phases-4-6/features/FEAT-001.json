@@ -1,0 +1,33 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Phase 4 - Engineering Document Intelligence utilities: regex-based extractors for drawing numbers, revision codes, PL numbers, title block fields; OCR confidence scoring utility; metadata validation rules; and engineering-specific search filter definitions. All pure-logic utility modules with comprehensive tests.",
+  "status": "in_progress",
+  "steps": [
+    "Create artifacts/edms/src/lib/engineeringExtractors.ts with pure functions: extractDrawingNumbers (patterns: DWG-XXXXX, DWG/XXXXX, SK-NNNNN, CLW/ED/..., RDSO/..., numeric 5-6 digit prefixed), extractRevisions (REV A, Rev. 2, R03, Revision 1, -R1 suffix), extractPLNumbers (8-digit PL numbers like 12345678, PL-12345678), extractTitleBlockFields (title, scale, material, drawn-by, date patterns from OCR text).",
+    "Create artifacts/edms/src/lib/ocrConfidenceScoring.ts with: calculatePageConfidence (aggregate word confidences), calculateDocumentConfidence (weight by page), classifyConfidenceLevel (HIGH >85, MEDIUM 60-85, LOW <60 matching config/ocr_pipeline.yaml confidence_threshold:60), flagLowConfidenceRegions.",
+    "Create artifacts/edms/src/lib/metadataValidation.ts with: validateDrawingNumber format, validatePLNumber format, validateRevisionSequence (is rev B after rev A?), validateRequiredFields for document types (DRAWING needs drawingNumber, SPECIFICATION needs specNumber), cross-reference validation rules.",
+    "Create artifacts/edms/src/lib/engineeringSearchFilters.ts with: EngineeringSearchFilter type definitions (drawingNumberPattern, revisionRange, plNumberFilter, confidenceThreshold, titleBlockField), a buildFilterQuery function that constructs filter params, pre-defined filter templates (by drawing series, by confidence level, by revision status). Import and use existing SearchFilterOptions type from services/SearchService.ts.",
+    "Create test file artifacts/edms/src/lib/engineeringExtractors.test.ts: test each extractor with positive/negative cases, edge cases (empty string, no matches, multiple matches, overlapping patterns).",
+    "Create test file artifacts/edms/src/lib/ocrConfidenceScoring.test.ts: test scoring calculations, classification boundaries, edge cases (empty arrays, single page, zero confidence).",
+    "Create test file artifacts/edms/src/lib/metadataValidation.test.ts: test all validation rules, valid/invalid inputs, required fields per document type."
+  ],
+  "acceptance_criteria": [
+    "npx tsc --noEmit passes with zero errors",
+    "npx vitest run passes all new tests in the 3 test files",
+    "cd artifacts/edms && npx vite build succeeds",
+    "extractDrawingNumbers('See DWG-12345 and SK-99001') returns ['DWG-12345', 'SK-99001']",
+    "extractRevisions('Updated to REV B from Rev. 1') returns ['REV B', 'Rev. 1']",
+    "extractPLNumbers('PL 12345678 linked') returns ['12345678']",
+    "classifyConfidenceLevel(90) returns 'HIGH', classifyConfidenceLevel(70) returns 'MEDIUM', classifyConfidenceLevel(50) returns 'LOW'",
+    "validateDrawingNumber('DWG-12345') returns {valid: true}",
+    "validatePLNumber('1234567') returns {valid: false} (only 7 digits)"
+  ],
+  "verification": [
+    "cd /projects/sandbox/LDO-2-local && npx tsc --noEmit",
+    "cd /projects/sandbox/LDO-2-local && npx vitest run",
+    "cd /projects/sandbox/LDO-2-local/artifacts/edms && npx vite build"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}
