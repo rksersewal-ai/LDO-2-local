@@ -33,14 +33,6 @@ function LargeDrawingViewerPage({
   totalPages = 1,
   documentTitle,
 }: LargeDrawingViewerPageProps) {
-  if (!isFeatureEnabled("LARGE_DRAWING_VIEWER")) {
-    return (
-      <div className="flex items-center justify-center min-h-[300px] text-muted-foreground">
-        <p className="text-sm">Large drawing viewer is not enabled</p>
-      </div>
-    );
-  }
-
   // Fetch OCR jobs for this document
   const ocrJobs = useMemo(() => {
     return TiledOcrService.getJobsForDocument(documentId);
@@ -80,6 +72,15 @@ function LargeDrawingViewerPage({
       confidence: tile.confidence,
     }));
   }, [activeJob]);
+
+  // Feature flag gate - placed after all hooks to comply with Rules of Hooks
+  if (!isFeatureEnabled("LARGE_DRAWING_VIEWER")) {
+    return (
+      <div className="flex items-center justify-center min-h-[300px] text-muted-foreground">
+        <p className="text-sm">Large drawing viewer is not enabled</p>
+      </div>
+    );
+  }
 
   const title = documentTitle || `Document ${documentId}`;
 

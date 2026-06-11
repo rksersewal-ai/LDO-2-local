@@ -45,11 +45,6 @@ export function TiledDrawingViewer({
   totalPages = 1,
   ocrOverlayData = [],
 }: TiledDrawingViewerProps) {
-  // Feature flag gate
-  if (!isFeatureEnabled("LARGE_DRAWING_VIEWER")) {
-    return null;
-  }
-
   // State management
   const [zoom, setZoom] = useState(1.0);
   const [rotation, setRotation] = useState(0);
@@ -178,6 +173,11 @@ export function TiledDrawingViewer({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleZoomIn, handleZoomOut, handleRotate, handleToggleOverlay]);
+
+  // Feature flag gate - placed after all hooks to comply with Rules of Hooks
+  if (!isFeatureEnabled("LARGE_DRAWING_VIEWER")) {
+    return null;
+  }
 
   // Build transform CSS
   const transformStyle: React.CSSProperties = {

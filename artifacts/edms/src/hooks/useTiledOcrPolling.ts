@@ -112,6 +112,19 @@ export function useTiledOcrPolling(options: UseTiledOcrPollingOptions): UseTiled
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoStart]);
 
+  // Restart polling when jobId changes while actively polling
+  useEffect(() => {
+    if (isPolling) {
+      // Clear the existing interval and restart with the new fetchJob
+      if (intervalRef.current !== null) {
+        clearInterval(intervalRef.current);
+      }
+      fetchJob();
+      intervalRef.current = setInterval(fetchJob, intervalMs);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobId]);
+
   // Cleanup on unmount
   useEffect(() => {
     mountedRef.current = true;
