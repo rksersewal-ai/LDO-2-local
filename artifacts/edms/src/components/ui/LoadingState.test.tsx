@@ -24,8 +24,8 @@ describe("LoadingState", () => {
     const { container: sm } = render(<LoadingState size="sm" />);
     const { container: lg } = render(<LoadingState size="lg" />);
 
-    expect(sm.firstChild).toHaveClass("py-8");
-    expect(lg.firstChild).toHaveClass("py-24");
+    expect(sm.firstChild).toHaveClass("py-6");
+    expect(lg.firstChild).toHaveClass("py-14");
   });
 });
 

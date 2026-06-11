@@ -4,14 +4,16 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: hsl(0 0% 100%);
-  --foreground: hsl(0 0% 14.9020%);
-  --card: hsl(0 0% 100%);
-  --card-foreground: hsl(0 0% 14.9020%);
-  --popover: hsl(0 0% 100%);
-  --popover-foreground: hsl(0 0% 14.9020%);
-  --primary: hsl(35.0588 100% 50%);
-  --primary-foreground: hsl(0 0% 0%);
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.1450 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.1450 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.1450 0 0);
+  --primary: #d38738;
+  --primary-hover: color-mix(in oklab, var(--primary), black 8%);
+  --primary-soft: color-mix(in oklab, var(--primary), transparent 88%);
+  --primary-foreground: oklch(0.9850 0 0);
   --secondary: hsl(220.0000 14.2857% 95.8824%);
   --secondary-foreground: hsl(215 13.7931% 34.1176%);
   --muted: hsl(210 20.0000% 98.0392%);
@@ -36,10 +38,39 @@
   --sidebar-accent-foreground: hsl(22.7273 82.5000% 31.3725%);
   --sidebar-border: hsl(220 13.0435% 90.9804%);
   --sidebar-ring: hsl(37.6923 92.1260% 50.1961%);
-  --font-sans: Inter, sans-serif;
-  --font-serif: Source Serif 4, serif;
-  --font-mono: JetBrains Mono, monospace;
-  --radius: 0.25rem;
+  --font-sans: "Geist", "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-serif: "Source Serif 4", Georgia, serif;
+  --font-mono: "Geist Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+
+  --text-2xs: 0.625rem;
+  --text-xs: 0.6875rem;
+  --text-sm: 0.75rem;
+  --text-base: 0.8125rem;
+  --text-md: 0.875rem;
+  --text-lg: 1rem;
+  --text-xl: 1.25rem;
+  --text-metric: 1.5rem;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.375rem;
+  --radius: 0.5rem;
+  --radius-lg: 0.75rem;
+  --app-header-height: 2.875rem;
+  --page-frame-width: 1480px;
+  --page-frame-wide-width: 1680px;
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.06), 0 8px 24px rgb(0 0 0 / 0.035);
+  --shadow-table: 0 1px 2px rgb(0 0 0 / 0.05), 0 10px 30px rgb(0 0 0 / 0.04);
+  --shadow-popover: 0 8px 30px rgb(0 0 0 / 0.12);
+  --shadow-focus: 0 0 0 3px color-mix(in oklab, var(--primary), transparent 78%);
   --shadow-x: 0px;
   --shadow-y: 4px;
   --shadow-blur: 8px;
@@ -62,12 +93,12 @@
   --tracking-normal: 0em;
   --spacing: 0.2rem;
 
-  --control-sm: 2rem;
-  --control-md: 2.5rem;
+  --control-sm: 1.75rem;
+  --control-md: 2rem;
   --control-lg: 3rem;
-  --table-row-dense: 2.25rem;
-  --table-row: 2.5rem;
-  --app-font-size: 14px;
+  --table-row-dense: 2.125rem;
+  --table-row: 2.375rem;
+  --app-font-size: 13px;
 
   --status-neutral: hsl(220 8.9362% 46.0784%);
   --status-success: hsl(142 70% 35%);
@@ -78,14 +109,16 @@
 }
 
 .dark {
-  --background: hsl(0 0% 9.0196%);
-  --foreground: hsl(0 0% 89.8039%);
-  --card: hsl(0 0% 14.9020%);
-  --card-foreground: hsl(0 0% 89.8039%);
-  --popover: hsl(0 0% 14.9020%);
-  --popover-foreground: hsl(0 0% 89.8039%);
-  --primary: hsl(37.6923 92.1260% 50.1961%);
-  --primary-foreground: hsl(0 0% 0%);
+  --background: oklch(0.1450 0 0);
+  --foreground: oklch(0.9850 0 0);
+  --card: oklch(0.2050 0 0);
+  --card-foreground: oklch(0.9850 0 0);
+  --popover: oklch(0.2690 0 0);
+  --popover-foreground: oklch(0.9850 0 0);
+  --primary: #d38738;
+  --primary-hover: color-mix(in oklab, var(--primary), white 7%);
+  --primary-soft: color-mix(in oklab, var(--primary), transparent 84%);
+  --primary-foreground: oklch(0.2050 0 0);
   --secondary: hsl(0 0% 14.9020%);
   --secondary-foreground: hsl(0 0% 89.8039%);
   --muted: hsl(0 0% 12.1569%);
@@ -110,10 +143,10 @@
   --sidebar-accent-foreground: hsl(48 96.6387% 76.6667%);
   --sidebar-border: hsl(0 0% 25.0980%);
   --sidebar-ring: hsl(37.6923 92.1260% 50.1961%);
-  --font-sans: Inter, sans-serif;
-  --font-serif: Source Serif 4, serif;
-  --font-mono: JetBrains Mono, monospace;
-  --radius: 0.25rem;
+  --radius: 0.5rem;
+  --shadow-card: 0 1px 0 rgb(255 255 255 / 0.035), 0 14px 35px rgb(0 0 0 / 0.32);
+  --shadow-table: 0 1px 0 rgb(255 255 255 / 0.035), 0 18px 42px rgb(0 0 0 / 0.38);
+  --shadow-popover: 0 20px 60px rgb(0 0 0 / 0.55);
   --shadow-x: 0px;
   --shadow-y: 4px;
   --shadow-blur: 8px;
@@ -150,6 +183,8 @@
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -201,6 +236,7 @@
   }
 
   html {
+    height: 100%;
     color-scheme: light;
   }
 
@@ -210,10 +246,18 @@
 
   body {
     @apply bg-background text-foreground;
+    height: 100%;
+    overflow: hidden;
     font-family: var(--font-sans);
     font-size: var(--app-font-size, 14px);
     letter-spacing: var(--tracking-normal);
+    font-variant-numeric: tabular-nums;
     text-rendering: optimizeLegibility;
+  }
+
+  #root {
+    height: 100%;
+    overflow: hidden;
   }
 
   button,
@@ -235,6 +279,8 @@
   .workspace-shell {
     background: var(--background);
     color: var(--foreground);
+    height: 100%;
+    min-height: 0;
   }
 
   .workspace-main {
@@ -252,7 +298,36 @@
     background: var(--card);
     color: var(--card-foreground);
     box-shadow: 0 1px 0 var(--border);
-    min-height: 3.5rem;
+    min-height: var(--app-header-height);
+  }
+
+  .page-frame {
+    width: min(100% - 32px, var(--page-frame-width));
+    margin: 18px auto 32px;
+  }
+
+  .page-frame-sm {
+    max-width: 960px;
+  }
+
+  .page-frame-md {
+    max-width: 1180px;
+  }
+
+  .page-frame-lg {
+    max-width: 1480px;
+  }
+
+  .page-frame-xl {
+    width: min(100% - 32px, var(--page-frame-wide-width));
+  }
+
+  @media (max-width: 640px) {
+    .page-frame,
+    .page-frame-xl {
+      width: min(100% - 24px, var(--page-frame-width));
+      margin-top: 12px;
+    }
   }
 
   .workspace-search-trigger {
@@ -268,8 +343,161 @@
     background: var(--card);
     color: var(--card-foreground);
     border: 1px solid var(--border);
-    border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+  }
+
+  .glass-card:hover,
+  .glass-card-orange:hover,
+  .glass-card-teal:hover,
+  .erp-card:hover,
+  .industrial-panel:hover {
+    border-color: color-mix(in oklab, var(--primary) 26%, var(--border));
+    background: color-mix(in oklab, var(--card) 96%, var(--primary));
+  }
+
+  .glass-card .text-white,
+  .glass-card-teal .text-white,
+  .glass-card-orange .text-white,
+  .erp-card .text-white,
+  .industrial-panel .text-white {
+    color: var(--card-foreground);
+  }
+
+  .page-frame [class~="bg-card/40"],
+  .page-frame [class~="bg-card/90"],
+  .page-frame [class~="bg-card/95"],
+  .page-frame [class~="bg-card/98"] {
+    background: var(--card);
+  }
+
+  .page-frame [class*="backdrop-blur"] {
+    backdrop-filter: none;
+  }
+
+  .page-frame [class~="rounded-xl"] {
+    border-radius: var(--radius);
+  }
+
+  .page-frame [class~="rounded-2xl"] {
+    border-radius: var(--radius-lg);
+  }
+
+  .page-frame [class*="shadow-2xl"],
+  .page-frame [class*="shadow-xl"],
+  .page-frame [class*="shadow-black"],
+  .page-frame [class*="shadow-teal"],
+  .page-frame [class*="shadow-primary"] {
+    box-shadow: var(--shadow-card);
+  }
+
+  .page-frame [class~="border-white/8"],
+  .page-frame [class~="border-white/10"],
+  .page-frame [class~="border-border/20"],
+  .page-frame [class~="border-border/30"],
+  .page-frame [class~="border-border/40"],
+  .page-frame [class~="border-border/50"] {
+    border-color: var(--border);
+  }
+
+  .page-frame [class~="bg-secondary/10"],
+  .page-frame [class~="bg-secondary/20"],
+  .page-frame [class~="bg-secondary/30"],
+  .page-frame [class~="bg-secondary/40"],
+  .page-frame [class~="bg-secondary/50"],
+  .page-frame [class~="bg-secondary/60"] {
+    background: var(--secondary);
+  }
+
+  .page-frame :is(h1, h2, h3, h4).text-white {
+    color: var(--foreground);
+  }
+
+  .page-frame
+    :is(.text-white):not([class*="bg-primary"]):not([class*="bg-teal"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-amber"]):not([class*="bg-red"]):not([class*="bg-blue"]) {
+    color: var(--foreground);
+  }
+
+  .page-frame [class*="hover:text-white"]:hover {
+    color: var(--foreground);
+  }
+
+  .page-frame h1 {
+    font-size: var(--text-xl);
+    line-height: 1.45;
+  }
+
+  .page-frame h2 {
+    font-size: var(--text-lg);
+    line-height: 1.45;
+  }
+
+  .page-frame :is(.text-2xl, .text-3xl).font-bold,
+  .page-frame :is(.text-2xl, .text-3xl).font-semibold {
+    font-size: var(--text-metric);
+    line-height: 1.25;
+  }
+
+  .page-frame [class~="gap-6"] {
+    gap: var(--space-4);
+  }
+
+  .page-frame [class~="p-6"] {
+    padding: var(--space-4);
+  }
+
+  .page-frame [class~="p-12"] {
+    padding: var(--space-6);
+  }
+
+  .page-frame section,
+  .page-frame article {
+    min-width: 0;
+  }
+
+  .page-frame :is(table) {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--foreground);
+    font-size: var(--text-sm);
+  }
+
+  .page-frame :is(thead) {
+    background: var(--muted);
+    color: var(--muted-foreground);
+  }
+
+  .page-frame :is(th) {
+    padding: 0.4375rem 0.625rem;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .page-frame :is(td) {
+    padding: 0.4375rem 0.625rem;
+    font-size: var(--text-sm);
+  }
+
+  .page-frame :is(input, select) {
+    min-height: var(--control-md);
+    font-size: var(--text-sm);
+  }
+
+  .page-frame :is(textarea) {
+    font-size: var(--text-sm);
+  }
+
+  .page-frame :is(button, [role="button"]) {
+    min-height: var(--control-sm);
+  }
+
+  .page-frame :is(dialog, [role="dialog"]) {
+    border-color: var(--border);
+    background: var(--popover);
+    color: var(--popover-foreground);
+    box-shadow: var(--shadow-popover);
   }
 
   .industrial-subpanel {
@@ -292,13 +520,13 @@
   }
 
   .stat-card {
-    min-height: 5rem;
+    min-height: 4.5rem;
     background: var(--card);
     color: var(--card-foreground);
     border: 1px solid var(--border);
     border-top: 2px solid var(--primary);
-    border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-xs);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
     contain: content;
     transition:
       border-color 140ms ease,
@@ -322,7 +550,7 @@
   .stat-number {
     color: var(--foreground);
     font-family: var(--font-mono);
-    font-size: 1.375rem;
+    font-size: var(--text-metric);
     font-weight: 700;
     line-height: 1.75rem;
     font-variant-numeric: tabular-nums;
@@ -333,6 +561,7 @@
     border-collapse: collapse;
     color: var(--foreground);
     background: var(--card);
+    box-shadow: var(--shadow-table);
   }
 
   .erp-table thead {
@@ -353,7 +582,7 @@
 
   .erp-table td {
     height: var(--table-row);
-    padding: 0 0.75rem;
+    padding: 0.4375rem 0.625rem;
     border-bottom: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
     vertical-align: middle;
   }

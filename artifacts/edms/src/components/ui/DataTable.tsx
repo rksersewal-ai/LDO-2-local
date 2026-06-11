@@ -109,7 +109,7 @@ export function DataTable<T extends { id: string }>({
   getRowClassName,
   className,
 }: DataTableProps<T>) {
-  const rowHeight = density === "dense" ? "h-9" : "h-10";
+  const rowHeight = density === "dense" ? "h-[34px]" : "h-[38px]";
   const visibleCols = columns.filter((c) => !c.hidden);
   const totalPages = totalCount != null ? Math.ceil(totalCount / pageSize) : undefined;
   const isAllSelected = selectable && data.length > 0 && selectedIds?.size === data.length;
@@ -132,11 +132,11 @@ export function DataTable<T extends { id: string }>({
   return (
     <div className={cn("flex flex-col gap-0", className)}>
       {/* Table */}
-      <div className="relative w-full overflow-auto rounded-xl border bg-card shadow-sm">
-        <table className="w-full caption-bottom text-sm" aria-label={caption}>
+      <div className="relative w-full overflow-auto rounded-md border bg-card shadow-[var(--shadow-table)]">
+        <table className="w-full caption-bottom text-xs" aria-label={caption}>
           {caption && <caption className="sr-only">{caption}</caption>}
           {/* Sticky header */}
-          <thead className="sticky top-0 z-10 border-b bg-muted/50">
+          <thead className="sticky top-0 z-10 border-b bg-muted">
             <tr>
               {selectable && (
                 <th className="w-9 px-2 py-1.5">
@@ -152,7 +152,7 @@ export function DataTable<T extends { id: string }>({
                   key={col.key}
                   style={{ width: col.width }}
                   className={cn(
-                    "select-none px-2.5 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground",
+                    "select-none px-2.5 py-1.5 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground",
                     col.align === "center" && "text-center",
                     col.align === "right" && "text-right",
                     col.sortable && "cursor-pointer hover:text-foreground transition-colors",
@@ -208,7 +208,7 @@ export function DataTable<T extends { id: string }>({
                     key={row.id}
                     data-state={isRowSelected ? "selected" : undefined}
                     className={cn(
-                      "border-b text-[13px] transition-colors",
+                      "border-b text-xs transition-colors",
                       rowHeight,
                       isRowSelected ? "bg-accent" : "hover:bg-muted/50",
                       onRowClick && "cursor-pointer",

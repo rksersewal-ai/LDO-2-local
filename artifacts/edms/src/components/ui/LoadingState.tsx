@@ -21,15 +21,15 @@ export function LoadingState({
   className = "",
 }: LoadingStateProps) {
   const sizeClasses = {
-    sm: "py-8",
-    md: "py-16",
-    lg: "py-24",
+    sm: "py-6",
+    md: "py-10",
+    lg: "py-14",
   };
 
   const spinnerSizes = {
-    sm: "w-5 h-5",
-    md: "w-8 h-8",
-    lg: "w-12 h-12",
+    sm: "h-4 w-4",
+    md: "h-6 w-6",
+    lg: "h-8 w-8",
   };
 
   return (
@@ -43,7 +43,7 @@ export function LoadingState({
           style={{ animation: "spin 0.8s linear infinite" }}
         />
       </div>
-      {message && <p className="text-muted-foreground text-sm font-medium">{message}</p>}
+      {message && <p className="text-xs font-medium text-muted-foreground">{message}</p>}
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
@@ -55,7 +55,7 @@ export function LoadingRows({ count = 5, className = "" }: { count?: number; cla
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="h-12 rounded-xl bg-secondary/40 animate-pulse"
+          className="h-9 animate-pulse rounded-md bg-secondary"
           style={{ opacity: 1 - i * 0.15 }}
         />
       ))}
@@ -65,7 +65,7 @@ export function LoadingRows({ count = 5, className = "" }: { count?: number; cla
 
 export function LoadingCard({ className = "" }: { className?: string }) {
   return (
-    <div className={`p-4 rounded-xl bg-secondary/40 space-y-3 animate-pulse ${className}`}>
+    <div className={`animate-pulse space-y-2 rounded-md bg-secondary p-3 ${className}`}>
       <div className="h-4 bg-muted/60 rounded w-3/4" />
       <div className="h-3 bg-muted/40 rounded w-1/2" />
       <div className="h-3 bg-muted/30 rounded w-2/3" />

@@ -151,7 +151,7 @@ export default function AppLayout() {
         </div>
       )}
 
-      <div className="flex flex-1 overflow-hidden md:gap-0">
+      <div className="flex min-h-0 flex-1 overflow-hidden md:gap-0">
         {/* Persistent left navigation rail */}
         <div className="hidden md:block">
           <Sidebar isExpanded={sidebarExpanded} onToggle={handleSidebarToggle} />
@@ -162,7 +162,7 @@ export default function AppLayout() {
           id="main-content"
           className="workspace-main flex min-w-0 flex-1 flex-col overflow-hidden"
         >
-          <Header />
+          <Header sidebarExpanded={sidebarExpanded} onSidebarToggle={handleSidebarToggle} />
 
           {/* Multi-document tab strip — only shown when 2+ docs are open */}
           {tabs.length > 1 && (
@@ -223,7 +223,7 @@ export default function AppLayout() {
 
           {/* ── Content + optional right panel ─────────────────── */}
           <div className="flex-1 overflow-hidden flex">
-            <div className="custom-scrollbar flex-1 overflow-auto px-3 pb-4 pt-3 md:px-4">
+            <div className="custom-scrollbar flex-1 overflow-auto">
               <PageContainer maxWidth="full">
                 <ErrorBoundary name="PageContent" onError={(error) => console.error("[AppLayout] Page crashed:", error)}>
                   <AnimatePresence mode="wait" initial={false}>

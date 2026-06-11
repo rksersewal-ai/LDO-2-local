@@ -100,8 +100,8 @@ export function NotificationPanel({
   };
 
   return (
-    <div className="absolute right-0 top-full mt-2 w-96 bg-card/95 backdrop-blur-xl border border-teal-500/20 rounded-2xl shadow-2xl shadow-teal-950/50 z-50 overflow-hidden">
-      <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+    <div className="absolute right-0 top-full z-50 mt-2 w-96 overflow-hidden rounded-md border border-border bg-card shadow-[var(--shadow-popover)]">
+      <div className="flex items-center justify-between border-b border-border px-3.5 py-3">
         <div className="flex items-center gap-2">
           <Bell className="w-4 h-4 text-primary" />
           <span className="text-sm font-semibold text-foreground">Notifications</span>
@@ -119,10 +119,10 @@ export function NotificationPanel({
           <X className="w-4 h-4" />
         </button>
       </div>
-      <div className="max-h-80 overflow-y-auto">
+      <div className="max-h-80 overflow-y-auto thin-scrollbar">
         {documentChangeAlerts.length > 0 && (
           <div className="border-b border-border/50">
-            <div className="px-5 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[color:var(--status-warning)] bg-[color:var(--status-warning)]/8">
+            <div className="bg-[color:var(--status-warning)]/8 px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[color:var(--status-warning)]">
               Linked document change alerts
             </div>
             {documentChangeAlerts.map((alert) => (
@@ -131,7 +131,7 @@ export function NotificationPanel({
                 role="button"
                 tabIndex={0}
                 key={alert.id}
-                className="w-full px-5 py-4 border-b border-border/40 hover:bg-amber-500/6 transition-colors text-left"
+                className="w-full border-b border-border/40 px-3.5 py-3 text-left transition-colors hover:bg-[color:var(--status-warning)]/8"
                 onClick={() => openDocumentAlert(alert)}
                 onKeyDown={(event) =>
                   activateRowFromKeyboard(event, () => openDocumentAlert(alert))

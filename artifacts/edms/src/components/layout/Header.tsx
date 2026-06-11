@@ -1,11 +1,14 @@
 import {
   AlertTriangle,
+  ArrowLeft,
   ArrowRight,
   Bell,
   LifeBuoy,
   LogOut,
   Minus,
   Moon,
+  PanelLeftClose,
+  PanelLeftOpen,
   Plus,
   RotateCcw,
   Search,
@@ -59,7 +62,12 @@ function segmentLabel(seg: string): string {
   return ROUTE_LABELS[seg] ?? seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, " ");
 }
 
-export function Header() {
+interface HeaderProps {
+  sidebarExpanded: boolean;
+  onSidebarToggle: () => void;
+}
+
+export function Header({ sidebarExpanded, onSidebarToggle }: HeaderProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout, hasPermission } = useAuth();
@@ -82,20 +90,7 @@ export function Header() {
   const standardInboxItems = inboxItems.filter((item) => item.type !== "supervisor_review");
   const unreadCount = standardInboxItems.length + documentChangeAlerts.length;
 
-  const getBreadcrumbPath = (index: number): string => {
-    if (index === 0) return "/";
-    return `/${paths.slice(0, index).join("/")}`;
-  };
-
-  const breadcrumbs = [
-    { label: "Home", path: "/" },
-    ...paths.map((seg, i) => ({
-      label: segmentLabel(seg),
-      path: getBreadcrumbPath(i + 1),
-    })),
-  ];
-
-  const pageTitle = breadcrumbs[breadcrumbs.length - 1]?.label ?? "Dashboard";
+  const pageTitle = paths.length > 0 ? segmentLabel(paths[paths.length - 1]) : "Dashboard";
   const isLightTheme = theme === "light";
   const fontSize = preferences.fontSize;
   const contextualGuide = (() => {
@@ -365,39 +360,59 @@ export function Header() {
         )}
 
         {/* ── Top bar ─────────────────────────────────────────────────── */}
-        <header className="workspace-topbar relative z-30 flex h-14 items-center justify-between gap-3 border-b border-border px-4 pl-14 md:pl-4">
-          <div className="min-w-0 shrink-0">
-            <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-0">
-              {breadcrumbs.map((crumb, i) => (
-                <span key={i} className="flex items-center">
-                  {i > 0 && (
-                    <span
-                      className="mx-2 select-none text-xs text-muted-foreground/40"
-                      aria-hidden="true"
-                    >
-                      /
-                    </span>
-                  )}
-                  {i === breadcrumbs.length - 1 ? (
-                    <span className="max-w-[180px] truncate text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
-                      {crumb.label}
-                    </span>
-                  ) : (
+        <header className="workspace-topbar relative z-30 flex h-[var(--app-header-height)] items-center justify-between gap-3 border-b border-border px-3 pl-14 md:pl-3">
+          <div className="flex min-w-0 shrink-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={onSidebarToggle}
+              className="hidden h-8 w-8 items-center justify-center rounded-md border border-border bg-background text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground md:flex"
+              aria-label={sidebarExpanded ? "Collapse navigation" : "Expand navigation"}
+            >
+              {sidebarExpanded ? (
+                <PanelLeftClose className="h-3.5 w-3.5" aria-hidden="true" />
+              ) : (
+                <PanelLeftOpen className="h-3.5 w-3.5" aria-hidden="true" />
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-background text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              aria-label="Go back to previous page"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+            </button>
+            <div className="min-w-0">
+              <nav
+                aria-label="Breadcrumb"
+                className="flex min-w-0 items-center gap-1 text-[11px] font-medium text-muted-foreground"
+              >
+                {pageTitle === "Dashboard" ? (
+                  <span className="truncate uppercase tracking-[0.08em] text-primary">Dashboard</span>
+                ) : (
+                  <>
                     <button
                       type="button"
-                      onClick={() => navigate(crumb.path)}
-                      className="max-w-[110px] truncate text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+                      onClick={() => navigate("/")}
+                      className="truncate uppercase tracking-[0.08em] transition-colors hover:text-foreground"
                     >
-                      {crumb.label}
+                      Dashboard
                     </button>
-                  )}
-                </span>
-              ))}
-            </nav>
-            <div className="mt-1 flex min-w-0 items-center gap-2">
-              <span className="truncate text-base font-semibold text-foreground" role="heading" aria-level={2}>{pageTitle}</span>
-              <span className="hidden xl:inline-flex items-center rounded-md border border-border bg-background px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
-                {contextualGuide.title}
+                    <span className="text-muted-foreground/40" aria-hidden="true">
+                      /
+                    </span>
+                    <span className="truncate uppercase tracking-[0.08em] text-primary">
+                      {pageTitle}
+                    </span>
+                  </>
+                )}
+              </nav>
+              <span
+                className="block truncate text-sm font-semibold leading-5 text-foreground"
+                role="heading"
+                aria-level={2}
+              >
+                {pageTitle}
               </span>
             </div>
           </div>

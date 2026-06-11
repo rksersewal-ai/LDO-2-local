@@ -30,14 +30,14 @@ export function RightPanel({ content, onClose }: RightPanelProps) {
   };
 
   return (
-    <aside className="w-96 border-l border-border bg-card/40 backdrop-blur-xl overflow-hidden flex flex-col">
+    <aside className="w-96 border-l border-border bg-card overflow-hidden flex flex-col shadow-[var(--shadow-card)]">
       {/* Header */}
       <div className="px-6 py-4 border-b border-border/30 shrink-0 bg-popover/20">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 min-w-0">
             {content.icon && <div className="text-primary mt-0.5 shrink-0">{content.icon}</div>}
             <div className="min-w-0">
-              <h2 className="text-sm font-semibold text-white truncate">{content.title}</h2>
+              <h2 className="text-sm font-semibold text-foreground truncate">{content.title}</h2>
               {content.subtitle && (
                 <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
                   {content.subtitle}
@@ -78,7 +78,7 @@ export function RightPanel({ content, onClose }: RightPanelProps) {
                 />
               </button>
               {expandedSections.has(i) && (
-                <div className="px-6 py-3 bg-card/40 border-t border-border/20 text-sm text-foreground/90">
+                <div className="px-3.5 py-2.5 bg-card border-t border-border text-xs text-foreground/90">
                   {section.content}
                 </div>
               )}

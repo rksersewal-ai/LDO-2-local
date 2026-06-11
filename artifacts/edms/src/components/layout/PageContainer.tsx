@@ -3,11 +3,11 @@ import type { ReactNode } from "react";
 type MaxWidth = "sm" | "md" | "lg" | "xl" | "full";
 
 const maxWidthMap: Record<MaxWidth, string> = {
-  sm: "max-w-2xl",
-  md: "max-w-3xl",
-  lg: "max-w-5xl",
-  xl: "max-w-[1520px]",
-  full: "max-w-none",
+  sm: "page-frame page-frame-sm",
+  md: "page-frame page-frame-md",
+  lg: "page-frame page-frame-lg",
+  xl: "page-frame",
+  full: "page-frame page-frame-xl",
 };
 
 interface PageContainerProps {
@@ -32,5 +32,5 @@ interface PageContainerProps {
  * </PageContainer>
  */
 export function PageContainer({ children, maxWidth = "xl", className = "" }: PageContainerProps) {
-  return <div className={`${maxWidthMap[maxWidth]} mx-auto h-full ${className}`}>{children}</div>;
+  return <div className={`${maxWidthMap[maxWidth]} ${className}`}>{children}</div>;
 }

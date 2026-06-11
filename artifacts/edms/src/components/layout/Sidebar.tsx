@@ -16,8 +16,6 @@ import {
   LayoutDashboard,
   Megaphone,
   MonitorCheck,
-  PanelLeftClose,
-  PanelLeftOpen,
   ServerCog,
   Settings,
   ShieldAlert,
@@ -172,6 +170,12 @@ const navGroups: NavGroup[] = [
   },
 ];
 
+const utilityItems: NavItem[] = [
+  { icon: Telescope, label: "Search", path: "/search" },
+  { icon: Bell, label: "Notifications", path: "/notifications" },
+  { icon: Settings, label: "Settings", path: "/settings", roles: ["admin"] },
+];
+
 const NAV_EXPANDED = 248;
 const NAV_COLLAPSED = 64;
 
@@ -183,14 +187,15 @@ interface SidebarProps {
 export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
   const location = useLocation();
   const { hasPermission } = useAuth();
+  void onToggle;
 
   return (
     <aside
       style={{ width: isExpanded ? NAV_EXPANDED : NAV_COLLAPSED }}
       className="workspace-rail relative z-40 flex h-full shrink-0 flex-col overflow-hidden transition-[width] duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]"
     >
-      {/* ── Logo + collapse toggle ────────────────────────────────────────── */}
-      <div className="flex h-14 shrink-0 items-center border-b border-sidebar-border px-3">
+      {/* ── Logo ──────────────────────────────────────────────────────────── */}
+      <div className="flex h-[var(--app-header-height)] shrink-0 items-center border-b border-sidebar-border px-3">
         {/* Brand mark */}
         <div
           className={cn(
@@ -216,32 +221,7 @@ export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
           )}
         </div>
 
-        {/* Collapse toggle (only in expanded state) */}
-        {isExpanded && (
-          <button
-            type="button"
-            onClick={onToggle}
-            title="Collapse navigation"
-            aria-label="Collapse navigation"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-transparent text-sidebar-foreground/50 transition-colors duration-150 hover:border-sidebar-border hover:bg-sidebar-accent hover:text-sidebar-foreground"
-          >
-            <PanelLeftClose className="h-[15px] w-[15px]" />
-          </button>
-        )}
       </div>
-
-      {/* ── Expand toggle (collapsed state only) ─────────────────────────── */}
-      {!isExpanded && (
-        <button
-          type="button"
-          onClick={onToggle}
-          title="Expand navigation"
-          aria-label="Expand navigation"
-          className="mx-auto mt-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-transparent text-sidebar-foreground/50 transition-colors duration-150 hover:border-sidebar-border hover:bg-sidebar-accent hover:text-sidebar-foreground"
-        >
-          <PanelLeftOpen className="h-[15px] w-[15px]" />
-        </button>
-      )}
 
       {/* ── Nav scroll area ─────────────────────────────────────────────── */}
       <nav aria-label="Main navigation" className="flex-1 overflow-y-auto py-2 thin-scrollbar">
@@ -333,6 +313,56 @@ export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
           );
         })}
       </nav>
+
+      <div className="shrink-0 border-t border-sidebar-border bg-sidebar px-2 py-2">
+        {utilityItems
+          .filter((item) => !item.roles || hasPermission(item.roles))
+          .map((item) => {
+            const Icon = item.icon;
+            const isActive =
+              item.path === "/" ? location.pathname === "/" : location.pathname.startsWith(item.path);
+            const link = (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                aria-current={isActive ? "page" : undefined}
+                className={cn(
+                  "group relative flex h-8 items-center gap-2 rounded-md border text-[12px] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  isExpanded ? "px-2.5" : "justify-center px-0",
+                  isActive
+                    ? "border-sidebar-border bg-sidebar-accent font-medium text-sidebar-accent-foreground"
+                    : "border-transparent text-sidebar-foreground/65 hover:border-sidebar-border hover:bg-sidebar-accent/70 hover:text-sidebar-foreground",
+                )}
+              >
+                <Icon
+                  aria-hidden="true"
+                  className={cn(
+                    "h-4 w-4 shrink-0 transition-colors duration-100",
+                    isActive
+                      ? "text-sidebar-primary"
+                      : "text-sidebar-foreground/50 group-hover:text-sidebar-foreground",
+                  )}
+                />
+                {isExpanded && (
+                  <span className="flex-1 overflow-hidden whitespace-nowrap leading-none">
+                    {item.label}
+                  </span>
+                )}
+              </NavLink>
+            );
+
+            if (!isExpanded) {
+              return (
+                <Tooltip key={item.path}>
+                  <TooltipTrigger asChild>{link}</TooltipTrigger>
+                  <TooltipContent side="right">{item.label}</TooltipContent>
+                </Tooltip>
+              );
+            }
+
+            return link;
+          })}
+      </div>
     </aside>
   );
 }

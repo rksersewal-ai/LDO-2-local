@@ -22,13 +22,33 @@ import { Input as ShadcnInput } from "./input";
 
 /* ── Card surfaces ──────────────────────────────────────────────────────── */
 
+function normalizeSurfaceClassName(className: string) {
+  return className
+    .replace(/\bbg-card\/40\b/g, "")
+    .replace(/\bbg-card\/95\b/g, "")
+    .replace(/\bbg-card\/98\b/g, "")
+    .replace(/\bbg-background\/40\b/g, "bg-background")
+    .replace(/\bbackdrop-blur(?:-[a-z]+)?\b/g, "")
+    .replace(/\bshadow-sm\b/g, "")
+    .replace(/\bshadow-md\b/g, "")
+    .replace(/\bshadow-xl\b/g, "")
+    .replace(/\bshadow-2xl\b/g, "")
+    .replace(/\bshadow-black\/\d+\b/g, "")
+    .replace(/\brounded-xl\b/g, "rounded-md")
+    .replace(/\brounded-2xl\b/g, "rounded-lg")
+    .replace(/\bhover:-translate-y-0\.5\b/g, "")
+    .replace(/\bduration-200\b/g, "duration-150")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export function GlassCard({
   children,
   className = "",
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <Card variant="default" className={cn("glass-card", className)} {...props}>
+    <Card variant="default" className={cn("glass-card", normalizeSurfaceClassName(className))} {...props}>
       {children}
     </Card>
   );
@@ -42,7 +62,7 @@ export function GlassCardTeal({
   return (
     <Card
       variant="default"
-      className={cn("glass-card-teal border-primary/30", className)}
+      className={cn("glass-card-teal border-primary/30", normalizeSurfaceClassName(className))}
       {...props}
     >
       {children}
@@ -117,8 +137,8 @@ export function Button({
   };
   const sizeCls: Record<string, string> = {
     sm: "h-8 px-2.5 text-xs gap-1.5",
-    md: "h-10 px-3 text-[13px] gap-2",
-    lg: "h-12 px-4 text-sm gap-2",
+    md: "h-8 px-3 text-xs gap-1.5",
+    lg: "h-9 px-4 text-[13px] gap-2",
   };
 
   return (
@@ -146,7 +166,7 @@ export const Input = React.forwardRef<
     <ShadcnInput
       ref={ref}
       className={cn(
-        "h-10 bg-background hover:border-border transition-colors duration-150 focus-visible:border-primary/60 focus-visible:ring-2 focus-visible:ring-ring/50",
+        "h-8 bg-background text-xs hover:border-border transition-colors duration-150 focus-visible:border-primary/60 focus-visible:ring-2 focus-visible:ring-ring/50",
         className,
       )}
       {...props}
@@ -165,7 +185,7 @@ export function Select({
   return (
     <select
       className={cn(
-        "h-10 w-full cursor-pointer rounded-md border border-input bg-background px-3 text-sm text-foreground",
+        "h-8 w-full cursor-pointer rounded-md border border-input bg-background px-2.5 text-xs text-foreground",
         "transition-colors duration-150",
         "focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-ring/50",
         className,
@@ -283,26 +303,14 @@ export function PageHeader({
       </div>
     ) : null;
 
+  void title;
+  void subtitle;
+
   const actionContent = actions ?? children ?? derivedActions;
 
-  return (
-    <div className="mb-4 flex flex-col gap-3">
-      <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-        <div>
-          <h1
-            className="text-[22px] font-semibold leading-tight text-foreground"
-            style={{ letterSpacing: "-0.01em" }}
-          >
-            {title}
-          </h1>
-          {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
-        </div>
-        {actionContent && (
-          <div className="flex items-center gap-2 flex-shrink-0">{actionContent}</div>
-        )}
-      </div>
-    </div>
-  );
+  if (!actionContent) return null;
+
+  return <div className="mb-3 flex items-center justify-end gap-2">{actionContent}</div>;
 }
 
 /* ── Filter Pills ───────────────────────────────────────────────────────── */

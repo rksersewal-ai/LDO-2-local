@@ -38,14 +38,14 @@ export function ErrorState({
 
   return (
     <div
-      className={`flex flex-col items-center justify-center py-16 gap-4 text-center ${className}`}
+      className={`flex flex-col items-center justify-center gap-3 py-10 text-center ${className}`}
     >
-      <div className="w-16 h-16 rounded-2xl bg-card border border-border flex items-center justify-center">
+      <div className="flex h-12 w-12 items-center justify-center rounded-md border border-border bg-card shadow-[var(--shadow-card)]">
         {icons[variant]}
       </div>
       <div>
         <p className="text-foreground font-semibold mb-1">{message ?? defaultMessages[variant]}</p>
-        <p className="text-muted-foreground text-sm max-w-sm mx-auto">
+        <p className="mx-auto max-w-sm text-xs text-muted-foreground">
           {detail ?? defaultDetails[variant]}
         </p>
       </div>
@@ -53,7 +53,7 @@ export function ErrorState({
         <button
           type="button"
           onClick={onRetry}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary/60 hover:bg-secondary/60 text-foreground/90 text-sm font-medium border border-border transition-colors"
+          className="flex h-8 items-center gap-2 rounded-md border border-border bg-secondary px-3 text-xs font-medium text-foreground/90 transition-colors hover:bg-muted hover:text-foreground"
         >
           <RefreshCw className="w-4 h-4" />
           Try Again
@@ -66,7 +66,7 @@ export function ErrorState({
 export function InlineError({ message, className = "" }: { message: string; className?: string }) {
   return (
     <div
-      className={`flex items-center gap-2 px-3 py-2 rounded-xl bg-[color:var(--status-danger)]/10 border border-[color:var(--status-danger)]/20 text-[color:var(--status-danger)] text-sm ${className}`}
+      className={`flex items-center gap-2 rounded-md border border-[color:var(--status-danger)]/20 bg-[color:var(--status-danger)]/10 px-3 py-2 text-xs text-[color:var(--status-danger)] ${className}`}
     >
       <AlertTriangle className="w-4 h-4 flex-shrink-0" />
       <span>{message}</span>

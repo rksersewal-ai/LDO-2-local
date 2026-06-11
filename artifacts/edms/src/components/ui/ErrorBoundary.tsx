@@ -62,7 +62,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
       // Default error UI — theme-aware using semantic status tokens
       return (
-        <div className="flex flex-col items-center justify-center py-8 px-4 bg-[color:var(--status-danger)]/10 border border-[color:var(--status-danger)]/20 rounded-lg">
+        <div className="flex flex-col items-center justify-center rounded-md border border-[color:var(--status-danger)]/20 bg-[color:var(--status-danger)]/10 px-4 py-6">
           <div className="flex items-center gap-3 mb-3">
             <AlertTriangle className="w-5 h-5 text-[color:var(--status-danger)] flex-shrink-0" />
             <h3 className="text-sm font-semibold text-[color:var(--status-danger)]">
@@ -75,7 +75,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
           <button
             type="button"
             onClick={this.handleReset}
-            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-[color:var(--status-danger)]/15 hover:bg-[color:var(--status-danger)]/25 text-[color:var(--status-danger)] border border-[color:var(--status-danger)]/30 transition-colors"
+            className="h-8 rounded-md border border-[color:var(--status-danger)]/30 bg-[color:var(--status-danger)]/15 px-3 text-xs font-medium text-[color:var(--status-danger)] transition-colors hover:bg-[color:var(--status-danger)]/25"
           >
             Retry
           </button>
