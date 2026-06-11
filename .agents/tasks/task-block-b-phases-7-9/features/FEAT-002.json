@@ -2,7 +2,7 @@
   "id": "FEAT-002",
   "type": "feat",
   "description": "Phase 8 - Performance: Create performance infrastructure utilities. Includes API performance instrumentation, pagination utility, request deduplication hook, image lazy loading utility, bundle size budget config, and performance monitoring hook.",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "Create artifacts/edms/src/lib/apiPerformanceInstrumentation.ts - Utility for request timing and slow query detection. Include: RequestTimer class (start/end/duration), SlowQueryDetector (configurable threshold, default 2000ms), RequestMetricsCollector (tracks p50/p95/p99 across requests), formatMetricsSummary(). Store metrics in memory with optional localStorage persistence.",
     "Create artifacts/edms/src/lib/paginationUtils.ts - Pagination utility ensuring all list endpoints use cursor/offset pagination. Include types: PaginationParams, CursorPaginationParams, OffsetPaginationParams, PaginatedResponse<T>. Functions: buildPaginationParams(page, pageSize), buildCursorParams(cursor, limit), parsePaginationHeaders(headers), getNextPageParams(currentResponse), calculateTotalPages(total, pageSize).",
