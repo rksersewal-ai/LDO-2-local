@@ -1,0 +1,39 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Phase 9 - Crash Protection: Create defensive utilities for robust error handling. Includes file validation, safe image dimension checker, request timeout wrapper, retry with exponential backoff, dead letter queue interface, graceful degradation service, structured error codes, and safe cleanup utility.",
+  "status": "pending",
+  "steps": [
+    "Create artifacts/edms/src/lib/fileValidation.ts - File validation utility. Validates: file size (configurable max, default 500MB from ocr_pipeline.yaml), MIME type (allowlist for engineering docs: PDF, TIFF, PNG, JPEG, DWG, DXF), file extension matching, magic bytes detection (PDF=%PDF, PNG=89504E47, TIFF=49492A00/4D4D002A, JPEG=FFD8FF). Export validateFile(file, options) returning ValidationResult with errors array.",
+    "Create artifacts/edms/src/lib/safeImageDimensions.ts - Safe image dimension checker. Validates max pixel limits for OCR processing (aligned with config/ocr_pipeline.yaml max_pixels: 200000000). Functions: checkImageDimensions(width, height, maxPixels?), estimateMemoryUsage(width, height, channels), isWithinOcrLimits(file), calculateSafeDimensions(originalWidth, originalHeight, maxPixels).",
+    "Create artifacts/edms/src/lib/requestTimeout.ts - Request timeout wrapper. Wraps any Promise with a configurable timeout. Functions: withTimeout<T>(promise, timeoutMs, errorMessage?), createTimeoutController(timeoutMs) returning AbortController+signal. Integrates with fetch API pattern. Default timeout: 30s for normal requests, 300s for OCR requests (from ocr_pipeline.yaml ocr_timeout_seconds).",
+    "Create artifacts/edms/src/lib/retryWithBackoff.ts - Retry with exponential backoff utility. Functions: retryWithBackoff<T>(fn, options) where options include maxRetries (default 3 from ocr_pipeline.yaml retry_count), baseDelay, maxDelay, backoffFactor, retryCondition predicate. Implements jitter to prevent thundering herd. Export RetryOptions type and RetryResult<T> with attempt count.",
+    "Create artifacts/edms/src/lib/deadLetterQueue.ts - Dead letter queue interface for failed background jobs. Types: DeadLetterEntry, DLQConfig, DLQStats. localStorage-backed implementation for frontend visibility. Functions: enqueue(entry), peek(count), dequeue(id), getStats(), purgeOlderThan(date), retryEntry(id). Aligns with AdminMetricsService.FailedJob interface.",
+    "Create artifacts/edms/src/services/GracefulDegradationService.ts - Detects when OCR/search/cache subsystems are down. ServiceStatus type (healthy/degraded/down). Monitors: OCR service, search service, cache service. Functions: checkServiceHealth(serviceName), getSystemStatus(), registerHealthCheck(name, checkFn), getFailoverStrategy(serviceName). Uses circuit breaker pattern (closed/open/half-open).",
+    "Create artifacts/edms/src/lib/errorCodes.ts - Structured error codes enum. Categories: FILE_* (validation errors), OCR_* (processing errors), SEARCH_* (query errors), AUTH_* (permission errors), NETWORK_* (connectivity errors), SYSTEM_* (internal errors). Each code has numeric value, message template, and severity level. Export ErrorCode enum, getErrorMessage(code, params), isRetryable(code).",
+    "Create artifacts/edms/src/lib/safeCleanup.ts - Safe cleanup utility for temp files/resources. Functions: createCleanupScope() returning scope with register(cleanupFn)/cleanup()/dispose() methods. Implements try-finally pattern. Tracks registered resources, executes cleanup in reverse order, catches and logs individual cleanup failures without aborting remaining cleanups.",
+    "Create artifacts/edms/src/lib/fileValidation.test.ts - Tests for file validation covering size, MIME, extension, magic bytes checks.",
+    "Create artifacts/edms/src/lib/safeImageDimensions.test.ts - Tests for dimension checking and memory estimation.",
+    "Create artifacts/edms/src/lib/requestTimeout.test.ts - Tests for timeout wrapper with fast/slow promises.",
+    "Create artifacts/edms/src/lib/retryWithBackoff.test.ts - Tests for retry logic, backoff timing, and jitter.",
+    "Create artifacts/edms/src/lib/deadLetterQueue.test.ts - Tests for DLQ operations using localStorage mock.",
+    "Create artifacts/edms/src/services/GracefulDegradationService.test.ts - Tests for circuit breaker states and health checks.",
+    "Create artifacts/edms/src/lib/errorCodes.test.ts - Tests for error code lookups and retryability.",
+    "Create artifacts/edms/src/lib/safeCleanup.test.ts - Tests for cleanup scope lifecycle and error resilience."
+  ],
+  "acceptance_criteria": [
+    "npx tsc --noEmit passes with 0 errors",
+    "All new test files pass when running cd artifacts/edms && npx vitest run",
+    "fileValidation magic bytes detection correctly identifies PDF, PNG, TIFF, JPEG",
+    "retryWithBackoff implements exponential backoff with jitter",
+    "GracefulDegradationService implements circuit breaker pattern with 3 states",
+    "safeCleanup executes cleanups in reverse order and survives individual failures",
+    "Config values (max_file_size_mb, max_pixels, retry_count, ocr_timeout_seconds) align with config/ocr_pipeline.yaml"
+  ],
+  "verification": [
+    "cd /projects/sandbox/LDO-2-local && npx tsc --noEmit",
+    "cd /projects/sandbox/LDO-2-local/artifacts/edms && npx vitest run src/lib/fileValidation.test.ts src/lib/safeImageDimensions.test.ts src/lib/requestTimeout.test.ts src/lib/retryWithBackoff.test.ts src/lib/deadLetterQueue.test.ts src/services/GracefulDegradationService.test.ts src/lib/errorCodes.test.ts src/lib/safeCleanup.test.ts"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

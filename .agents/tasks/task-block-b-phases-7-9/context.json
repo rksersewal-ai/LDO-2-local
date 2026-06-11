@@ -1,0 +1,29 @@
+{
+  "project_type": "React 19 + Vite 7 + TailwindCSS 4 frontend (pnpm monorepo) with Django 5.2 backend",
+  "language": "TypeScript (frontend), Python (backend)",
+  "build_system": "pnpm monorepo with workspace packages. Root vitest for smoke tests. artifacts/edms has its own vitest.config.ts for feature tests.",
+  "test_framework": "Vitest with jsdom environment, @testing-library/react. Tests co-located with source (*.test.ts). Setup file at src/test/setup.ts provides localStorage and matchMedia mocks.",
+  "build_command": "cd /projects/sandbox/LDO-2-local && npx tsc --noEmit && cd artifacts/edms && npx vite build",
+  "test_command": "cd /projects/sandbox/LDO-2-local && npx vitest run && cd artifacts/edms && npx vitest run",
+  "verification_instructions": "1. npx tsc --noEmit (0 errors). 2. npx vitest run (5 root smoke tests pass). 3. cd artifacts/edms && npx vitest run (all feature tests pass, ignoring 2 pre-existing throttle/theme failures).",
+  "snapshot_or_generated_files": null,
+  "setup_instructions": "pnpm install (already done). No additional setup needed.",
+  "environment_constraints": "INTEGRATIONS_ONLY network - cannot install new packages. Must use existing deps only. No Docker daemon. No external HTTP calls.",
+  "contribution_requirements": "Conventional commits. Zero TS errors. All new tests pass. Files under 800 lines. No hardcoded Tailwind colors.",
+  "key_patterns": "Services use localStorage-backed mock data with typed interfaces. Tests use vi.mock for feature flags. Hooks follow React patterns with useRef/useState/useEffect. Lib modules are pure utility functions with JSDoc comments and section dividers (horizontal rules). Feature flags gate new functionality via isFeatureEnabled().",
+  "relevant_files": [
+    "artifacts/edms/src/lib/engineeringSearchFilters.ts",
+    "artifacts/edms/src/services/SearchService.ts",
+    "artifacts/edms/src/services/FullTextSearchService.ts",
+    "artifacts/edms/src/lib/featureFlags.ts",
+    "artifacts/edms/src/lib/logger.ts",
+    "artifacts/edms/src/hooks/useOverloadProtection.ts",
+    "artifacts/edms/src/services/AdminMetricsService.ts",
+    "artifacts/edms/src/services/SystemHealthService.ts",
+    "artifacts/edms/src/services/UploadProgressService.ts",
+    "artifacts/edms/src/lib/ocrConfidenceScoring.ts",
+    "artifacts/edms/src/lib/tiledOcrTypes.ts",
+    "config/ocr_pipeline.yaml"
+  ],
+  "directory_structure": "Root: monorepo with pnpm-workspace.yaml. artifacts/edms/src/lib/ = pure utilities. artifacts/edms/src/services/ = service classes. artifacts/edms/src/hooks/ = React hooks. artifacts/edms/src/components/ = UI components. config/ = YAML config files. backend/ = Django app. src/test/ = root test setup."
+}

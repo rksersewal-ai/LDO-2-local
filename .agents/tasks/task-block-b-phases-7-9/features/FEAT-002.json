@@ -1,0 +1,31 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Phase 8 - Performance: Create performance infrastructure utilities. Includes API performance instrumentation, pagination utility, request deduplication hook, image lazy loading utility, bundle size budget config, and performance monitoring hook.",
+  "status": "pending",
+  "steps": [
+    "Create artifacts/edms/src/lib/apiPerformanceInstrumentation.ts - Utility for request timing and slow query detection. Include: RequestTimer class (start/end/duration), SlowQueryDetector (configurable threshold, default 2000ms), RequestMetricsCollector (tracks p50/p95/p99 across requests), formatMetricsSummary(). Store metrics in memory with optional localStorage persistence.",
+    "Create artifacts/edms/src/lib/paginationUtils.ts - Pagination utility ensuring all list endpoints use cursor/offset pagination. Include types: PaginationParams, CursorPaginationParams, OffsetPaginationParams, PaginatedResponse<T>. Functions: buildPaginationParams(page, pageSize), buildCursorParams(cursor, limit), parsePaginationHeaders(headers), getNextPageParams(currentResponse), calculateTotalPages(total, pageSize).",
+    "Create artifacts/edms/src/hooks/useRequestDeduplication.ts - React hook that prevents duplicate API calls. Maintains in-flight request map keyed by URL+params hash. If same request is already in-flight, returns the existing promise instead of making a new call. Include cleanup on unmount. Exports useRequestDeduplication() hook and standalone deduplicateRequest() function.",
+    "Create artifacts/edms/src/lib/imageLazyLoading.ts - Utility for image/thumbnail lazy loading. Include: LazyImageConfig type, createIntersectionObserver(options), buildSrcSet(baseUrl, sizes), generatePlaceholderDataUrl(width, height, color), calculateLoadPriority(viewport, elementRect). Uses IntersectionObserver API pattern.",
+    "Create artifacts/edms/src/lib/bundleSizeBudget.ts - Bundle size budget configuration. Define BundleBudget interface with limits per chunk. Include budgets: main chunk (200KB gzip), vendor chunk (400KB gzip), lazy routes (50KB each). Functions: checkBudget(actualSize, budget), formatBudgetReport(results). Export DEFAULT_BUDGETS constant.",
+    "Create artifacts/edms/src/hooks/usePerformanceMonitor.ts - React hook that tracks component render times. Uses Performance API (performance.mark/measure). Tracks: mount time, re-render count, average render duration, slow renders (>16ms). Exports usePerformanceMonitor(componentName) returning metrics object.",
+    "Create artifacts/edms/src/lib/apiPerformanceInstrumentation.test.ts - Tests for request timing, slow query detection, and metrics collection.",
+    "Create artifacts/edms/src/lib/paginationUtils.test.ts - Tests for all pagination functions and edge cases.",
+    "Create artifacts/edms/src/hooks/useRequestDeduplication.test.ts - Tests for deduplication logic using renderHook.",
+    "Create artifacts/edms/src/hooks/usePerformanceMonitor.test.ts - Tests for performance monitoring hook."
+  ],
+  "acceptance_criteria": [
+    "npx tsc --noEmit passes with 0 errors",
+    "All new test files pass when running cd artifacts/edms && npx vitest run",
+    "useRequestDeduplication correctly deduplicates concurrent identical requests",
+    "usePerformanceMonitor tracks render timing using Performance API",
+    "paginationUtils supports both cursor and offset pagination modes"
+  ],
+  "verification": [
+    "cd /projects/sandbox/LDO-2-local && npx tsc --noEmit",
+    "cd /projects/sandbox/LDO-2-local/artifacts/edms && npx vitest run src/lib/apiPerformanceInstrumentation.test.ts src/lib/paginationUtils.test.ts src/hooks/useRequestDeduplication.test.ts src/hooks/usePerformanceMonitor.test.ts"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

@@ -1,0 +1,30 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Phase 7 - Search & Scale: Create search infrastructure utilities for 6 lakh document scale. Includes search index schema types, query builder, benchmark configuration, engineering filter integration, search result caching service, and benchmark script.",
+  "status": "in_progress",
+  "steps": [
+    "Create artifacts/edms/src/lib/searchIndexSchema.ts - Define TypeScript types for PostgreSQL tsvector/GIN index strategy. Include SearchIndexField, SearchIndexConfig, GINIndexDefinition, TsvectorWeightConfig interfaces. Document column weights (A=title, B=drawingNumber, C=body, D=metadata).",
+    "Create artifacts/edms/src/lib/searchQueryBuilder.ts - Build optimized search query builder utility. Include functions: buildSearchQuery(term, filters, sort, pagination), buildTsvectorQuery(term, weights), buildGINFilterClause(filters), buildSortClause(sortField, direction), buildPaginationClause(cursor/offset, limit). Support both cursor-based and offset pagination. Integrate with EngineeringSearchFilter type from engineeringSearchFilters.ts.",
+    "Create artifacts/edms/src/lib/searchBenchmarkConfig.ts - Define benchmark test scenarios for 10K, 100K, and 600K documents. Include BenchmarkScenario, BenchmarkConfig interfaces. Define scenarios: simple text search, filtered search, faceted search, autocomplete prefix, wildcard patterns. Each scenario has expected latency targets (p50, p95, p99).",
+    "Create artifacts/edms/src/lib/searchFiltersIntegration.ts - Integration layer between engineering-specific search filters (from engineeringSearchFilters.ts) and the search query builder. Functions: applyEngineeringFilters(query, engineeringFilter), buildDrawingNumberTsvector(pattern), buildRevisionRangeClause(from, to), buildConfidenceFilter(threshold).",
+    "Create artifacts/edms/src/services/SearchCacheService.ts - localStorage-backed search result caching for frontend. Features: TTL-based expiry, LRU eviction (max 50 entries), cache key generation from query+filters hash, hit/miss stats tracking. Include JSDoc documenting the Redis strategy that would be used backend-side.",
+    "Create scripts/search-benchmark.sh - Shell script with benchmark commands. Define scenarios using curl placeholders (documenting API endpoints). Include commands for each benchmark tier (10K/100K/600K), warm-up queries, result collection.",
+    "Create artifacts/edms/src/lib/searchIndexSchema.test.ts - Tests for search index schema validation helpers.",
+    "Create artifacts/edms/src/lib/searchQueryBuilder.test.ts - Tests for query builder covering all clause types, edge cases (empty terms, special chars), and pagination modes.",
+    "Create artifacts/edms/src/services/SearchCacheService.test.ts - Tests for cache service covering set/get, TTL expiry, LRU eviction, stats, and cache invalidation."
+  ],
+  "acceptance_criteria": [
+    "npx tsc --noEmit passes with 0 errors after all new files are added",
+    "All new test files pass when running cd artifacts/edms && npx vitest run",
+    "searchQueryBuilder correctly integrates with EngineeringSearchFilter type from existing engineeringSearchFilters.ts",
+    "SearchCacheService localStorage operations work with the existing test setup mock",
+    "scripts/search-benchmark.sh is executable and contains documented benchmark commands"
+  ],
+  "verification": [
+    "cd /projects/sandbox/LDO-2-local && npx tsc --noEmit",
+    "cd /projects/sandbox/LDO-2-local/artifacts/edms && npx vitest run src/lib/searchIndexSchema.test.ts src/lib/searchQueryBuilder.test.ts src/services/SearchCacheService.test.ts"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}
