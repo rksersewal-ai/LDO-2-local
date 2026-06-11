@@ -1,7 +1,8 @@
 import { HardDrive } from "lucide-react";
+import { useEffect, useState } from "react";
 import { GlassCard } from "./Shared";
 import { Progress } from "./progress";
-import { AdminMetricsService } from "../../services/AdminMetricsService";
+import { AdminMetricsService, type AdminMetrics } from "../../services/AdminMetricsService";
 
 function usageColor(percent: number): string {
   if (percent > 85) return "[&>div]:bg-rose-500";
@@ -15,15 +16,34 @@ function usageTextColor(percent: number): string {
   return "text-emerald-400";
 }
 
-export function StorageUsageIndicator() {
-  const metrics = AdminMetricsService.getMetrics();
-  const percent = Math.round((metrics.storageUsedGB / metrics.storageTotalGB) * 100);
-
-  const breakdown = [
-    { label: "Documents", value: "89.2 GB", percent: 62 },
-    { label: "OCR Outputs", value: "34.1 GB", percent: 24 },
-    { label: "Backups", value: "19.4 GB", percent: 14 },
+/** Derive a proportional breakdown from the total storage used */
+function computeBreakdown(usedGB: number) {
+  // Fixed proportions for mock data: 62% documents, 24% OCR outputs, 14% backups
+  const proportions = [
+    { label: "Documents", ratio: 0.62 },
+    { label: "OCR Outputs", ratio: 0.24 },
+    { label: "Backups", ratio: 0.14 },
   ];
+  return proportions.map((p) => ({
+    label: p.label,
+    value: `${(usedGB * p.ratio).toFixed(1)} GB`,
+    percent: Math.round(p.ratio * 100),
+  }));
+}
+
+export function StorageUsageIndicator() {
+  const [metrics, setMetrics] = useState<AdminMetrics>(() => AdminMetricsService.getMetrics());
+
+  // Refresh metrics every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMetrics(AdminMetricsService.getMetrics());
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const percent = Math.round((metrics.storageUsedGB / metrics.storageTotalGB) * 100);
+  const breakdown = computeBreakdown(metrics.storageUsedGB);
 
   return (
     <GlassCard className="overflow-hidden border border-border/50 bg-card/40 backdrop-blur-md">

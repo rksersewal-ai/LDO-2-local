@@ -426,14 +426,16 @@ export default function DocumentHub() {
     setIsDragOver(false);
     const files = e.dataTransfer.files;
     if (files.length > 0) {
+      // Simulate upload progress for each dropped file, then auto-complete
       for (let i = 0; i < files.length; i++) {
-        UploadProgressService.startUpload(
-          `drop_${Date.now()}_${i}`,
-          files[i].name,
-        );
+        const uploadId = `drop_${Date.now()}_${i}`;
+        UploadProgressService.startUpload(uploadId, files[i].name);
+        // Simulate progress: 30% after 500ms, 80% after 1.5s, complete after 2.5s
+        setTimeout(() => UploadProgressService.updateProgress(uploadId, 30), 500);
+        setTimeout(() => UploadProgressService.updateProgress(uploadId, 80), 1500);
+        setTimeout(() => UploadProgressService.completeUpload(uploadId), 2500);
       }
-      showToast(`${files.length} file${files.length > 1 ? "s" : ""} queued — opening ingest…`);
-      setTimeout(() => navigate("/documents/ingest"), 900);
+      showToast(`${files.length} file${files.length > 1 ? "s" : ""} queued for upload`);
     }
   };
 

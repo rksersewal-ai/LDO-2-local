@@ -1,7 +1,8 @@
 import { Activity, CheckCircle, HardDrive, Users } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Badge, GlassCard } from "./Shared";
 import { Progress } from "./progress";
-import { AdminMetricsService } from "../../services/AdminMetricsService";
+import { AdminMetricsService, type AdminMetrics } from "../../services/AdminMetricsService";
 
 function queueColor(depth: number): "success" | "warning" | "danger" {
   if (depth < 5) return "success";
@@ -10,7 +11,16 @@ function queueColor(depth: number): "success" | "warning" | "danger" {
 }
 
 export function SystemHealthSummary() {
-  const metrics = AdminMetricsService.getMetrics();
+  const [metrics, setMetrics] = useState<AdminMetrics>(() => AdminMetricsService.getMetrics());
+
+  // Refresh metrics every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMetrics(AdminMetricsService.getMetrics());
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, []);
+
   const storagePercent = Math.round((metrics.storageUsedGB / metrics.storageTotalGB) * 100);
 
   const cards = [

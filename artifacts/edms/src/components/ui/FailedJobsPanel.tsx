@@ -1,5 +1,5 @@
 import { AlertTriangle, RotateCcw } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Badge, Button, GlassCard } from "./Shared";
 import { AdminMetricsService, type FailedJob } from "../../services/AdminMetricsService";
@@ -15,6 +15,14 @@ function formatTime(iso: string): string {
 export function FailedJobsPanel() {
   const [jobs, setJobs] = useState<FailedJob[]>(() => AdminMetricsService.getFailedJobs());
 
+  // Refresh failed jobs every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setJobs(AdminMetricsService.getFailedJobs());
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, []);
+
   const handleRetry = (jobId: string) => {
     const updated = AdminMetricsService.retryJob(jobId);
     setJobs(updated);
@@ -24,10 +32,11 @@ export function FailedJobsPanel() {
   };
 
   const handleRetryAll = () => {
+    const count = jobs.length;
     const updated = AdminMetricsService.retryAllFailed();
     setJobs(updated);
     toast.success("All failed jobs queued", {
-      description: `${jobs.length} job(s) re-added to the processing queue.`,
+      description: `${count} job(s) re-added to the processing queue.`,
     });
   };
 

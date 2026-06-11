@@ -45,6 +45,11 @@ export const UploadProgressService = {
       item.progress = 100;
       item.status = "success";
       emit();
+      // Auto-dismiss after 5 seconds
+      setTimeout(() => {
+        activeUploads.delete(id);
+        emit();
+      }, 5000);
     }
   },
 
@@ -54,6 +59,11 @@ export const UploadProgressService = {
       item.status = "failed";
       item.error = error;
       emit();
+      // Auto-dismiss failed uploads after 8 seconds
+      setTimeout(() => {
+        activeUploads.delete(id);
+        emit();
+      }, 8000);
     }
   },
 

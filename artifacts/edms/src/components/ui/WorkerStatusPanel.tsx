@@ -1,4 +1,5 @@
 import { AlertTriangle, Users } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Badge, GlassCard } from "./Shared";
 import { AdminMetricsService, type WorkerInfo } from "../../services/AdminMetricsService";
 
@@ -30,8 +31,16 @@ function hasStaleWorker(workers: WorkerInfo[]): boolean {
 }
 
 export function WorkerStatusPanel() {
-  const workers = AdminMetricsService.getWorkers();
+  const [workers, setWorkers] = useState<WorkerInfo[]>(() => AdminMetricsService.getWorkers());
   const staleAlert = hasStaleWorker(workers);
+
+  // Refresh worker status every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setWorkers(AdminMetricsService.getWorkers());
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <GlassCard className="overflow-hidden border border-border/50 bg-card/40 backdrop-blur-md">

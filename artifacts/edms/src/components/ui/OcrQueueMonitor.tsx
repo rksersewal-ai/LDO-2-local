@@ -1,6 +1,7 @@
 import { Activity } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Badge, GlassCard } from "./Shared";
-import { AdminMetricsService } from "../../services/AdminMetricsService";
+import { AdminMetricsService, type AdminMetrics } from "../../services/AdminMetricsService";
 
 function healthIndicator(depth: number): { label: string; variant: "success" | "warning" | "danger"; dot: string } {
   if (depth < 5) return { label: "Healthy", variant: "success", dot: "bg-emerald-500" };
@@ -9,20 +10,32 @@ function healthIndicator(depth: number): { label: string; variant: "success" | "
 }
 
 export function OcrQueueMonitor() {
-  const metrics = AdminMetricsService.getMetrics();
+  const [metrics, setMetrics] = useState<AdminMetrics>(() => AdminMetricsService.getMetrics());
+
+  // Poll metrics every 30 seconds to keep the display fresh
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMetrics(AdminMetricsService.getMetrics());
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, []);
+
   const health = healthIndicator(metrics.ocrQueueDepth);
   const estimatedMinutes =
     metrics.ocrProcessingRate > 0
       ? Math.round((metrics.ocrQueueDepth / metrics.ocrProcessingRate) * 60)
       : 0;
 
-  const processingJobs = [
-    { id: "pj-1", document: "DOC-0201", page: "3/12", worker: "alpha" },
-    { id: "pj-2", document: "DOC-0198", page: "7/7", worker: "beta" },
-    { id: "pj-3", document: "DOC-0195", page: "22/45", worker: "gamma" },
-    { id: "pj-4", document: "DOC-0210", page: "1/3", worker: "delta" },
-    { id: "pj-5", document: "DOC-0212", page: "5/8", worker: "alpha" },
-  ];
+  // Derive processing jobs from worker data instead of hardcoding
+  const workers = AdminMetricsService.getWorkers();
+  const processingJobs = workers
+    .filter((w) => w.currentTask !== null)
+    .map((w) => ({
+      id: w.id,
+      document: w.currentTask!.split(" ")[0],
+      detail: w.currentTask!,
+      worker: w.name.replace("ocr-worker-", ""),
+    }));
 
   return (
     <GlassCard className="overflow-hidden border border-border/50 bg-card/40 backdrop-blur-md">
@@ -66,20 +79,24 @@ export function OcrQueueMonitor() {
 
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-2">
-            Currently Processing (Top 5)
+            Currently Processing ({processingJobs.length})
           </p>
           <div className="space-y-1.5">
-            {processingJobs.map((job) => (
-              <div
-                key={job.id}
-                className="flex items-center justify-between rounded-lg border bg-card/30 px-3 py-1.5 text-xs"
-              >
-                <span className="font-mono text-foreground">{job.document}</span>
-                <span className="text-muted-foreground">
-                  Page {job.page} - Worker {job.worker}
-                </span>
-              </div>
-            ))}
+            {processingJobs.length === 0 ? (
+              <p className="text-xs text-muted-foreground py-2">No active processing jobs</p>
+            ) : (
+              processingJobs.map((job) => (
+                <div
+                  key={job.id}
+                  className="flex items-center justify-between rounded-lg border bg-card/30 px-3 py-1.5 text-xs"
+                >
+                  <span className="font-mono text-foreground">{job.document}</span>
+                  <span className="text-muted-foreground">
+                    {job.detail} - Worker {job.worker}
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

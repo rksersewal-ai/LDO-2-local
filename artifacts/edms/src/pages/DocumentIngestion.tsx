@@ -224,10 +224,18 @@ export default function DocumentIngestion() {
         formData.append("template_fields", JSON.stringify(templateDraft.formValues));
       }
 
-      // Simulate progress updates
-      UploadProgressService.updateProgress(uploadId, 30);
+      // Simulate indeterminate progress while waiting for the API
+      const progressInterval = setInterval(() => {
+        const current = UploadProgressService.getActive().find((item) => item.id === uploadId);
+        if (current && current.progress < 90) {
+          // Advance progress in small increments to simulate activity
+          UploadProgressService.updateProgress(uploadId, current.progress + 5);
+        }
+      }, 300);
+
       const result = await apiClient.ingestDocument(formData);
-      UploadProgressService.updateProgress(uploadId, 80);
+
+      clearInterval(progressInterval);
       UploadProgressService.completeUpload(uploadId);
       const createdDocument = (result as Record<string, unknown>)?.document as
         | { id?: string }
