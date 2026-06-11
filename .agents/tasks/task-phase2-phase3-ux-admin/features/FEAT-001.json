@@ -2,7 +2,7 @@
   "id": "FEAT-001",
   "type": "feat",
   "description": "Phase 2 - User Experience: Upload progress tracking, OCR status visibility, recently viewed documents, and saved filters. Creates new services (RecentDocumentsService, UploadProgressService) and UI components (UploadProgress, OcrStatusBadge, RecentDocumentsPanel, SavedFiltersDropdown), then integrates them into existing pages.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Create artifacts/edms/src/services/RecentDocumentsService.ts - a localStorage-backed service that tracks recently viewed documents with documentId, title, viewedAt timestamp, and document type. Pattern: follow NavigationHistoryService style with a const object exporting record(), getRecent(limit), and clear() methods. Max 20 items.",
     "Create artifacts/edms/src/services/UploadProgressService.ts - a service to track upload progress state. Uses an event-based pattern (CustomEvent on window) so components can subscribe to upload progress updates. Interface: UploadProgressItem { id, filename, progress (0-100), status: 'uploading'|'success'|'failed'|'processing', error?: string, startedAt }. Methods: startUpload(id, filename), updateProgress(id, progress), completeUpload(id), failUpload(id, error), getActive(), subscribe(callback), clear().",
@@ -33,5 +33,5 @@
     "Run npx vitest run and confirm all existing tests pass"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All services and components created successfully. Build, typecheck, and vitest all pass. The drag-and-drop uses the Upload icon already imported in DocumentHub. UploadProgressService uses CustomEvent pattern for cross-component communication. Keyboard navigation is inherently handled by Radix Dialog primitives (focus trapping, Escape to close, Enter/Space on buttons). pnpm-lock.yaml and pnpm-workspace.yaml had pre-existing unstaged changes that were not included in the commit."
 }
