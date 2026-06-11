@@ -55,19 +55,19 @@ class WebhookHandlerTests(TestCase):
         with self.settings(DEBUG=True):
             self.assertFalse(is_safe_url('http://this-domain-does-not-exist.local/'))
 
-    @patch('integrations.webhook_handler.requests.post')
     @patch('integrations.webhook_handler.is_safe_url')
-    def test_dispatch_skips_unsafe_endpoints(self, mock_is_safe_url, mock_post):
+    def test_dispatch_skips_unsafe_endpoints(self, mock_is_safe_url):
         mock_is_safe_url.side_effect = lambda url: url == 'https://safe.example.com'
 
-        result = WebhookHandler.dispatch(
-            event_type='test.event',
-            payload={},
-            endpoints=['https://safe.example.com', 'http://unsafe.local'],
-            dry_run=True
-        )
+        with patch('requests.post') as mock_post:
+            result = WebhookHandler.dispatch(
+                event_type='test.event',
+                payload={},
+                endpoints=['https://safe.example.com', 'http://unsafe.local'],
+                dry_run=True
+            )
 
-        self.assertEqual(result['status'], 'dispatched')
-        self.assertEqual(result['results']['https://safe.example.com'], 'dry_run')
-        self.assertEqual(result['results']['http://unsafe.local'], 'skipped_unsafe')
-        mock_post.assert_not_called()
+            self.assertEqual(result['status'], 'dispatched')
+            self.assertEqual(result['results']['https://safe.example.com'], 'dry_run')
+            self.assertEqual(result['results']['http://unsafe.local'], 'skipped_unsafe')
+            mock_post.assert_not_called()

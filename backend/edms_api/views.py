@@ -11,14 +11,6 @@ This module re-exports the public view classes so older imports keep working
 while the backend internally follows the modular-monolith layout.
 """
 
-from config_mgmt.views import (
-    BaselineViewSet,
-    ChangeNoticeViewSet,
-    ChangeRequestViewSet,
-    PlBomLineViewSet,
-    PlDocumentLinkViewSet,
-    PlItemViewSet,
-)
 from documents.views import DocumentViewSet, OcrJobViewSet, OcrResultView
 from shared.views import (
     AuditLogViewSet,
@@ -34,20 +26,14 @@ from work.views import ApprovalViewSet, CaseViewSet, WorkRecordExportJobCreateVi
 __all__ = [
     'ApprovalViewSet',
     'AuditLogViewSet',
-    'BaselineViewSet',
     'CaseViewSet',
     'DashboardStatsView',
     'DocumentViewSet',
     'HealthStatusView',
     'LoginView',
     'LogoutView',
-    'ChangeNoticeViewSet',
-    'ChangeRequestViewSet',
     'OcrJobViewSet',
     'OcrResultView',
-    'PlBomLineViewSet',
-    'PlDocumentLinkViewSet',
-    'PlItemViewSet',
     'SearchHistoryView',
     'SearchView',
     'WorkRecordExportJobCreateView',
