@@ -225,7 +225,7 @@ export default function AdminInitialRun() {
                   <span className="text-xs font-semibold text-foreground">{step.step}</span>
                 </div>
                 {idx < 3 && (
-                  <ChevronRight className="w-3.5 h-3.5 text-slate-700 ml-auto shrink-0" />
+                  <ChevronRight className="w-3.5 h-3.5 text-muted-foreground ml-auto shrink-0" />
                 )}
               </div>
             ))}
@@ -288,7 +288,7 @@ export default function AdminInitialRun() {
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/40 hover:bg-secondary/40 text-xs text-foreground/90 transition-all"
           >
             <div
-              className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${skipIndexed ? "bg-teal-500/20 border-primary" : "border-slate-700"}`}
+              className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${skipIndexed ? "bg-teal-500/20 border-primary" : "border-border"}`}
             >
               {skipIndexed && <div className="w-1.5 h-1.5 rounded bg-primary" />}
             </div>
@@ -302,7 +302,7 @@ export default function AdminInitialRun() {
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/40 hover:bg-secondary/40 text-xs text-foreground/90 transition-all"
           >
             <div
-              className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${forceFullHash ? "bg-teal-500/20 border-primary" : "border-slate-700"}`}
+              className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${forceFullHash ? "bg-teal-500/20 border-primary" : "border-border"}`}
             >
               {forceFullHash && <div className="w-1.5 h-1.5 rounded bg-primary" />}
             </div>

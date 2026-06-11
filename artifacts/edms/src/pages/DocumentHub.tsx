@@ -230,7 +230,7 @@ export default function DocumentHub() {
   };
 
   const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field) return <ArrowUpDown className="w-2.5 h-2.5 text-slate-600" />;
+    if (sortField !== field) return <ArrowUpDown className="w-2.5 h-2.5 text-muted-foreground" />;
     return sortDir === "asc" ? (
       <ArrowUp className="w-2.5 h-2.5 text-primary" />
     ) : (
@@ -828,7 +828,7 @@ export default function DocumentHub() {
                     </button>
                     {showColMenu && (
                       <div className="absolute right-0 top-full mt-1 z-50 w-44 bg-card/95 backdrop-blur-xl border border-white/8 rounded-md shadow-2xl shadow-black/60 p-2">
-                        <p className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                        <p className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
                           Visible Columns
                         </p>
                         {ALL_COLS.map((c) => (
@@ -836,10 +836,10 @@ export default function DocumentHub() {
                             type="button"
                             key={c}
                             onClick={() => toggleCol(c)}
-                            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-slate-700/50 text-left transition-colors"
+                            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted text-left transition-colors"
                           >
                             <div
-                              className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 ${visibleCols.has(c) ? "bg-teal-500/30 border-teal-500/60" : "border-slate-600"}`}
+                              className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 ${visibleCols.has(c) ? "bg-teal-500/30 border-teal-500/60" : "border-border"}`}
                             >
                               {visibleCols.has(c) && (
                                 <CheckCheck className="w-2.5 h-2.5 text-primary" />
@@ -931,21 +931,21 @@ export default function DocumentHub() {
                   <button
                     type="button"
                     onClick={handleDownloadSelected}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/60 hover:bg-slate-700/60 text-foreground/90 text-xs border border-border/40 hover:border-teal-500/30 transition-all"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/60 hover:bg-secondary/60 text-foreground/90 text-xs border border-border/40 hover:border-teal-500/30 transition-all"
                   >
                     <Download className="w-3.5 h-3.5 text-primary" /> Download Selected
                   </button>
                   <button
                     type="button"
                     onClick={handleRequestApproval}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/60 hover:bg-slate-700/60 text-foreground/90 text-xs border border-border/40 hover:border-amber-500/30 transition-all"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/60 hover:bg-secondary/60 text-foreground/90 text-xs border border-border/40 hover:border-amber-500/30 transition-all"
                   >
                     <Send className="w-3.5 h-3.5 text-amber-400" /> Request Approval
                   </button>
                   <button
                     type="button"
                     onClick={() => setFolderPickerOpen(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/60 hover:bg-slate-700/60 text-foreground/90 text-xs border border-border/40 hover:border-indigo-500/30 transition-all"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/60 hover:bg-secondary/60 text-foreground/90 text-xs border border-border/40 hover:border-indigo-500/30 transition-all"
                   >
                     <FolderOpen className="w-3.5 h-3.5 text-indigo-400" /> Move to Folder
                   </button>
@@ -1155,7 +1155,7 @@ export default function DocumentHub() {
                                   {doc.linkedPL}
                                 </button>
                               ) : (
-                                <span className="text-slate-600">—</span>
+                                <span className="text-muted-foreground">—</span>
                               )}
                             </td>
                           )}
@@ -1170,7 +1170,7 @@ export default function DocumentHub() {
                                 iconOnly
                                 className="h-8 min-h-0 px-2 text-foreground/90 hover:text-teal-200"
                               />
-                              <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-primary transition-colors" />
+                              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
                             </div>
                           </td>
                         </tr>
@@ -1241,7 +1241,7 @@ export default function DocumentHub() {
                           <button
                             type="button"
                             onClick={(e) => toggleSelect(doc.id, e)}
-                            className="text-slate-600 hover:text-primary transition-colors"
+                            className="text-muted-foreground hover:text-primary transition-colors"
                           >
                             {isSelected ? (
                               <CheckSquare className="w-4 h-4 text-primary" />
@@ -1293,7 +1293,7 @@ export default function DocumentHub() {
                           {doc.ocrStatus}
                         </Badge>
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] text-slate-600">{doc.date}</span>
+                          <span className="text-[10px] text-muted-foreground">{doc.date}</span>
                           <DocumentPreviewButton
                             documentId={doc.id}
                             title={doc.name}

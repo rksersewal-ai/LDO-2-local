@@ -280,7 +280,7 @@ export default function BOMExplorer() {
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="w-52 border border-border/60 bg-slate-950 text-foreground"
+                className="w-52 border border-border/60 bg-popover text-foreground"
               >
                 <DropdownMenuItem
                   className="focus:bg-secondary"
@@ -452,7 +452,7 @@ export default function BOMExplorer() {
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-xs text-muted-foreground">{p.lastModified}</span>
-                  <ChevronRight className="w-3.5 h-3.5 text-slate-600 group-hover:text-primary transition-colors" />
+                  <ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
                 </div>
               </button>
             ))}

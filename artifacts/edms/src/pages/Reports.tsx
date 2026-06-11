@@ -239,7 +239,7 @@ export default function Reports() {
             Document Status Distribution
           </h2>
           <Suspense
-            fallback={<div className="w-full h-[180px] animate-pulse bg-slate-800/30 rounded-xl" />}
+            fallback={<div className="w-full h-[180px] animate-pulse bg-muted/30 rounded-xl" />}
           >
             <ReportsPieChart data={docStatusData} />
           </Suspense>
@@ -250,7 +250,7 @@ export default function Reports() {
             Work Records by Type
           </h2>
           <Suspense
-            fallback={<div className="w-full h-[180px] animate-pulse bg-slate-800/30 rounded-xl" />}
+            fallback={<div className="w-full h-[180px] animate-pulse bg-muted/30 rounded-xl" />}
           >
             <ReportsBarChart data={workByType} />
           </Suspense>

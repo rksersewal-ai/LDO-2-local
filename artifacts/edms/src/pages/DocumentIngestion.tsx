@@ -447,7 +447,7 @@ export default function DocumentIngestion() {
                 ].map(([type, fmts]) => (
                   <div key={type} className="flex items-center justify-between">
                     <span className="text-muted-foreground">{type}</span>
-                    <span className="font-mono text-slate-500">{fmts}</span>
+                    <span className="font-mono text-muted-foreground">{fmts}</span>
                   </div>
                 ))}
               </div>

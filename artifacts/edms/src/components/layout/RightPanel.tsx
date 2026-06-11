@@ -32,7 +32,7 @@ export function RightPanel({ content, onClose }: RightPanelProps) {
   return (
     <aside className="w-96 border-l border-border bg-card/40 backdrop-blur-xl overflow-hidden flex flex-col">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-border/30 shrink-0 bg-slate-950/20">
+      <div className="px-6 py-4 border-b border-border/30 shrink-0 bg-popover/20">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 min-w-0">
             {content.icon && <div className="text-primary mt-0.5 shrink-0">{content.icon}</div>}
@@ -50,7 +50,7 @@ export function RightPanel({ content, onClose }: RightPanelProps) {
             <button
               type="button"
               onClick={onClose}
-              className="w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground/90 hover:bg-slate-700/50 transition-colors flex items-center justify-center"
+              className="w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground/90 hover:bg-muted transition-colors flex items-center justify-center"
             >
               <X className="w-4 h-4" />
             </button>
@@ -72,13 +72,13 @@ export function RightPanel({ content, onClose }: RightPanelProps) {
                   {section.heading}
                 </h3>
                 <ChevronDown
-                  className={`w-4 h-4 text-slate-600 transition-transform ${
+                  className={`w-4 h-4 text-muted-foreground transition-transform ${
                     expandedSections.has(i) ? "rotate-180" : ""
                   }`}
                 />
               </button>
               {expandedSections.has(i) && (
-                <div className="px-6 py-3 bg-slate-950/40 border-t border-border/20 text-sm text-foreground/90">
+                <div className="px-6 py-3 bg-card/40 border-t border-border/20 text-sm text-foreground/90">
                   {section.content}
                 </div>
               )}
@@ -88,7 +88,7 @@ export function RightPanel({ content, onClose }: RightPanelProps) {
       </div>
 
       {content.footer && (
-        <div className="shrink-0 border-t border-border/30 bg-slate-950/30 px-6 py-4">
+        <div className="shrink-0 border-t border-border/30 bg-card/30 px-6 py-4">
           {content.footer}
         </div>
       )}

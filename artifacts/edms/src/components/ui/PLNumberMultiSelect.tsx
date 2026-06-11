@@ -73,7 +73,7 @@ export function PLNumberMultiSelect({
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="h-10 w-full justify-between rounded-xl border border-border/55 bg-slate-950/60 px-3 text-left font-normal text-foreground shadow-sm hover:bg-card/70"
+            className="h-10 w-full justify-between rounded-xl border border-border/55 bg-background px-3 text-left font-normal text-foreground shadow-sm hover:bg-card/70"
           >
             <span className="flex min-w-0 items-center gap-2">
               <Hash className="h-4 w-4 shrink-0 text-primary" />
@@ -88,7 +88,7 @@ export function PLNumberMultiSelect({
         </PopoverTrigger>
         <PopoverContent
           align="start"
-          className="w-[var(--radix-popover-trigger-width)] max-w-[460px] rounded-2xl border border-border/60 bg-slate-950/98 p-0 shadow-2xl backdrop-blur-xl"
+          className="w-[var(--radix-popover-trigger-width)] max-w-[460px] rounded-2xl border border-border/60 bg-popover/98 p-0 shadow-2xl backdrop-blur-xl"
         >
           <Command className="bg-transparent text-foreground">
             <CommandInput

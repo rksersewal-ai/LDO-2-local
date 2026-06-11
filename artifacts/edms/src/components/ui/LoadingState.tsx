@@ -28,7 +28,7 @@ export function LoadingState({
       <div className={`${spinnerSizes[size]} relative`}>
         <div className={`absolute inset-0 rounded-full border-2 border-border`} />
         <div
-          className={`absolute inset-0 rounded-full border-2 border-transparent border-t-teal-500`}
+          className={`absolute inset-0 rounded-full border-2 border-transparent border-t-primary`}
           style={{ animation: "spin 0.8s linear infinite" }}
         />
       </div>
@@ -55,9 +55,9 @@ export function LoadingRows({ count = 5, className = "" }: { count?: number; cla
 export function LoadingCard({ className = "" }: { className?: string }) {
   return (
     <div className={`p-4 rounded-xl bg-secondary/40 space-y-3 animate-pulse ${className}`}>
-      <div className="h-4 bg-slate-700/60 rounded w-3/4" />
-      <div className="h-3 bg-slate-700/40 rounded w-1/2" />
-      <div className="h-3 bg-slate-700/30 rounded w-2/3" />
+      <div className="h-4 bg-muted/60 rounded w-3/4" />
+      <div className="h-3 bg-muted/40 rounded w-1/2" />
+      <div className="h-3 bg-muted/30 rounded w-2/3" />
     </div>
   );
 }

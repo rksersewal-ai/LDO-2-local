@@ -255,7 +255,7 @@ export default function PLPreviewPage() {
               {previewFields(effectivePayload).map((field) => (
                 <div
                   key={field.label}
-                  className="rounded-2xl border border-border/70 bg-slate-950/35 px-4 py-3"
+                  className="rounded-2xl border border-border/70 bg-card/35 px-4 py-3"
                 >
                   <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                     {field.label}
@@ -281,7 +281,7 @@ export default function PLPreviewPage() {
                 effectiveChangeLog.map((entry) => (
                   <div
                     key={entry.id}
-                    className="rounded-2xl border border-border/70 bg-slate-950/35 px-4 py-3"
+                    className="rounded-2xl border border-border/70 bg-card/35 px-4 py-3"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <p className="text-sm font-semibold text-foreground">{entry.label}</p>
@@ -308,7 +308,7 @@ export default function PLPreviewPage() {
                   </div>
                 ))
               ) : (
-                <div className="rounded-2xl border border-border/70 bg-slate-950/35 px-4 py-5 text-sm text-muted-foreground">
+                <div className="rounded-2xl border border-border/70 bg-card/35 px-4 py-5 text-sm text-muted-foreground">
                   No pending field changes detected.
                 </div>
               )}
@@ -335,7 +335,7 @@ export default function PLPreviewPage() {
                   className={`w-full rounded-2xl border px-4 py-3 text-left transition-all ${
                     !activeRevisionId
                       ? "border-teal-400/30 bg-teal-500/10"
-                      : "border-border/70 bg-slate-950/35 hover:border-border/80"
+                      : "border-border/70 bg-card/35 hover:border-border/80"
                   }`}
                 >
                   <div className="flex items-center justify-between gap-3">
@@ -362,7 +362,7 @@ export default function PLPreviewPage() {
                     className={`w-full rounded-2xl border px-4 py-3 text-left transition-all ${
                       activeRevisionId === entry.id
                         ? "border-amber-400/30 bg-amber-500/10"
-                        : "border-border/70 bg-slate-950/35 hover:border-border/80"
+                        : "border-border/70 bg-card/35 hover:border-border/80"
                     }`}
                   >
                     <div className="flex items-center justify-between gap-3">
@@ -388,7 +388,7 @@ export default function PLPreviewPage() {
                   </button>
                 ))
               ) : (
-                <div className="rounded-2xl border border-border/70 bg-slate-950/35 px-4 py-5 text-sm text-muted-foreground">
+                <div className="rounded-2xl border border-border/70 bg-card/35 px-4 py-5 text-sm text-muted-foreground">
                   No saved PL revisions are available yet.
                 </div>
               )}

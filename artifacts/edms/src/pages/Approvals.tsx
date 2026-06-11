@@ -288,7 +288,7 @@ export default function Approvals() {
                       </button>
                     </>
                   )}
-                  <ArrowRight className="w-4 h-4 text-slate-600 self-center" />
+                  <ArrowRight className="w-4 h-4 text-muted-foreground self-center" />
                 </div>
               </div>
             </GlassCard>
@@ -349,7 +349,7 @@ export default function Approvals() {
                     <span className="text-sm font-mono text-primary">
                       {selectedApproval.linkedDoc}
                     </span>
-                    <ArrowRight className="w-3 h-3 text-slate-600 ml-auto" />
+                    <ArrowRight className="w-3 h-3 text-muted-foreground ml-auto" />
                   </button>
                   <DocumentPreviewButton
                     documentId={selectedApproval.linkedDoc}
@@ -387,7 +387,7 @@ export default function Approvals() {
           if (!open) setConfirmAction(null);
         }}
       >
-        <DialogContent className="border border-border/60 bg-slate-950 text-foreground sm:max-w-[420px]">
+        <DialogContent className="border border-border/60 bg-popover text-foreground sm:max-w-[420px]">
           <DialogHeader>
             <DialogTitle>
               Confirm {confirmAction?.action === "Approved" ? "Approval" : "Rejection"}

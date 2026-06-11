@@ -35,17 +35,23 @@ import {
 import type { AppInboxItem } from "../lib/types";
 import { InboxService } from "../services/InboxService";
 
+// Theme-aware icon color mapping using semantic colors (same as NotificationPanel)
+const TYPE_ICON_CONFIG: Record<string, { Icon: typeof Bell; color: string }> = {
+  approval: { Icon: CheckSquare, color: "text-[color:var(--status-warning)]" },
+  ocr: { Icon: ServerCog, color: "text-[color:var(--status-info)]" },
+  case: { Icon: AlertCircle, color: "text-[color:var(--status-danger)]" },
+  work: { Icon: Briefcase, color: "text-primary" },
+  "design-change": { Icon: AlertTriangle, color: "text-[color:var(--status-warning)]" },
+  dedup_review: { Icon: AlertTriangle, color: "text-[color:var(--status-warning)]" },
+  indexing_failure: { Icon: ServerCog, color: "text-[color:var(--status-danger)]" },
+  change_request: { Icon: GitBranch, color: "text-[color:var(--status-info)]" },
+  change_notice: { Icon: GitCommitHorizontal, color: "text-[color:var(--status-info)]" },
+};
+
 const typeIcon = (type: string) => {
-  if (type === "approval") return <CheckSquare className="w-4 h-4 text-amber-400" />;
-  if (type === "ocr") return <ServerCog className="w-4 h-4 text-blue-400" />;
-  if (type === "case") return <AlertCircle className="w-4 h-4 text-rose-400" />;
-  if (type === "work") return <Briefcase className="w-4 h-4 text-primary" />;
-  if (type === "design-change") return <AlertTriangle className="w-4 h-4 text-amber-300" />;
-  if (type === "dedup_review") return <AlertTriangle className="w-4 h-4 text-violet-300" />;
-  if (type === "indexing_failure") return <ServerCog className="w-4 h-4 text-rose-300" />;
-  if (type === "change_request") return <GitBranch className="w-4 h-4 text-cyan-300" />;
-  if (type === "change_notice") return <GitCommitHorizontal className="w-4 h-4 text-indigo-300" />;
-  return <Bell className="w-4 h-4 text-muted-foreground" />;
+  const config = TYPE_ICON_CONFIG[type] || { Icon: Bell, color: "text-muted-foreground" };
+  const { Icon, color } = config;
+  return <Icon className={`w-4 h-4 ${color}`} />;
 };
 
 export default function NotificationsPage() {
@@ -100,7 +106,7 @@ export default function NotificationsPage() {
 
       {feedback && (
         <GlassCard className="p-3.5 border-border/50 bg-card/40 backdrop-blur-md">
-          <p className="text-sm text-teal-200">{feedback}</p>
+          <p className="text-sm text-[color:var(--status-success)]">{feedback}</p>
         </GlassCard>
       )}
 
@@ -116,7 +122,7 @@ export default function NotificationsPage() {
           <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
             Document Change Reviews
           </p>
-          <p className="mt-2 text-3xl font-bold text-amber-400">{documentChangeAlerts.length}</p>
+          <p className="mt-2 text-3xl font-bold text-[color:var(--status-warning)]">{documentChangeAlerts.length}</p>
           <p className="text-xs text-muted-foreground mt-1">
             Supervisor reviews waiting on approval or bypass.
           </p>
@@ -208,7 +214,7 @@ export default function NotificationsPage() {
                         <span className="text-sm font-semibold text-foreground">
                           {notification.title}
                         </span>
-                        <span className="h-2 w-2 rounded-full bg-teal-400" />
+                        <span className="h-2 w-2 rounded-full bg-primary" />
                       </div>
                       <p className="text-sm text-foreground/90 mt-1">
                         {notification.subtitle || "Action required in the EDMS workflow queue."}
@@ -245,7 +251,7 @@ export default function NotificationsPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent
                               align="end"
-                              className="w-48 border border-border/60 bg-slate-950 text-foreground"
+                              className="w-48 border border-border bg-popover text-popover-foreground"
                             >
                               {notification.actions.map((action) => (
                                 <DropdownMenuItem

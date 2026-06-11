@@ -188,7 +188,7 @@ export default function OCRMonitor() {
           {
             label: "Total Jobs",
             value: jobs.length,
-            color: "text-foreground/90 bg-slate-700/30",
+            color: "text-foreground/90 bg-secondary/30",
           },
         ].map((s) => (
           <GlassCard
@@ -282,7 +282,7 @@ export default function OCRMonitor() {
                           <span className="text-xs text-foreground/90">{job.confidence}%</span>
                         </div>
                       ) : (
-                        <span className="text-xs text-slate-600">—</span>
+                        <span className="text-xs text-muted-foreground">—</span>
                       )}
                     </td>
                     <td className="py-3 text-muted-foreground text-xs">{job.pages}</td>

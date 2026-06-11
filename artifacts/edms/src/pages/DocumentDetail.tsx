@@ -215,7 +215,7 @@ function DocumentViewer({
   pageCount: number;
 }) {
   const getFileIcon = () => {
-    if (!doc) return <FileText className="w-16 h-16 text-slate-600" />;
+    if (!doc) return <FileText className="w-16 h-16 text-muted-foreground" />;
     const t = doc.type?.toUpperCase();
     if (t === "PDF") return <FileText className="w-16 h-16 text-rose-400/60" />;
     if (["PNG", "JPG", "JPEG", "SVG"].includes(t))
@@ -225,7 +225,7 @@ function DocumentViewer({
 
   return (
     <div
-      className="w-full h-full flex items-center justify-center overflow-hidden bg-slate-950/40 rounded-xl"
+      className="w-full h-full flex items-center justify-center overflow-hidden bg-card/40 rounded-xl"
       style={{
         transform: `scale(${zoom}) rotate(${rotation}deg)`,
         transformOrigin: "center center",
@@ -292,7 +292,7 @@ function PageNavPanel({
             className={`w-full h-16 rounded-lg mb-1.5 flex items-center justify-center ${currentPage === p ? "bg-teal-900/30" : "bg-secondary/40"} border border-border`}
           >
             <FileText
-              className={`w-5 h-5 ${currentPage === p ? "text-primary" : "text-slate-600"}`}
+              className={`w-5 h-5 ${currentPage === p ? "text-primary" : "text-muted-foreground"}`}
             />
           </div>
           <span className="font-medium">Page {p}</span>
@@ -361,7 +361,7 @@ function OcrPanel({ text, query, onQueryChange, onNavigate }: OcrPanelProps) {
                   setTimeout(() => setCopied(false), 2000);
                 })
               }
-              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-secondary/60 hover:bg-slate-700/60 text-muted-foreground hover:text-foreground text-[10px] transition-colors border border-border/40"
+              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-secondary/60 hover:bg-secondary/60 text-muted-foreground hover:text-foreground text-[10px] transition-colors border border-border/40"
             >
               {copied ? (
                 <CheckCheck className="w-3 h-3 text-primary" />
@@ -376,7 +376,7 @@ function OcrPanel({ text, query, onQueryChange, onNavigate }: OcrPanelProps) {
           </pre>
         </div>
       ) : (
-        <div className="text-center py-6 text-slate-600">
+        <div className="text-center py-6 text-muted-foreground">
           <ScanText className="w-6 h-6 mx-auto mb-2 opacity-40" />
           <p className="text-xs">No OCR text available</p>
         </div>
@@ -607,11 +607,11 @@ function RightPanel({
               </button>
             </div>
           ) : (
-            <div className="text-center py-8 text-slate-600">
+            <div className="text-center py-8 text-muted-foreground">
               <Layers className="w-8 h-8 mx-auto mb-2 opacity-30" />
               <p className="text-xs">No PL record linked</p>
               {doc?.linkedPL && doc.linkedPL !== "N/A" && (
-                <p className="text-[10px] text-slate-600 mt-1 font-mono">{doc.linkedPL}</p>
+                <p className="text-[10px] text-muted-foreground mt-1 font-mono">{doc.linkedPL}</p>
               )}
             </div>
           ))}
@@ -640,7 +640,7 @@ function RightPanel({
                 </div>
               ))
             ) : (
-              <div className="text-center py-8 text-slate-600">
+              <div className="text-center py-8 text-muted-foreground">
                 <Users className="w-8 h-8 mx-auto mb-2 opacity-30" />
                 <p className="text-xs">No usage data available</p>
               </div>
@@ -683,7 +683,7 @@ function RightPanel({
                 </div>
               ))
             ) : (
-              <div className="text-center py-8 text-slate-600">
+              <div className="text-center py-8 text-muted-foreground">
                 <BookOpen className="w-8 h-8 mx-auto mb-2 opacity-30" />
                 <p className="text-xs">No related documents found</p>
               </div>
@@ -697,7 +697,7 @@ function RightPanel({
               <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-widest">
                 Revision History
               </span>
-              <span className="text-[10px] text-slate-600">{revHistory.length} revisions</span>
+              <span className="text-[10px] text-muted-foreground">{revHistory.length} revisions</span>
             </div>
             {revHistory.map((r, i) => (
               <div key={i} className="flex gap-3 group">
@@ -708,7 +708,7 @@ function RightPanel({
                     {i === 0 ? "●" : "○"}
                   </div>
                   {i < revHistory.length - 1 && (
-                    <div className="w-px flex-1 bg-slate-700/40 my-1" />
+                    <div className="w-px flex-1 bg-secondary/40 my-1" />
                   )}
                 </div>
                 <div className="flex-1 pb-3">
@@ -854,7 +854,7 @@ function EditMetadataSlideOver({
 
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-              Tags <span className="text-slate-600">(comma-separated)</span>
+              Tags <span className="text-muted-foreground">(comma-separated)</span>
             </label>
             <textarea
               value={form.tags}
@@ -872,7 +872,7 @@ function EditMetadataSlideOver({
                 .map((tag) => (
                   <span
                     key={tag}
-                    className="px-2 py-0.5 bg-slate-700/60 border border-slate-600/40 rounded-full text-[11px] text-foreground/90"
+                    className="px-2 py-0.5 bg-secondary/60 border border-border rounded-full text-[11px] text-foreground/90"
                   >
                     {tag}
                   </span>
@@ -903,7 +903,7 @@ function EditMetadataSlideOver({
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 px-4 py-2 rounded-xl bg-secondary/60 hover:bg-slate-700/60 text-foreground/90 text-sm border border-border transition-colors"
+            className="flex-1 px-4 py-2 rounded-xl bg-secondary/60 hover:bg-secondary/60 text-foreground/90 text-sm border border-border transition-colors"
           >
             Cancel
           </button>
@@ -984,7 +984,7 @@ function ApprovalDialog({
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 px-4 py-2 rounded-xl bg-secondary/60 hover:bg-slate-700/60 text-foreground/90 text-sm border border-border transition-colors"
+            className="flex-1 px-4 py-2 rounded-xl bg-secondary/60 hover:bg-secondary/60 text-foreground/90 text-sm border border-border transition-colors"
           >
             Cancel
           </button>
@@ -1229,7 +1229,7 @@ export default function DocumentDetail() {
 
   return (
     <div
-      className={`flex flex-col h-[calc(100vh-120px)] ${isFullscreen ? "fixed inset-0 z-50 h-screen bg-slate-950" : ""}`}
+      className={`flex flex-col h-[calc(100vh-120px)] ${isFullscreen ? "fixed inset-0 z-50 h-screen bg-popover" : ""}`}
     >
       {toast && <Toast msg={toast} onDismiss={() => setToast(null)} />}
       {showEditMeta && activeDoc && (
@@ -1264,7 +1264,7 @@ export default function DocumentDetail() {
               const next = MOCK_DOCUMENTS.find((d) => !openTabs.find((t) => t.id === d.id));
               if (next) openLinkedDoc((next as { id: string }).id);
             }}
-            className="flex items-center gap-1 px-2.5 py-1.5 text-slate-600 hover:text-primary transition-colors text-xs rounded-lg hover:bg-secondary/40 border border-dashed border-border/40 hover:border-teal-500/30"
+            className="flex items-center gap-1 px-2.5 py-1.5 text-muted-foreground hover:text-primary transition-colors text-xs rounded-lg hover:bg-secondary/40 border border-dashed border-border/40 hover:border-teal-500/30"
           >
             <Plus className="w-3.5 h-3.5" /> Open Another
           </button>
@@ -1278,7 +1278,7 @@ export default function DocumentDetail() {
           <button
             type="button"
             onClick={handleDownload}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-secondary/50 hover:bg-slate-700/60 text-foreground/90 text-xs border border-border/40 hover:border-teal-500/30 transition-all"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-secondary/50 hover:bg-secondary/60 text-foreground/90 text-xs border border-border/40 hover:border-teal-500/30 transition-all"
           >
             <Download className="w-3.5 h-3.5 text-primary" /> Download
           </button>
@@ -1287,7 +1287,7 @@ export default function DocumentDetail() {
             title={activeDoc.name}
             size="sm"
             variant="ghost"
-            className="px-2.5 py-1.5 rounded-lg bg-secondary/50 hover:bg-slate-700/60 text-foreground/90 text-xs border border-border/40 hover:border-teal-500/30"
+            className="px-2.5 py-1.5 rounded-lg bg-secondary/50 hover:bg-secondary/60 text-foreground/90 text-xs border border-border/40 hover:border-teal-500/30"
             label="Preview"
             stopPropagation={false}
           />
@@ -1302,7 +1302,7 @@ export default function DocumentDetail() {
             type="button"
             onClick={() => setShowEditMeta(true)}
             disabled={!activeDoc}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-secondary/50 hover:bg-slate-700/60 text-foreground/90 text-xs border border-border/40 hover:border-indigo-500/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-secondary/50 hover:bg-secondary/60 text-foreground/90 text-xs border border-border/40 hover:border-indigo-500/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Edit3 className="w-3.5 h-3.5 text-indigo-400" /> Edit Metadata
           </button>
@@ -1310,7 +1310,7 @@ export default function DocumentDetail() {
             type="button"
             onClick={() => setShowApproval(true)}
             disabled={!activeDoc}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-secondary/50 hover:bg-slate-700/60 text-foreground/90 text-xs border border-border/40 hover:border-amber-500/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-secondary/50 hover:bg-secondary/60 text-foreground/90 text-xs border border-border/40 hover:border-amber-500/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Send className="w-3.5 h-3.5 text-amber-400" /> Route for Approval
           </button>
@@ -1325,7 +1325,7 @@ export default function DocumentDetail() {
             type="button"
             onClick={handleRerunOcr}
             disabled={!activeDoc || ocrProcessing}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-secondary/50 hover:bg-slate-700/60 text-foreground/90 text-xs border border-border/40 hover:border-blue-500/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-secondary/50 hover:bg-secondary/60 text-foreground/90 text-xs border border-border/40 hover:border-blue-500/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {ocrProcessing ? (
               <Loader2 className="w-3.5 h-3.5 text-blue-400 animate-spin" />
@@ -1372,7 +1372,7 @@ export default function DocumentDetail() {
                 <button
                   type="button"
                   onClick={toggleLeft}
-                  className="p-1 text-slate-600 hover:text-foreground/90 transition-colors"
+                  className="p-1 text-muted-foreground hover:text-foreground/90 transition-colors"
                   title="Collapse left panel"
                 >
                   <ChevronLeft className="w-3.5 h-3.5" />
@@ -1397,7 +1397,7 @@ export default function DocumentDetail() {
             <button
               type="button"
               onClick={toggleLeft}
-              className="flex-1 flex items-center justify-center text-slate-600 hover:text-primary transition-colors"
+              className="flex-1 flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
               title="Expand left panel"
             >
               <ChevronRight className="w-4 h-4" />
@@ -1494,7 +1494,7 @@ export default function DocumentDetail() {
             <button
               type="button"
               onClick={handleDownload}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/50 hover:bg-slate-700/60 text-foreground/90 text-xs border border-border/40 hover:border-teal-500/20 transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/50 hover:bg-secondary/60 text-foreground/90 text-xs border border-border/40 hover:border-teal-500/20 transition-all"
             >
               <Download className="w-3.5 h-3.5 text-primary" /> Download
             </button>
@@ -1502,7 +1502,7 @@ export default function DocumentDetail() {
               type="button"
               onClick={handleRerunOcr}
               disabled={ocrProcessing}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/50 hover:bg-slate-700/60 text-foreground/90 text-xs border border-border/40 hover:border-amber-500/20 transition-all disabled:opacity-40"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/50 hover:bg-secondary/60 text-foreground/90 text-xs border border-border/40 hover:border-amber-500/20 transition-all disabled:opacity-40"
             >
               {ocrProcessing ? (
                 <Loader2 className="w-3.5 h-3.5 text-amber-400 animate-spin" />
@@ -1513,13 +1513,13 @@ export default function DocumentDetail() {
             </button>
             <button
               type="button"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/50 hover:bg-slate-700/60 text-foreground/90 text-xs border border-border/40 hover:border-blue-500/20 transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/50 hover:bg-secondary/60 text-foreground/90 text-xs border border-border/40 hover:border-blue-500/20 transition-all"
             >
               <GitCompare className="w-3.5 h-3.5 text-blue-400" /> Compare
             </button>
             <button
               type="button"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/50 hover:bg-slate-700/60 text-foreground/90 text-xs border border-border/40 hover:border-indigo-500/20 transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/50 hover:bg-secondary/60 text-foreground/90 text-xs border border-border/40 hover:border-indigo-500/20 transition-all"
             >
               <Paperclip className="w-3.5 h-3.5 text-indigo-400" /> Attach
             </button>
@@ -1527,7 +1527,7 @@ export default function DocumentDetail() {
               type="button"
               onClick={() => setShowEditMeta(true)}
               disabled={!activeDoc}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/50 hover:bg-slate-700/60 text-foreground/90 text-xs border border-border/40 transition-all ml-auto disabled:opacity-40"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/50 hover:bg-secondary/60 text-foreground/90 text-xs border border-border/40 transition-all ml-auto disabled:opacity-40"
             >
               <Edit3 className="w-3.5 h-3.5 text-muted-foreground" /> Edit Metadata
             </button>
@@ -1547,7 +1547,7 @@ export default function DocumentDetail() {
                 <button
                   type="button"
                   onClick={toggleRight}
-                  className="p-0.5 text-slate-600 hover:text-foreground/90 transition-colors"
+                  className="p-0.5 text-muted-foreground hover:text-foreground/90 transition-colors"
                   title="Collapse right panel"
                 >
                   <ChevronRight className="w-3.5 h-3.5" />
@@ -1566,7 +1566,7 @@ export default function DocumentDetail() {
             <button
               type="button"
               onClick={toggleRight}
-              className="flex-1 flex items-center justify-center text-slate-600 hover:text-primary transition-colors"
+              className="flex-1 flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
               title="Expand right panel"
             >
               <ChevronLeft className="w-4 h-4" />

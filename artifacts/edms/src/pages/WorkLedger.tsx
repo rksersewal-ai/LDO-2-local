@@ -172,7 +172,7 @@ function AnalyticsPanel({ records }: { records: WorkRecord[] }) {
             </div>
           ))}
           {analytics.avgDaysByType.length === 0 && (
-            <p className="text-xs text-slate-600">No completed records yet</p>
+            <p className="text-xs text-muted-foreground">No completed records yet</p>
           )}
         </div>
       </div>
@@ -392,7 +392,7 @@ function CreateWorkModal({
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal panel */}
-      <div className="relative z-10 w-full max-w-2xl max-h-[90vh] flex flex-col bg-slate-950/95 border border-border/70 rounded-2xl shadow-2xl shadow-black/70 backdrop-blur-xl">
+      <div className="relative z-10 w-full max-w-2xl max-h-[90vh] flex flex-col bg-popover/95 border border-border/70 rounded-2xl shadow-2xl shadow-black/70 backdrop-blur-xl">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 shrink-0">
           <div className="flex items-center gap-3">
@@ -409,7 +409,7 @@ function CreateWorkModal({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-slate-700/60 transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -506,7 +506,7 @@ function CreateWorkModal({
                       ? "bg-rose-500/20 text-rose-300"
                       : selectedTypeDef.priority === "HIGH"
                         ? "bg-amber-500/20 text-amber-300"
-                        : "bg-slate-700/50 text-muted-foreground"
+                        : "bg-muted text-muted-foreground"
                   }`}
                 >
                   {selectedTypeDef.priority}
@@ -525,7 +525,7 @@ function CreateWorkModal({
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
               placeholder="Describe the work, item, and any relevant technical context..."
               rows={3}
-              className={`w-full bg-background/80 text-foreground text-sm rounded-xl px-4 py-2.5 border focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/30 transition-all placeholder:text-slate-600 resize-none ${errors.description ? "border-rose-500/50" : "border-border"}`}
+              className={`w-full bg-background/80 text-foreground text-sm rounded-xl px-4 py-2.5 border focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/30 transition-all placeholder:text-muted-foreground resize-none ${errors.description ? "border-rose-500/50" : "border-border"}`}
             />
             {errors.description && (
               <p className="text-[10px] text-rose-400 mt-1">{errors.description}</p>
@@ -590,7 +590,7 @@ function CreateWorkModal({
             <div>
               <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-1.5 block">
                 Concerned Supervisor
-                <span className="ml-1 text-[9px] normal-case tracking-normal text-slate-600">
+                <span className="ml-1 text-[9px] normal-case tracking-normal text-muted-foreground">
                   (from user list)
                 </span>
               </label>
@@ -635,7 +635,7 @@ function CreateWorkModal({
             <div>
               <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-1.5 block">
                 Concerned Officer
-                <span className="ml-1 text-[9px] normal-case tracking-normal text-slate-600">
+                <span className="ml-1 text-[9px] normal-case tracking-normal text-muted-foreground">
                   (reference only)
                 </span>
               </label>
@@ -706,7 +706,7 @@ function CreateWorkModal({
               }}
               placeholder="Any additional remarks, observations, or context..."
               rows={2}
-              className="w-full bg-background/80 border border-border text-foreground text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/30 transition-all placeholder:text-slate-600 resize-none"
+              className="w-full bg-background/80 border border-border text-foreground text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/30 transition-all placeholder:text-muted-foreground resize-none"
             />
           </div>
 
@@ -769,7 +769,7 @@ function CreateWorkModal({
         {/* end scrollable body */}
 
         {/* Footer */}
-        <div className="flex items-center gap-3 px-6 py-4 border-t border-border/50 shrink-0 bg-slate-950/60">
+        <div className="flex items-center gap-3 px-6 py-4 border-t border-border/50 shrink-0 bg-background">
           {attachedFiles.length > 0 && (
             <span className="text-[11px] text-muted-foreground mr-auto">
               {attachedFiles.length} file{attachedFiles.length !== 1 ? "s" : ""} attached
@@ -814,7 +814,7 @@ function RecordDetail({
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal panel */}
-      <div className="relative z-10 w-full max-w-xl max-h-[85vh] flex flex-col bg-slate-950/95 border border-border/70 rounded-2xl shadow-2xl shadow-black/70 backdrop-blur-xl">
+      <div className="relative z-10 w-full max-w-xl max-h-[85vh] flex flex-col bg-popover/95 border border-border/70 rounded-2xl shadow-2xl shadow-black/70 backdrop-blur-xl">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 shrink-0">
           <div className="flex items-center gap-3">
@@ -836,7 +836,7 @@ function RecordDetail({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-slate-700/60 transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -984,7 +984,7 @@ function RecordDetail({
         </div>
 
         {/* Footer actions */}
-        <div className="flex items-center gap-3 px-6 py-4 border-t border-border/50 shrink-0 bg-slate-950/60">
+        <div className="flex items-center gap-3 px-6 py-4 border-t border-border/50 shrink-0 bg-background">
           <Button variant="secondary" onClick={onClose} className="flex-1">
             Close
           </Button>
@@ -1300,7 +1300,7 @@ export default function WorkLedger() {
           </span>
           <div className="flex items-center gap-1.5">
             <DatePicker value={dateFrom} onChange={setDateFrom} placeholder="From date" />
-            <span className="text-slate-600 text-xs">—</span>
+            <span className="text-muted-foreground text-xs">—</span>
             <DatePicker value={dateTo} onChange={setDateTo} placeholder="To date" />
             {(dateFrom || dateTo) && (
               <button
@@ -1340,7 +1340,7 @@ export default function WorkLedger() {
 
         {/* Quick Filters */}
         <div className="flex items-center gap-2 mb-3 flex-wrap">
-          <span className="text-[11px] text-slate-600 font-medium uppercase tracking-wide">
+          <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">
             Quick:
           </span>
           <button
@@ -1364,7 +1364,7 @@ export default function WorkLedger() {
                 setShowMine(false);
                 setShowOverdue(false);
               }}
-              className="text-[11px] text-slate-600 hover:text-muted-foreground transition-colors"
+              className="text-[11px] text-muted-foreground hover:text-muted-foreground transition-colors"
             >
               ✕ Clear
             </button>
@@ -1425,16 +1425,16 @@ export default function WorkLedger() {
                     <td className="py-3 pl-3">
                       <div className="flex items-center gap-1.5">
                         {w.isLocked ? (
-                          <Lock className="w-3 h-3 text-slate-600" />
+                          <Lock className="w-3 h-3 text-muted-foreground" />
                         ) : (
-                          <Unlock className="w-3 h-3 text-slate-700" />
+                          <Unlock className="w-3 h-3 text-muted-foreground" />
                         )}
                         <span className="font-mono text-primary text-xs">{w.id}</span>
                         <button
                           type="button"
                           onClick={(e) => copyId(w.id, e)}
                           title="Copy ID"
-                          className="opacity-0 group-hover:opacity-100 transition-opacity ml-0.5 text-slate-600 hover:text-primary"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity ml-0.5 text-muted-foreground hover:text-primary"
                         >
                           {copiedId === w.id ? (
                             <Check className="w-3 h-3 text-emerald-400" />
@@ -1453,7 +1453,7 @@ export default function WorkLedger() {
                       <p className="text-xs text-muted-foreground">
                         {CATEGORY_LABEL[w.workCategory]}
                       </p>
-                      <p className="text-[10px] text-slate-600">{w.workType}</p>
+                      <p className="text-[10px] text-muted-foreground">{w.workType}</p>
                     </td>
                     <td className="py-3">
                       {w.plNumber && (
@@ -1467,7 +1467,7 @@ export default function WorkLedger() {
                         </p>
                       )}
                       {!w.plNumber && !w.eOfficeNumber && (
-                        <span className="text-slate-700 text-xs">—</span>
+                        <span className="text-muted-foreground text-xs">—</span>
                       )}
                     </td>
                     <td className="py-3">
@@ -1488,10 +1488,10 @@ export default function WorkLedger() {
                           {w.daysTaken}d
                         </span>
                       ) : (
-                        <span className="text-slate-700">—</span>
+                        <span className="text-muted-foreground">—</span>
                       )}
                       {w.targetDays != null && (
-                        <span className="text-slate-600"> / {w.targetDays}d</span>
+                        <span className="text-muted-foreground"> / {w.targetDays}d</span>
                       )}
                     </td>
                     <td className="py-3 text-muted-foreground text-xs truncate max-w-[100px]">
@@ -1500,7 +1500,7 @@ export default function WorkLedger() {
                     <td className="py-3 text-muted-foreground text-xs">{w.date}</td>
                     <td className="py-3 pr-3">
                       <ChevronRight
-                        className={`w-4 h-4 transition-all ${selectedId === w.id ? "rotate-90 text-primary" : "text-slate-600 group-hover:text-primary"}`}
+                        className={`w-4 h-4 transition-all ${selectedId === w.id ? "rotate-90 text-primary" : "text-muted-foreground group-hover:text-primary"}`}
                       />
                     </td>
                   </tr>
@@ -1615,11 +1615,11 @@ export default function WorkLedger() {
                 onClick={() => importInputRef.current?.click()}
                 className="border-2 border-dashed border-border rounded-xl p-10 text-center cursor-pointer hover:border-teal-500/40 transition-colors"
               >
-                <Upload className="w-8 h-8 mx-auto mb-3 text-slate-600" />
+                <Upload className="w-8 h-8 mx-auto mb-3 text-muted-foreground" />
                 <p className="text-sm text-muted-foreground mb-1">
                   Click to upload CSV or Excel file
                 </p>
-                <p className="text-xs text-slate-600">Supported: .csv, .xlsx, .xls</p>
+                <p className="text-xs text-muted-foreground">Supported: .csv, .xlsx, .xls</p>
               </div>
             ) : (
               <div>

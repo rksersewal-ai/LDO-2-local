@@ -292,7 +292,7 @@ function DraggableBOMRow({
           <div className="absolute inset-x-3 bottom-0 h-px bg-teal-300/80 shadow-[0_0_10px_rgba(94,234,212,0.6)]" />
         )}
         {showDropSuggestion && (
-          <div className="absolute right-3 -top-2 rounded-full border border-teal-400/40 bg-slate-950/95 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-primary/90 shadow-lg">
+          <div className="absolute right-3 -top-2 rounded-full border border-primary/40 bg-card/95 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-primary/90 shadow-lg">
             {placementLabel(dropPlacement)}
           </div>
         )}
@@ -315,7 +315,7 @@ function DraggableBOMRow({
                 event.stopPropagation();
                 onReorderWithinParent(parentId, index, index - 1);
               }}
-              className="p-0.5 text-slate-600 hover:text-primary disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
+              className="p-0.5 text-muted-foreground hover:text-primary disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
               aria-label="Move up"
             >
               <ChevronUp className="w-2.5 h-2.5" />
@@ -327,7 +327,7 @@ function DraggableBOMRow({
                 event.stopPropagation();
                 onReorderWithinParent(parentId, index, index + 1);
               }}
-              className="p-0.5 text-slate-600 hover:text-primary disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
+              className="p-0.5 text-muted-foreground hover:text-primary disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
               aria-label="Move down"
             >
               <ChevronDown className="w-2.5 h-2.5" />
@@ -445,7 +445,7 @@ function RootDropZone({
       className={`rounded-xl border border-dashed px-3 py-2 text-[11px] transition-all ${
         isOver && canDrop
           ? "border-teal-400/50 bg-teal-500/10 text-primary/90 shadow-[0_0_0_1px_rgba(94,234,212,0.08)]"
-          : "border-white/8 bg-slate-950/25 text-muted-foreground"
+          : "border-white/8 bg-card/25 text-muted-foreground"
       }`}
     >
       <div className="flex items-center gap-2">
@@ -963,7 +963,7 @@ function AddNodeModal({
                 </option>
               ))}
             </Select>
-            <p className="text-[10px] text-slate-600 mt-1">
+            <p className="text-[10px] text-muted-foreground mt-1">
               This only chooses the initial placement. The magnetic drag hints will still let you
               move it anywhere later.
             </p>

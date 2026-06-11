@@ -300,18 +300,18 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Search pages, actions, records..."
-            className="flex-1 bg-transparent text-white placeholder-slate-500 text-sm outline-none"
+            className="flex-1 bg-transparent text-foreground placeholder-muted-foreground text-sm outline-none"
           />
           {query && (
             <button
               type="button"
               onClick={() => setQuery("")}
-              className="text-muted-foreground hover:text-white"
+              className="text-muted-foreground hover:text-foreground"
             >
               <X className="w-4 h-4" />
             </button>
           )}
-          <kbd className="text-xs px-1.5 py-0.5 bg-slate-700 text-muted-foreground rounded border border-border">
+          <kbd className="text-xs px-1.5 py-0.5 bg-secondary text-muted-foreground rounded border border-border">
             Esc
           </kbd>
         </div>
@@ -330,11 +330,11 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
                     navigate(`/search?q=${encodeURIComponent(item.query)}`);
                     onClose();
                   }}
-                  className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-foreground/90 hover:bg-white/5 transition-colors"
+                  className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-foreground/90 hover:bg-secondary/50 transition-colors"
                 >
                   <Search className="w-3.5 h-3.5 text-muted-foreground" />
                   <span>{item.query}</span>
-                  <span className="ml-auto text-xs text-slate-600">{item.scope}</span>
+                  <span className="ml-auto text-xs text-muted-foreground">{item.scope}</span>
                 </button>
               ))}
             </div>
@@ -355,8 +355,8 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
                     onClick={cmd.action}
                     className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm transition-colors ${
                       idx === selected
-                        ? "bg-teal-500/15 text-white"
-                        : "text-foreground/90 hover:bg-white/5"
+                        ? "bg-primary/15 text-foreground"
+                        : "text-foreground/90 hover:bg-secondary/50"
                     }`}
                   >
                     <Icon
@@ -368,7 +368,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
                         <div className="text-xs text-muted-foreground">{cmd.description}</div>
                       )}
                     </div>
-                    <ArrowRight className="w-3.5 h-3.5 text-slate-600" />
+                    <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
                   </button>
                 );
               })}
@@ -382,7 +382,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
           )}
         </div>
 
-        <div className="flex items-center justify-between px-4 py-2 border-t border-white/8 text-xs text-slate-600">
+        <div className="flex items-center justify-between px-4 py-2 border-t border-white/8 text-xs text-muted-foreground">
           <span>↑↓ navigate</span>
           <span>↵ select</span>
           <span>esc close</span>

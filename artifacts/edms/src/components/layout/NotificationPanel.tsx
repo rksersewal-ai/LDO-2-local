@@ -32,17 +32,23 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 
+// Theme-aware icon color mapping using semantic colors
+const TYPE_ICON_CONFIG: Record<string, { Icon: typeof Bell; color: string }> = {
+  approval: { Icon: CheckSquare, color: "text-[color:var(--status-warning)]" },
+  ocr: { Icon: ServerCog, color: "text-[color:var(--status-info)]" },
+  case: { Icon: AlertCircle, color: "text-[color:var(--status-danger)]" },
+  work: { Icon: Briefcase, color: "text-primary" },
+  "design-change": { Icon: AlertTriangle, color: "text-[color:var(--status-warning)]" },
+  dedup_review: { Icon: AlertTriangle, color: "text-[color:var(--status-warning)]" },
+  indexing_failure: { Icon: ServerCog, color: "text-[color:var(--status-danger)]" },
+  change_request: { Icon: GitBranch, color: "text-[color:var(--status-info)]" },
+  change_notice: { Icon: GitCommitHorizontal, color: "text-[color:var(--status-info)]" },
+};
+
 const typeIcon = (type: string) => {
-  if (type === "approval") return <CheckSquare className="w-4 h-4 text-amber-400" />;
-  if (type === "ocr") return <ServerCog className="w-4 h-4 text-blue-400" />;
-  if (type === "case") return <AlertCircle className="w-4 h-4 text-rose-400" />;
-  if (type === "work") return <Briefcase className="w-4 h-4 text-primary" />;
-  if (type === "design-change") return <AlertTriangle className="w-4 h-4 text-amber-300" />;
-  if (type === "dedup_review") return <AlertTriangle className="w-4 h-4 text-violet-300" />;
-  if (type === "indexing_failure") return <ServerCog className="w-4 h-4 text-rose-300" />;
-  if (type === "change_request") return <GitBranch className="w-4 h-4 text-cyan-300" />;
-  if (type === "change_notice") return <GitCommitHorizontal className="w-4 h-4 text-indigo-300" />;
-  return <Bell className="w-4 h-4 text-muted-foreground" />;
+  const config = TYPE_ICON_CONFIG[type] || { Icon: Bell, color: "text-muted-foreground" };
+  const { Icon, color } = config;
+  return <Icon className={`w-4 h-4 ${color}`} />;
 };
 
 export function NotificationPanel({
@@ -116,7 +122,7 @@ export function NotificationPanel({
       <div className="max-h-80 overflow-y-auto">
         {documentChangeAlerts.length > 0 && (
           <div className="border-b border-border/50">
-            <div className="px-5 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300/80 bg-amber-500/8">
+            <div className="px-5 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[color:var(--status-warning)] bg-[color:var(--status-warning)]/8">
               Linked document change alerts
             </div>
             {documentChangeAlerts.map((alert) => (
@@ -143,7 +149,7 @@ export function NotificationPanel({
                     <p className="text-xs text-foreground/90 leading-relaxed">
                       {alert.documentName}
                     </p>
-                    <p className="text-[11px] text-amber-200 mt-1">{alert.message}</p>
+                    <p className="text-[11px] text-[color:var(--status-warning)] mt-1">{alert.message}</p>
                     <p className="text-[10px] text-muted-foreground mt-1">
                       {alert.designSupervisor
                         ? `Design Supervisor: ${alert.designSupervisor}`
@@ -238,7 +244,7 @@ export function NotificationPanel({
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   {n.subtitle || "Actionable workflow item waiting in the queue."}
                 </p>
-                <span className="text-[10px] text-slate-600 mt-1 block">
+                <span className="text-[10px] text-muted-foreground mt-1 block">
                   {n.created_at || "Now"}
                 </span>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -298,7 +304,7 @@ export function NotificationPanel({
                   )}
                 </div>
               </div>
-              <div className="shrink-0 self-center text-slate-600">
+              <div className="shrink-0 self-center text-muted-foreground">
                 <ExternalLink className="w-3.5 h-3.5" />
               </div>
             </div>
