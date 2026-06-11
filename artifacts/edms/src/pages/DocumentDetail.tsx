@@ -12,6 +12,7 @@ import { PL_DATABASE } from "../lib/bomData";
 import { MOCK_DOCUMENTS } from "../lib/mock";
 import { ApprovalService } from "../services/ApprovalService";
 import { type OcrJobRecord, OcrJobService } from "../services/OcrJobService";
+import { RecentDocumentsService } from "../services/RecentDocumentsService";
 
 type DocRecord = {
   id: string;
@@ -1070,6 +1071,11 @@ export default function DocumentDetail() {
     if (!id) return;
     const currentDocName = MOCK_DOCUMENTS.find((d) => d.id === id)?.name;
     openTab(id, currentDocName);
+    // Record view in recently viewed documents
+    const doc = MOCK_DOCUMENTS.find((d) => d.id === id);
+    if (doc) {
+      RecentDocumentsService.record(id, doc.name, doc.type);
+    }
     setZoom(1);
     setRotation(0);
     setCurrentPage(1);

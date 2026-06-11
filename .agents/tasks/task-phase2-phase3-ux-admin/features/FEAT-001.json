@@ -1,0 +1,37 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Phase 2 - User Experience: Upload progress tracking, OCR status visibility, recently viewed documents, and saved filters. Creates new services (RecentDocumentsService, UploadProgressService) and UI components (UploadProgress, OcrStatusBadge, RecentDocumentsPanel, SavedFiltersDropdown), then integrates them into existing pages.",
+  "status": "in_progress",
+  "steps": [
+    "Create artifacts/edms/src/services/RecentDocumentsService.ts - a localStorage-backed service that tracks recently viewed documents with documentId, title, viewedAt timestamp, and document type. Pattern: follow NavigationHistoryService style with a const object exporting record(), getRecent(limit), and clear() methods. Max 20 items.",
+    "Create artifacts/edms/src/services/UploadProgressService.ts - a service to track upload progress state. Uses an event-based pattern (CustomEvent on window) so components can subscribe to upload progress updates. Interface: UploadProgressItem { id, filename, progress (0-100), status: 'uploading'|'success'|'failed'|'processing', error?: string, startedAt }. Methods: startUpload(id, filename), updateProgress(id, progress), completeUpload(id), failUpload(id, error), getActive(), subscribe(callback), clear().",
+    "Create artifacts/edms/src/services/SavedFiltersService.ts - localStorage-backed service for saving named filter sets. Interface: SavedFilter { id, name, createdAt, filters: { search, status, ocrStatus, type, category } }. Methods: save(name, filters), getAll(), delete(id), apply(id) returning the filter object.",
+    "Create artifacts/edms/src/components/ui/UploadProgress.tsx - a floating panel component (fixed bottom-right) showing active uploads with progress bars. Uses the Progress component from components/ui/progress.tsx. Shows filename, percentage, status icon (spinner for uploading, checkmark for success, X for failed). Collapses when no active uploads. Import GlassCard, Badge from Shared.tsx.",
+    "Create artifacts/edms/src/components/ui/OcrStatusBadge.tsx - a small component that renders the OCR status with appropriate icon and animation. For 'Processing': blue spinner + 'OCR Processing' text with pulse animation. For 'Completed': green checkmark + confidence percentage. For 'Failed': red warning + 'OCR Failed' with tooltip showing reason. For 'Pending'/'Not Required': gray neutral badge. Uses Badge from Shared.tsx and Spinner from spinner.tsx.",
+    "Create artifacts/edms/src/components/ui/RecentDocumentsPanel.tsx - a collapsible side panel or dropdown showing recently viewed documents (from RecentDocumentsService). Each item shows doc title, type icon, and relative time (e.g. '5 min ago'). Clicking navigates to /documents/:id. Uses GlassCard styling.",
+    "Create artifacts/edms/src/components/ui/SavedFiltersDropdown.tsx - a dropdown button that shows saved filter presets from SavedFiltersService. Has a 'Save current' option at top and lists existing saved filters with delete buttons. Uses existing dropdown-menu.tsx pattern from components/ui/.",
+    "Integrate RecentDocumentsService.record() call in DocumentDetail.tsx - when a document is loaded, record its ID and title in the recently viewed service.",
+    "Integrate UploadProgress component into the App layout - add the floating UploadProgress panel at the app level so it is visible across all pages. Add it inside App.tsx within the router or in AppLayout.",
+    "Integrate UploadProgressService into DocumentIngestion.tsx - when a file is submitted, call startUpload, simulate progress updates (since this is a mock), then completeUpload on success or failUpload on error.",
+    "Add drag-and-drop upload enhancement to DocumentHub.tsx - add a drop zone overlay that appears when files are dragged over the page. On drop, show the upload progress panel and navigate to ingest. Use onDragEnter/onDragOver/onDragLeave/onDrop events on the main container div.",
+    "Add keyboard navigation improvements - in the existing Dialog components and the DocumentHub page, ensure Escape closes dialogs (already handled by Radix) and add Enter-to-confirm on the folder picker dialog and other confirmation dialogs."
+  ],
+  "acceptance_criteria": [
+    "UploadProgress component renders active uploads with progress bars and status indicators",
+    "OcrStatusBadge correctly renders different states (Processing with spinner, Completed with checkmark, Failed with warning)",
+    "RecentDocumentsService persists viewed documents to localStorage and returns them in recency order",
+    "SavedFiltersService persists named filter sets and can retrieve/delete them",
+    "DocumentDetail.tsx records each document view in RecentDocumentsService",
+    "DocumentHub.tsx shows a drag-and-drop overlay when files are dragged over it",
+    "Build passes: cd artifacts/edms && npx vite build succeeds",
+    "Typecheck passes: npx tsc --noEmit has no errors"
+  ],
+  "verification": [
+    "Run npx tsc --noEmit from repo root and confirm 0 errors",
+    "Run cd artifacts/edms && npx vite build and confirm successful build",
+    "Run npx vitest run and confirm all existing tests pass"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

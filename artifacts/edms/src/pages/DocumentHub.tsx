@@ -37,6 +37,7 @@ import { Badge, Button, GlassCard, PageHeader } from "../components/ui/Shared";
 import { TableSkeleton } from "../components/ui/TableSkeleton";
 import { MOCK_DOCUMENTS } from "../lib/mock";
 import { ExportImportService } from "../services/ExportImportService";
+import { UploadProgressService } from "../services/UploadProgressService";
 
 const statusVariant = (s: string) => {
   if (s === "Approved") return "success" as const;
@@ -381,11 +382,49 @@ export default function DocumentHub() {
 
   // Bulk upload
   const bulkInputRef = useRef<HTMLInputElement>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
   const handleBulkFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const count = e.target.files?.length ?? 0;
     e.target.value = "";
     if (count > 0) {
       showToast(`${count} file${count > 1 ? "s" : ""} queued — opening ingest…`);
+      setTimeout(() => navigate("/documents/ingest"), 900);
+    }
+  };
+
+  // Drag-and-drop handlers for file upload
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.dataTransfer.types.includes("Files")) {
+      setIsDragOver(true);
+    }
+  };
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Only set false if leaving the container (not entering a child)
+    if (e.currentTarget === e.target) {
+      setIsDragOver(false);
+    }
+  };
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      for (let i = 0; i < files.length; i++) {
+        UploadProgressService.startUpload(
+          `drop_${Date.now()}_${i}`,
+          files[i].name,
+        );
+      }
+      showToast(`${files.length} file${files.length > 1 ? "s" : ""} queued — opening ingest…`);
       setTimeout(() => navigate("/documents/ingest"), 900);
     }
   };
@@ -464,7 +503,22 @@ export default function DocumentHub() {
   };
 
   return (
-    <div className="space-y-5 max-w-[1400px] mx-auto">
+    <div
+      className="space-y-5 max-w-[1400px] mx-auto relative"
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {/* Drag-and-drop overlay */}
+      {isDragOver && (
+        <div className="absolute inset-0 z-40 flex items-center justify-center bg-background/80 backdrop-blur-sm border-2 border-dashed border-primary rounded-xl pointer-events-none">
+          <div className="flex flex-col items-center gap-2 text-primary">
+            <Upload className="w-10 h-10" />
+            <span className="text-sm font-semibold">Drop files to upload</span>
+          </div>
+        </div>
+      )}
       {toast && <Toast msg={toast} onDismiss={() => setToast(null)} />}
 
       {/* Hidden bulk upload file input */}

@@ -23,6 +23,7 @@ import { Button, GlassCard, Input, PageHeader, Select } from "../components/ui/S
 import { Switch } from "../components/ui/switch";
 import { usePLItems } from "../hooks/usePLItems";
 import apiClient from "../services/ApiClient";
+import { UploadProgressService } from "../services/UploadProgressService";
 
 const DOC_TYPES = [
   "Drawing",
@@ -194,6 +195,8 @@ export default function DocumentIngestion() {
     if (!validate()) return;
     if (!selectedFile) return;
     setIsSubmitting(true);
+    const uploadId = `upload_${Date.now()}`;
+    UploadProgressService.startUpload(uploadId, selectedFile.name);
     try {
       const formData = new FormData();
       formData.append("file", selectedFile);
@@ -221,7 +224,11 @@ export default function DocumentIngestion() {
         formData.append("template_fields", JSON.stringify(templateDraft.formValues));
       }
 
+      // Simulate progress updates
+      UploadProgressService.updateProgress(uploadId, 30);
       const result = await apiClient.ingestDocument(formData);
+      UploadProgressService.updateProgress(uploadId, 80);
+      UploadProgressService.completeUpload(uploadId);
       const createdDocument = (result as Record<string, unknown>)?.document as
         | { id?: string }
         | undefined;
@@ -236,6 +243,7 @@ export default function DocumentIngestion() {
       }
       navigate("/documents");
     } catch (error: any) {
+      UploadProgressService.failUpload(uploadId, error?.message ?? "Upload failed");
       const message =
         error?.response?.data?.detail ||
         error?.response?.data?.message ||

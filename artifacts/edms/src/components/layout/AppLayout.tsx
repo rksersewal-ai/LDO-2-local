@@ -10,6 +10,7 @@ import { PreferencesService } from "../../services/PreferencesService";
 import { getDocumentContextAttributes } from "../documents/DocumentPreviewActions";
 import { ErrorBoundary } from "../ui/ErrorBoundary";
 import { RightClickPalette } from "../ui/RightClickPalette";
+import { UploadProgress } from "../ui/UploadProgress";
 import { Header } from "./Header";
 import { PageContainer } from "./PageContainer";
 import { RightPanel } from "./RightPanel";
@@ -124,6 +125,7 @@ export default function AppLayout() {
       </a>
 
       <RightClickPalette />
+      <UploadProgress />
 
       {/* ── Shell: sidebar + main ─────────────────────────────── */}
       <button
