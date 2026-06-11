@@ -259,7 +259,7 @@ export function Header() {
   /* Ghost icon button — no border, clean hover */
   const ghostBtn = (active: boolean) =>
     cn(
-      "flex h-8 w-8 items-center justify-center rounded-md border transition-colors duration-150",
+      "flex h-8 w-8 items-center justify-center rounded-md border transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
       active
         ? "border-border bg-secondary text-foreground"
         : "border-transparent text-muted-foreground hover:border-border hover:bg-secondary hover:text-foreground",
@@ -395,7 +395,7 @@ export function Header() {
               ))}
             </nav>
             <div className="mt-1 flex min-w-0 items-center gap-2">
-              <h1 className="truncate text-base font-semibold text-foreground">{pageTitle}</h1>
+              <span className="truncate text-base font-semibold text-foreground" role="heading" aria-level={2}>{pageTitle}</span>
               <span className="hidden xl:inline-flex items-center rounded-md border border-border bg-background px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
                 {contextualGuide.title}
               </span>

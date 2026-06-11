@@ -47,6 +47,9 @@ export interface DataTableProps<T extends { id: string }> {
   emptyMessage?: string;
   emptyState?: React.ReactNode;
 
+  /** Accessible name for the table (announced by screen readers) */
+  caption?: string;
+
   // Sorting
   sort?: SortState;
   onSort?: (sort: SortState) => void;
@@ -90,6 +93,7 @@ export function DataTable<T extends { id: string }>({
   error = null,
   emptyMessage = "No records found.",
   emptyState,
+  caption,
   sort,
   onSort,
   selectable = false,
@@ -129,7 +133,8 @@ export function DataTable<T extends { id: string }>({
     <div className={cn("flex flex-col gap-0", className)}>
       {/* Table */}
       <div className="relative w-full overflow-auto rounded-xl border bg-card shadow-sm">
-        <table className="w-full caption-bottom text-sm">
+        <table className="w-full caption-bottom text-sm" aria-label={caption}>
+          {caption && <caption className="sr-only">{caption}</caption>}
           {/* Sticky header */}
           <thead className="sticky top-0 z-10 border-b bg-muted/50">
             <tr>

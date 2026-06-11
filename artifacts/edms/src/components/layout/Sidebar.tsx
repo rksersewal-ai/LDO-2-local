@@ -275,7 +275,7 @@ export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                     to={item.path}
                     aria-current={isActive ? "page" : undefined}
                     className={cn(
-                      "group relative mx-2 flex h-8 items-center gap-2 rounded-md border text-[13px] transition-colors duration-150",
+                      "group relative mx-2 flex h-8 items-center gap-2 rounded-md border text-[13px] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                       isExpanded ? "px-3" : "justify-center px-0",
                       isActive
                         ? "border-sidebar-border bg-sidebar-accent font-medium text-sidebar-accent-foreground"
