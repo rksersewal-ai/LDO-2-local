@@ -3,7 +3,19 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import { ErrorBoundary } from "./components/ui/ErrorBoundary";
+import { reportError, reportWebVitals } from "./lib/logger";
 import "./index.css";
+
+// ─── Global Error Handlers ────────────────────────────────────────────────────
+window.addEventListener("error", (event) => {
+  reportError(event.error ?? event.message, { source: "window.onerror", filename: event.filename });
+});
+window.addEventListener("unhandledrejection", (event) => {
+  reportError(event.reason, { source: "unhandledrejection" });
+});
+
+// ─── Performance Monitoring ───────────────────────────────────────────────────
+reportWebVitals();
 
 const queryClient = new QueryClient();
 
@@ -15,7 +27,7 @@ createRoot(document.getElementById("root") as HTMLElement).render(
         fallback={(error) => (
           <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
             <div className="max-w-md text-center space-y-4 p-8">
-              <h1 className="text-xl font-semibold text-rose-400">Application Error</h1>
+              <h1 className="text-xl font-semibold text-[color:var(--status-danger)]">Application Error</h1>
               <p className="text-sm text-muted-foreground">
                 {error.message || "An unexpected error occurred. Please reload the page."}
               </p>
