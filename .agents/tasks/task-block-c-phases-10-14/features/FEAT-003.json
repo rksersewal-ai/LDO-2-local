@@ -1,0 +1,38 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Phase 12 - Storage Architecture: Create 6 new storage utility modules with comprehensive tests in artifacts/edms/src/lib/storage/",
+  "status": "completed",
+  "steps": [
+    "Create directory artifacts/edms/src/lib/storage/ for all storage modules",
+    "Create artifacts/edms/src/lib/storage/contentAddressedStorage.ts - SHA-256 path generation utility. Given a file hash string, generate storage path in format /aa/bb/<full-hash> where aa = first 2 chars, bb = next 2 chars. Methods: generateStoragePath(hash), parseStoragePath(path), validateHash(hash). Pure functions, no side effects. Include hashFile(content: ArrayBuffer) using a simple non-crypto hash (since Web Crypto is async and may not be available in test env, use a deterministic string hash function).",
+    "Create artifacts/edms/src/lib/storage/contentAddressedStorage.test.ts - Test path generation format, path parsing roundtrip, hash validation, edge cases (short hashes, invalid chars)",
+    "Create artifacts/edms/src/lib/storage/storageLayout.ts - Define canonical storage structure as typed constants. StorageCategory: originals, previews, tiles, ocr, temp. StorageLayoutConfig: basePath per category, retention policy per category, max size per category. Methods: getPathForCategory(category, filename), getCategoryFromPath(path), getAllCategories(). Export DEFAULT_LAYOUT constant.",
+    "Create artifacts/edms/src/lib/storage/storageLayout.test.ts - Test path generation per category, category detection from paths, default layout values, all categories enumerated",
+    "Create artifacts/edms/src/lib/storage/deduplicationDetector.ts - Detect duplicate files by comparing SHA-256 hashes. DuplicateMatch: originalId, duplicateId, hash, detectedAt. DeduplicationIndex class: addFile(id, hash), findDuplicate(hash) => string | null, getDuplicateGroups() => Map<hash, id[]>, getStats() => { totalFiles, uniqueFiles, duplicateCount, spaceSaved }. Store index in memory (Map).",
+    "Create artifacts/edms/src/lib/storage/deduplicationDetector.test.ts - Test duplicate detection, group formation, stats calculation, no false positives on unique files",
+    "Create artifacts/edms/src/lib/storage/storageTierPolicy.ts - Rules engine for hot/warm/cold tier classification. StorageTier: hot, warm, cold, archive. TierRule: condition function + target tier. TierPolicy class: addRule(rule), classify(file: FileMetadata) => StorageTier. Default rules: accessed in last 7 days = hot, accessed in last 30 days = warm, accessed in last 90 days = cold, older = archive. FileMetadata includes lastAccessedAt, createdAt, accessCount, sizeBytes. Gate behind STORAGE_TIERING feature flag.",
+    "Create artifacts/edms/src/lib/storage/storageTierPolicy.test.ts - Test tier classification based on access recency, custom rules, feature flag gating, edge cases (never accessed)",
+    "Create artifacts/edms/src/lib/storage/orphanFileDetector.ts - Detect storage files with no corresponding database record. OrphanDetectionResult: orphanPaths[], totalScanned, detectedAt. OrphanDetector class: constructor(knownFileIds: Set<string>), scanPaths(storagePaths: string[]) => OrphanDetectionResult, isOrphan(path: string) => boolean. Extract file ID from storage path using content-addressed format.",
+    "Create artifacts/edms/src/lib/storage/orphanFileDetector.test.ts - Test orphan detection with known vs unknown paths, empty sets, large datasets",
+    "Create artifacts/edms/src/lib/storage/storageUsageCalculator.ts - Calculate storage usage per category and forecast growth. UsageEntry: category, sizeBytes, fileCount, measuredAt. StorageUsageCalculator class: recordUsage(entry), getCurrentUsage() => UsageEntry[], getTotalSize() => number, forecastGrowth(daysAhead: number) => ForecastResult based on linear regression of historical data points. ForecastResult: projectedSizeBytes, growthRatePerDay, daysUntilLimit(limitBytes).",
+    "Create artifacts/edms/src/lib/storage/storageUsageCalculator.test.ts - Test usage recording, total calculation, growth forecasting with known data points, days-until-limit calculation",
+    "Create artifacts/edms/src/lib/storage/index.ts - Barrel export for all storage modules"
+  ],
+  "acceptance_criteria": [
+    "All 6 storage modules compile without TypeScript errors",
+    "All storage tests pass when running: cd artifacts/edms && npx vitest run src/lib/storage/",
+    "Content-addressed storage generates correct /aa/bb/hash paths",
+    "Storage layout defines all 5 categories with proper paths",
+    "Deduplication detector correctly identifies duplicate hashes",
+    "Tier policy classifies files based on access patterns with feature flag gating",
+    "Orphan detector identifies files without database records",
+    "Usage calculator provides growth forecasting based on historical data"
+  ],
+  "verification": [
+    "cd /projects/sandbox/LDO-2-local && npx tsc --noEmit",
+    "cd /projects/sandbox/LDO-2-local/artifacts/edms && npx vitest run src/lib/storage/"
+  ],
+  "blocked_reason": null,
+  "findings": "All 6 storage modules created with 128 passing tests. TypeScript compiles clean. Used same code patterns as security/reliability modules (JSDoc, section dividers, vi.mock for feature flags). hashContent uses multi-round FNV-1a to produce 64-char hex strings matching SHA-256 length format."
+}

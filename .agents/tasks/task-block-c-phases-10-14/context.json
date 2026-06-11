@@ -1,0 +1,28 @@
+{
+  "project_type": "React 19 + Vite 7 + TailwindCSS 4 frontend (pnpm monorepo) with Django 5.2 backend",
+  "language": "TypeScript (frontend), Python (backend)",
+  "build_system": "pnpm monorepo with workspace packages. Root vitest for smoke tests. artifacts/edms has its own vitest.config.ts for feature tests.",
+  "test_framework": "Vitest with jsdom environment, @testing-library/react. Tests co-located with source (*.test.ts). Setup file at artifacts/edms/src/test/setup.ts provides localStorage and matchMedia mocks.",
+  "build_command": "cd /projects/sandbox/LDO-2-local && npx tsc --noEmit && cd artifacts/edms && npx vite build",
+  "test_command": "cd /projects/sandbox/LDO-2-local && npx vitest run && cd /projects/sandbox/LDO-2-local/artifacts/edms && npx vitest run",
+  "verification_instructions": "1. npx tsc --noEmit (0 errors). 2. npx vitest run (5 root smoke tests pass). 3. cd artifacts/edms && npx vitest run (all feature tests pass, ignoring 2 pre-existing ThemeContext/useOverloadProtection failures).",
+  "snapshot_or_generated_files": null,
+  "setup_instructions": "pnpm install (already done). No additional setup needed.",
+  "environment_constraints": "INTEGRATIONS_ONLY network - cannot install new packages. Must use existing deps only. No Docker daemon. No external HTTP calls.",
+  "contribution_requirements": "Conventional commits. Zero TS errors. All new tests pass. Files under 800 lines. No hardcoded Tailwind colors. All work is ADDITIVE (new files only, no modification to existing code).",
+  "key_patterns": "Lib modules are pure utility functions with JSDoc comments and section dividers (horizontal rules like // --- Types ---). Services use localStorage-backed mock data with typed interfaces. Tests use describe/it/expect from Vitest with beforeEach for setup. Feature flags gate new functionality via isFeatureEnabled(). Existing feature flags include AUDIT_HASH_CHAIN and STORAGE_TIERING which are relevant to Phase 10 and 12.",
+  "relevant_files": [
+    "artifacts/edms/src/lib/featureFlags.ts",
+    "artifacts/edms/src/lib/retryWithBackoff.ts",
+    "artifacts/edms/src/lib/fileValidation.ts",
+    "artifacts/edms/src/lib/safeCleanup.ts",
+    "artifacts/edms/src/lib/deadLetterQueue.ts",
+    "artifacts/edms/src/lib/searchBenchmarkConfig.ts",
+    "artifacts/edms/src/services/SystemHealthService.ts",
+    "artifacts/edms/src/services/DeduplicationService.ts",
+    "artifacts/edms/src/services/UploadProgressService.ts",
+    "artifacts/edms/src/hooks/useOverloadProtection.ts",
+    "config/ocr_pipeline.yaml"
+  ],
+  "directory_structure": "Root: monorepo. artifacts/edms/src/lib/ = pure utilities (*.ts + *.test.ts co-located). artifacts/edms/src/services/ = service classes. artifacts/edms/src/hooks/ = React hooks. config/ = YAML config files. docs/ = documentation. New security/reliability/storage utilities go in artifacts/edms/src/lib/. Makefile goes at repo root. Docs go in docs/."
+}

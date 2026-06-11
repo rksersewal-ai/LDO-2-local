@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router";
 import { GlassCard } from "../components/ui/Shared";
+import { SystemHealthSummary } from "../components/ui/SystemHealthSummary";
 import { MOCK_AUDIT_LOG } from "../lib/mock";
 
 const quickLinks = [
@@ -133,6 +134,8 @@ export default function AdminWorkspace() {
           );
         })}
       </div>
+
+      <SystemHealthSummary />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <GlassCard className="p-3.5 border-border/50 bg-card/40 backdrop-blur-md">

@@ -12,6 +12,7 @@ import { PL_DATABASE } from "../lib/bomData";
 import { MOCK_DOCUMENTS } from "../lib/mock";
 import { ApprovalService } from "../services/ApprovalService";
 import { type OcrJobRecord, OcrJobService } from "../services/OcrJobService";
+import { RecentDocumentsService } from "../services/RecentDocumentsService";
 
 type DocRecord = {
   id: string;
@@ -559,9 +560,12 @@ function RightPanel({
             </div>
             <div className="flex items-center gap-2 pt-2">
               <Badge variant={statusVariant(doc.status)}>{doc.status}</Badge>
-              <Badge variant="default" className="text-muted-foreground">
-                {doc.lifecycle}
-              </Badge>
+              <span className="inline-flex items-center gap-1">
+                <span className={`h-2 w-2 rounded-full shrink-0 ${doc.lifecycle === "Active" ? "bg-emerald-500" : doc.lifecycle === "Draft" ? "bg-amber-500" : "bg-gray-400"}`} />
+                <Badge variant="default" className="text-muted-foreground">
+                  {doc.lifecycle}
+                </Badge>
+              </span>
             </div>
           </div>
         )}
@@ -1070,6 +1074,11 @@ export default function DocumentDetail() {
     if (!id) return;
     const currentDocName = MOCK_DOCUMENTS.find((d) => d.id === id)?.name;
     openTab(id, currentDocName);
+    // Record view in recently viewed documents
+    const doc = MOCK_DOCUMENTS.find((d) => d.id === id);
+    if (doc) {
+      RecentDocumentsService.record(id, doc.name, doc.type);
+    }
     setZoom(1);
     setRotation(0);
     setCurrentPage(1);

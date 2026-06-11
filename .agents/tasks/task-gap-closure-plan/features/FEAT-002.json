@@ -1,0 +1,33 @@
+{
+  "id": "FEAT-002",
+  "type": "fix",
+  "description": "Phase 1 stabilization: Fix typecheck errors, fix lint errors, improve error handling, and add health check infrastructure. Currently there are 16 typecheck errors (test file type issues + 1 WorkLedger.tsx error) and 88 lint errors (label association, unused vars, noExplicitAny, noNonNullAssertion). Fix the blocking issues without breaking existing functionality.",
+  "status": "completed",
+  "steps": [
+    "Fix typecheck errors in artifacts/edms/src/test/setup.ts: (1) Add @testing-library/jest-dom types - check if @testing-library/jest-dom is in node_modules and add reference directive or configure tsconfig.json, (2) fix afterEach not found by adding vitest globals reference.",
+    "Fix typecheck errors in artifacts/edms/src/components/ui/ErrorBoundary.test.tsx and LoadingState.test.tsx: These test files use jest-dom matchers (toBeInTheDocument, toHaveClass) not recognized by TypeScript. Either add triple-slash reference to vitest globals types or update tsconfig to include test types.",
+    "Fix typecheck error in artifacts/edms/src/pages/WorkLedger.tsx line 811: 'Expected 2-3 arguments, but got 1' - investigate the function call and provide the missing argument.",
+    "Fix critical lint errors - specifically the unused variable 'rerender' and the 5 label-input association issues (add htmlFor attributes or nest inputs in labels).",
+    "Fix the static element interactivity issue found by biome lint.",
+    "Add proper error boundary wrapping around the Outlet in AppLayout to prevent white-screen crashes (referenced in ISSUE_REGISTER S-001).",
+    "Create a frontend feature flags utility at artifacts/edms/src/lib/featureFlags.ts that reads from environment variables (VITE_FF_*) to gate risky features behind toggles.",
+    "Create a config/ocr_pipeline.yaml (or equivalent TypeScript config) defining OCR pipeline parameters as specified in requirements (tile size, overlap, DPI, timeouts, etc.) - this is documentation/config only, not implementation."
+  ],
+  "acceptance_criteria": [
+    "pnpm run typecheck passes with zero errors (or at minimum reduces errors significantly from 16)",
+    "pnpm run lint:frontend error count is reduced (target: eliminate the 5 label errors and unused variable)",
+    "pnpm run build still passes",
+    "pnpm run test still passes (existing tests not broken)",
+    "ErrorBoundary wraps page content in AppLayout",
+    "Feature flags utility exists and is importable",
+    "OCR pipeline config file exists with documented parameters"
+  ],
+  "verification": [
+    "export PATH=\"$HOME/.local/share/mise/installs/node/22.22.3/bin:$PATH\" && cd /projects/sandbox/LDO-2-local && pnpm run typecheck 2>&1 | tail -5",
+    "export PATH=\"$HOME/.local/share/mise/installs/node/22.22.3/bin:$PATH\" && cd /projects/sandbox/LDO-2-local && pnpm run build 2>&1 | tail -5",
+    "export PATH=\"$HOME/.local/share/mise/installs/node/22.22.3/bin:$PATH\" && cd /projects/sandbox/LDO-2-local && pnpm run test 2>&1 | tail -5",
+    "export PATH=\"$HOME/.local/share/mise/installs/node/22.22.3/bin:$PATH\" && cd /projects/sandbox/LDO-2-local && pnpm run lint:frontend 2>&1 | grep 'Found'"
+  ],
+  "blocked_reason": null,
+  "findings": "All 16 typecheck errors resolved to 0. Lint errors reduced from 88 to 81 (7 errors fixed: 5 label-input associations, 1 unused var, 1 static element interactivity). The remaining lint errors are mostly noExplicitAny and noNonNullAssertion warnings in other files, plus 2 static element issues in BOMProductView.tsx. Two pre-existing test failures exist in ThemeContext.test.tsx and useOverloadProtection.test.ts (timing-related, not caused by our changes - verified by testing on base state). ErrorBoundary already wraps Outlet in AppLayout.tsx (was implemented in a prior phase). Feature flags utility created at src/lib/featureFlags.ts. OCR pipeline config created at config/ocr_pipeline.yaml. Three commits: 47c73a1, 37af494, b147ba4."
+}

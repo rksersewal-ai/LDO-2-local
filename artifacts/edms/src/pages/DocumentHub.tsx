@@ -35,9 +35,11 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../components/ui/dialog";
 import { EmptyState } from "../components/ui/EmptyState";
 import { Badge, Button, GlassCard, PageHeader } from "../components/ui/Shared";
+import { OcrStatusBadge } from "../components/ui/OcrStatusBadge";
 import { TableSkeleton } from "../components/ui/TableSkeleton";
 import { MOCK_DOCUMENTS } from "../lib/mock";
 import { ExportImportService } from "../services/ExportImportService";
+import { UploadProgressService } from "../services/UploadProgressService";
 
 const statusVariant = (s: string) => {
   if (s === "Approved") return "success" as const;
@@ -52,6 +54,13 @@ const ocrVariant = (s: string) => {
   if (s === "Processing") return "processing" as const;
   if (s === "Failed") return "danger" as const;
   return "default" as const;
+};
+
+const lifecycleDotColor = (lifecycle: string) => {
+  if (lifecycle === "Active") return "bg-emerald-500";
+  if (lifecycle === "Draft") return "bg-amber-500";
+  if (lifecycle === "Archived") return "bg-gray-400";
+  return "bg-gray-400";
 };
 
 const FileIcon = ({ type }: { type: string }) => {
@@ -384,12 +393,52 @@ export default function DocumentHub() {
 
   // Bulk upload
   const bulkInputRef = useRef<HTMLInputElement>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
   const handleBulkFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const count = e.target.files?.length ?? 0;
     e.target.value = "";
     if (count > 0) {
       showToast(`${count} file${count > 1 ? "s" : ""} queued — opening ingest…`);
       setTimeout(() => navigate("/documents/ingest"), 900);
+    }
+  };
+
+  // Drag-and-drop handlers for file upload
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.dataTransfer.types.includes("Files")) {
+      setIsDragOver(true);
+    }
+  };
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Only set false if leaving the container (not entering a child)
+    if (e.currentTarget === e.target) {
+      setIsDragOver(false);
+    }
+  };
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      // Simulate upload progress for each dropped file, then auto-complete
+      for (let i = 0; i < files.length; i++) {
+        const uploadId = `drop_${Date.now()}_${i}`;
+        UploadProgressService.startUpload(uploadId, files[i].name);
+        // Simulate progress: 30% after 500ms, 80% after 1.5s, complete after 2.5s
+        setTimeout(() => UploadProgressService.updateProgress(uploadId, 30), 500);
+        setTimeout(() => UploadProgressService.updateProgress(uploadId, 80), 1500);
+        setTimeout(() => UploadProgressService.completeUpload(uploadId), 2500);
+      }
+      showToast(`${files.length} file${files.length > 1 ? "s" : ""} queued for upload`);
     }
   };
 
@@ -467,7 +516,22 @@ export default function DocumentHub() {
   };
 
   return (
-    <div className="space-y-5 max-w-[1400px] mx-auto">
+    <div
+      className="space-y-5 max-w-[1400px] mx-auto relative"
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {/* Drag-and-drop overlay */}
+      {isDragOver && (
+        <div className="absolute inset-0 z-40 flex items-center justify-center bg-background/80 backdrop-blur-sm border-2 border-dashed border-primary rounded-xl pointer-events-none">
+          <div className="flex flex-col items-center gap-2 text-primary">
+            <Upload className="w-10 h-10" />
+            <span className="text-sm font-semibold">Drop files to upload</span>
+          </div>
+        </div>
+      )}
       {toast && <Toast msg={toast} onDismiss={() => setToast(null)} />}
 
       {/* Hidden bulk upload file input */}
@@ -1135,12 +1199,15 @@ export default function DocumentHub() {
                           )}
                           {visibleCols.has("status") && (
                             <td className="py-3">
-                              <Badge variant={statusVariant(doc.status)}>{doc.status}</Badge>
+                              <div className="flex items-center gap-1.5">
+                                <span className={`h-2 w-2 rounded-full shrink-0 ${lifecycleDotColor(doc.lifecycle)}`} />
+                                <Badge variant={statusVariant(doc.status)}>{doc.status}</Badge>
+                              </div>
                             </td>
                           )}
                           {visibleCols.has("ocr") && (
                             <td className="py-3">
-                              <Badge variant={ocrVariant(doc.ocrStatus)}>{doc.ocrStatus}</Badge>
+                              <OcrStatusBadge status={doc.ocrStatus} confidence={doc.ocrConfidence} />
                             </td>
                           )}
                           {visibleCols.has("linkedPL") && (
@@ -1256,7 +1323,10 @@ export default function DocumentHub() {
                             <FileIcon type={doc.type} />
                           </div>
                         </div>
-                        <Badge variant={statusVariant(doc.status)}>{doc.status}</Badge>
+                        <div className="flex items-center gap-1.5">
+                          <span className={`h-2 w-2 rounded-full shrink-0 ${lifecycleDotColor(doc.lifecycle)}`} />
+                          <Badge variant={statusVariant(doc.status)}>{doc.status}</Badge>
+                        </div>
                       </div>
                       <p className="text-sm font-medium text-foreground mb-1 line-clamp-2 group-hover:text-white transition-colors">
                         {doc.name}
@@ -1292,9 +1362,7 @@ export default function DocumentHub() {
                       )}
 
                       <div className="mt-2 pt-2 border-t border-border flex items-center justify-between">
-                        <Badge variant={ocrVariant(doc.ocrStatus)} className="text-[10px]">
-                          {doc.ocrStatus}
-                        </Badge>
+                        <OcrStatusBadge status={doc.ocrStatus} confidence={doc.ocrConfidence} />
                         <div className="flex items-center gap-2">
                           <span className="text-[10px] text-muted-foreground">{doc.date}</span>
                           <DocumentPreviewButton

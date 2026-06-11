@@ -1,0 +1,35 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Phase 11 - Reliability, Backup, Recovery: Create 5 new reliability utility modules with comprehensive tests in artifacts/edms/src/lib/reliability/",
+  "status": "completed",
+  "steps": [
+    "Create directory artifacts/edms/src/lib/reliability/ for all reliability modules",
+    "Create artifacts/edms/src/lib/reliability/healthCheckEndpoints.ts - Health check response types: ServiceStatus (healthy/degraded/unhealthy), HealthCheckResult with service name, status, latencyMs, lastChecked. Client-side polling service: HealthCheckPoller class that periodically checks service endpoints (DB, Redis, OCR, Storage). Methods: startPolling(intervalMs), stopPolling(), getStatus(serviceName), getOverallHealth(), onStatusChange(callback). Uses event emitter pattern.",
+    "Create artifacts/edms/src/lib/reliability/healthCheckEndpoints.test.ts - Test polling lifecycle, status aggregation, degraded vs unhealthy thresholds, callback notifications",
+    "Create artifacts/edms/src/lib/reliability/backupVerification.ts - Backup status tracking types: BackupType (full/incremental/differential), BackupStatus (completed/in_progress/failed/scheduled). BackupVerificationResult with checksumValid, sizeMatch, restorable, verifiedAt. BackupTracker class: recordBackup(), verifyBackup(), getLastSuccessful(), getBackupHistory(), isOverdue(maxAgeHours). Store state in localStorage.",
+    "Create artifacts/edms/src/lib/reliability/backupVerification.test.ts - Test backup recording, verification result tracking, overdue detection, history retrieval",
+    "Create artifacts/edms/src/lib/reliability/maintenanceMode.ts - Maintenance mode detection service. Checks for maintenance flag in API response headers (X-Maintenance-Mode). MaintenanceDetector class: checkMaintenanceStatus(), isInMaintenance(), getMaintenanceMessage(), getEstimatedEndTime(), onMaintenanceChange(callback). Provides a mock/simulation mode for local testing.",
+    "Create artifacts/edms/src/lib/reliability/maintenanceMode.test.ts - Test maintenance detection, callback firing, message extraction, simulation mode",
+    "Create artifacts/edms/src/lib/reliability/startupChecks.ts - Pre-flight check utility. StartupCheck interface: name, check() => Promise<CheckResult>, critical (boolean). PreflightRunner class: registerCheck(check), runAll() => PreflightReport. PreflightReport: allPassed, criticalFailures, warnings, results[]. Default checks: localStorage available, required APIs reachable (mock), minimum browser features present.",
+    "Create artifacts/edms/src/lib/reliability/startupChecks.test.ts - Test check registration, critical vs non-critical failure handling, report generation, all-pass scenario",
+    "Create artifacts/edms/src/lib/reliability/workerHeartbeat.ts - Worker liveness tracking. WorkerInfo: id, name, lastHeartbeat, status (alive/stale/dead). HeartbeatTracker class: registerWorker(id, name), recordHeartbeat(id), getWorkerStatus(id), getStaleWorkers(thresholdMs), getAllWorkers(), removeWorker(id). Configurable staleness threshold (default 30s). Store in localStorage.",
+    "Create artifacts/edms/src/lib/reliability/workerHeartbeat.test.ts - Test heartbeat recording, staleness detection with configurable threshold, worker lifecycle (register/heartbeat/stale/dead)",
+    "Create artifacts/edms/src/lib/reliability/index.ts - Barrel export for all reliability modules"
+  ],
+  "acceptance_criteria": [
+    "All 5 reliability modules compile without TypeScript errors",
+    "All reliability tests pass when running: cd artifacts/edms && npx vitest run src/lib/reliability/",
+    "Health check poller correctly aggregates service statuses",
+    "Backup verification tracks and validates backup state",
+    "Maintenance mode detection works with simulated headers",
+    "Startup checks correctly categorize critical vs non-critical failures",
+    "Worker heartbeat detects stale workers based on configurable threshold"
+  ],
+  "verification": [
+    "cd /projects/sandbox/LDO-2-local && npx tsc --noEmit",
+    "cd /projects/sandbox/LDO-2-local/artifacts/edms && npx vitest run src/lib/reliability/"
+  ],
+  "blocked_reason": null,
+  "findings": "All 5 reliability modules and their tests created successfully. 103 tests passing across 5 test files. Zero TypeScript errors. HealthCheckPoller uses async polling with callback notifications on status change. BackupTracker stores state in localStorage with full verification workflow. MaintenanceDetector supports both simulation mode (localStorage) and custom check functions. PreflightRunner categorizes checks as critical vs non-critical with structured reports. HeartbeatTracker computes worker status (alive/stale/dead) based on configurable thresholds."
+}

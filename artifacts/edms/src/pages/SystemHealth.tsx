@@ -14,6 +14,10 @@ import { lazy, type ReactNode, Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { PageContainer } from "../components/layout/PageContainer";
 import { Badge, Button, GlassCard, PageHeader } from "../components/ui/Shared";
+import { FailedJobsPanel } from "../components/ui/FailedJobsPanel";
+import { OcrQueueMonitor } from "../components/ui/OcrQueueMonitor";
+import { StorageUsageIndicator } from "../components/ui/StorageUsageIndicator";
+import { WorkerStatusPanel } from "../components/ui/WorkerStatusPanel";
 import { cn } from "../lib/utils";
 import { type BackupRecord, SystemHealthService } from "../services/SystemHealthService";
 
@@ -411,6 +415,18 @@ export default function SystemHealth() {
           />
         </div>
       </GlassCard>
+
+      {/* OCR Queue Monitor */}
+      <OcrQueueMonitor />
+
+      {/* Worker Status and Failed Jobs side-by-side */}
+      <section className="grid gap-4 lg:grid-cols-2">
+        <WorkerStatusPanel />
+        <FailedJobsPanel />
+      </section>
+
+      {/* Storage Usage */}
+      <StorageUsageIndicator />
 
       {/* Recovery list and Slow Query watch list */}
       <section className="grid gap-4 lg:grid-cols-2">

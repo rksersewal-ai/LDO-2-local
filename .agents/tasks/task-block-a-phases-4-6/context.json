@@ -1,0 +1,31 @@
+{
+  "project_type": "React SPA (Vite + TypeScript + Tailwind + Radix UI + Zustand)",
+  "language": "TypeScript",
+  "build_system": "pnpm workspaces, Vite bundler, biome formatter/linter",
+  "test_framework": "vitest with jsdom environment, custom setup in src/test/setup.ts (mock localStorage, IntersectionObserver, ResizeObserver), test files colocated with source",
+  "build_command": "cd /projects/sandbox/LDO-2-local && npx tsc --noEmit && cd artifacts/edms && npx vite build",
+  "test_command": "cd /projects/sandbox/LDO-2-local && npx vitest run",
+  "verification_instructions": "1) Run typecheck: npx tsc --noEmit from repo root. 2) Run tests: npx vitest run from repo root. 3) Build: cd artifacts/edms && npx vite build",
+  "snapshot_or_generated_files": null,
+  "setup_instructions": "Already set up - pnpm install done, node_modules present",
+  "environment_constraints": "INTEGRATIONS_ONLY network - cannot install new packages. Must use existing dependencies only. Feature flags gate all risky additions.",
+  "contribution_requirements": "Conventional commits, build + typecheck must pass after each commit, preserve existing functionality completely",
+  "key_patterns": "Services use localStorage-backed mock stores (see OcrJobService.ts, AdminMetricsService.ts). Feature flags in featureFlags.ts gate new features. Types in lib/types.ts. Hooks in src/hooks/. Components in src/components/ui/. Tests follow describe/it pattern with vitest.",
+  "relevant_files": [
+    "artifacts/edms/src/lib/featureFlags.ts",
+    "artifacts/edms/src/lib/types.ts",
+    "artifacts/edms/src/lib/constants.ts",
+    "artifacts/edms/src/lib/validation.ts",
+    "artifacts/edms/src/services/OcrJobService.ts",
+    "artifacts/edms/src/services/SearchService.ts",
+    "artifacts/edms/src/services/AdminMetricsService.ts",
+    "artifacts/edms/src/hooks/useOverloadProtection.ts",
+    "artifacts/edms/src/pages/DocumentPreviewPage.tsx",
+    "artifacts/edms/src/pages/OCRMonitor.tsx",
+    "config/ocr_pipeline.yaml",
+    "vitest.config.ts",
+    "artifacts/edms/src/test/setup.ts",
+    "artifacts/edms/src/services/PreferencesService.test.ts"
+  ],
+  "directory_structure": "Root: package.json (workspace), vitest.config.ts, tsconfig.json. artifacts/edms/: main frontend app (src/pages, src/components, src/services, src/hooks, src/lib, src/store, src/test). config/: ocr_pipeline.yaml. lib/: api-client-react, api-spec, api-zod."
+}
