@@ -1,0 +1,4 @@
+## 2026-06-11 - Harden WebhookHandler against SSRF
+**Vulnerability:** The WebhookHandler allowed dispatching events to arbitrary URLs without validating the destination, exposing the application to Server-Side Request Forgery (SSRF) where attackers could trigger requests to internal services or metadata endpoints.
+**Learning:** Python's `urllib.parse` and regexes are not sufficient to prevent SSRF due to DNS rebinding or obfuscation; it is essential to resolve hostnames via `socket.getaddrinfo` and check resulting IPs with `ipaddress` for private, loopback, or reserved status. Additionally, requests library follows redirects by default, which can bypass initial URL validation.
+**Prevention:** Always validate webhook and outbound URLs using strict IP-level checks. Set `allow_redirects=False` on outbound `requests` to ensure that safe URLs do not redirect to unsafe internal endpoints. Enforce HTTPS in production environments.

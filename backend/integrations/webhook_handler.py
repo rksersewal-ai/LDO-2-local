@@ -4,11 +4,16 @@ Dispatches EDMS domain events to external systems via HTTP webhooks.
 """
 import hashlib
 import hmac
+import ipaddress
 import json
 import logging
 import os
+import socket
 import time
+import urllib.parse
 from typing import Any, Dict, List, Optional
+
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +36,55 @@ APPROVAL_REQUESTED = "approval.requested"
 def _sign_payload(secret: str, payload: bytes) -> str:
     """HMAC-SHA256 signature for payload verification."""
     return hmac.new(secret.encode(), payload, hashlib.sha256).hexdigest()
+
+
+def is_safe_url(url: str) -> bool:
+    """
+    Validates a URL to prevent Server-Side Request Forgery (SSRF).
+    Blocks non-HTTP(S) schemes, private/internal IPs, loopback, and metadata endpoints.
+    """
+    try:
+        parsed = urllib.parse.urlparse(url)
+        if parsed.scheme not in ("http", "https"):
+            logger.warning("Blocked webhook URL with unsafe scheme: %s", url)
+            return False
+
+        # In production (DEBUG=False), you might want to enforce HTTPS:
+        if not getattr(settings, "DEBUG", True) and parsed.scheme != "https":
+            logger.warning("Blocked HTTP webhook URL in production mode: %s", url)
+            return False
+
+        if not parsed.hostname:
+            return False
+
+        # Resolve hostname to IPs to check against private/internal ranges
+        try:
+            addrinfo = socket.getaddrinfo(parsed.hostname, None)
+        except socket.gaierror:
+            logger.warning("Blocked webhook URL with unresolvable hostname: %s", url)
+            return False
+
+        for info in addrinfo:
+            ip_str = info[4][0]
+            ip_obj = ipaddress.ip_address(ip_str)
+
+            if (
+                ip_obj.is_private
+                or ip_obj.is_loopback
+                or ip_obj.is_link_local
+                or ip_obj.is_multicast
+                or ip_obj.is_reserved
+                or ip_obj.is_unspecified
+            ):
+                logger.warning(
+                    "Blocked webhook URL resolving to unsafe IP (%s): %s", ip_str, url
+                )
+                return False
+
+        return True
+    except Exception as exc:
+        logger.warning("Error validating webhook URL %s: %s", url, exc)
+        return False
 
 
 class WebhookHandler:
@@ -77,6 +131,11 @@ class WebhookHandler:
 
         results: Dict[str, Any] = {}
         for url in endpoints:
+            if not is_safe_url(url):
+                logger.warning("Skipping unsafe webhook endpoint: %s", url)
+                results[url] = "skipped_unsafe"
+                continue
+
             if dry_run:
                 logger.info("[DRY RUN] Would POST %s to %s", event_type, url)
                 results[url] = "dry_run"
@@ -86,9 +145,14 @@ class WebhookHandler:
             for attempt, delay in enumerate(WebhookHandler.RETRY_DELAYS):
                 try:
                     response = requests.post(
-                        url, data=body, headers=headers, timeout=10
+                        url, data=body, headers=headers, timeout=10, allow_redirects=False
                     )
-                    if response.ok:
+
+                    if response.is_redirect:
+                        logger.warning("Webhook %s → %s returned redirect (%s), which is not followed to prevent SSRF", event_type, url, response.status_code)
+                        # We don't consider redirects successful to prevent SSRF bypasses
+
+                    elif response.ok:
                         logger.info("Webhook dispatched: %s → %s [%s]", event_type, url, response.status_code)
                         success = True
                         break
