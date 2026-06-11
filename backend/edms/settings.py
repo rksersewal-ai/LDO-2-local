@@ -147,10 +147,28 @@ REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'].setdefault('health', os.getenv('EDMS_HE
 SIMPLE_JWT = dict(API_SIMPLE_JWT)
 if not SIMPLE_JWT.get('SIGNING_KEY'):
     SIMPLE_JWT['SIGNING_KEY'] = SECRET_KEY
+
 CORS_ALLOWED_ORIGINS = _env_list('CORS_ALLOWED_ORIGINS', DEFAULT_CORS_ALLOWED_ORIGINS)
+CSRF_TRUSTED_ORIGINS = _env_list('CSRF_TRUSTED_ORIGINS', DEFAULT_CSRF_TRUSTED_ORIGINS)
+
+if DEBUG:
+    if not CORS_ALLOWED_ORIGINS:
+        CORS_ALLOWED_ORIGINS = [
+            'http://localhost:4173',
+            'http://127.0.0.1:4173',
+            'http://localhost:5173',
+            'http://127.0.0.1:5173',
+        ]
+    if not CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS = [
+            'http://localhost:4173',
+            'http://127.0.0.1:4173',
+            'http://localhost:5173',
+            'http://127.0.0.1:5173',
+        ]
+
 CORS_EXPOSE_HEADERS = list(DEFAULT_CORS_EXPOSE_HEADERS)
 CORS_ALLOW_CREDENTIALS = DEFAULT_CORS_ALLOW_CREDENTIALS
-CSRF_TRUSTED_ORIGINS = _env_list('CSRF_TRUSTED_ORIGINS', DEFAULT_CSRF_TRUSTED_ORIGINS)
 
 LOGGING = dict(API_LOGGING)
 LOGGING['filters']['request_context'] = {'()': 'shared.logging.RequestContextFilter'}

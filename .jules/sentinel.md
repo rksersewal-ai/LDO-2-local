@@ -1,4 +1,4 @@
-## 2026-06-11 - Harden WebhookHandler against SSRF
-**Vulnerability:** The WebhookHandler allowed dispatching events to arbitrary URLs without validating the destination, exposing the application to Server-Side Request Forgery (SSRF) where attackers could trigger requests to internal services or metadata endpoints.
-**Learning:** Python's `urllib.parse` and regexes are not sufficient to prevent SSRF due to DNS rebinding or obfuscation; it is essential to resolve hostnames via `socket.getaddrinfo` and check resulting IPs with `ipaddress` for private, loopback, or reserved status. Additionally, requests library follows redirects by default, which can bypass initial URL validation.
-**Prevention:** Always validate webhook and outbound URLs using strict IP-level checks. Set `allow_redirects=False` on outbound `requests` to ensure that safe URLs do not redirect to unsafe internal endpoints. Enforce HTTPS in production environments.
+## 2026-06-11 - Unsafe CORS Configuration Fixed
+**Vulnerability:** Hardcoded local domains (`localhost`, `127.0.0.1`) in `CORS_ALLOWED_ORIGINS` and `CSRF_TRUSTED_ORIGINS` could leak into production if not overridden, exposing the application to CORS/CSRF attacks from local development servers or compromised endpoints.
+**Learning:** Default settings intended for development must be strictly gated by `DEBUG` flags and explicitly removed or flagged when running in production to prevent unintended exposure.
+**Prevention:** Enforce strict validation during app startup (`enforce_startup_config`) to ensure critical variables like `CORS_ALLOWED_ORIGINS` are correctly set and do not contain unsafe defaults when `DEBUG=False`.

@@ -96,10 +96,6 @@ SIMPLE_JWT = {
 # ─────────────────────────────────────────────────────────────────────────────
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:4173',      # Standard Vite frontend
-    'http://127.0.0.1:4173',
-    'http://localhost:5173',      # Vite dev server
-    'http://127.0.0.1:5173',
     # Add your production domain here — do NOT use placeholder domains
 ]
 
@@ -111,10 +107,6 @@ CORS_EXPOSE_HEADERS = [
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:4173',
-    'http://127.0.0.1:4173',
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
     # Add your production domain here
 ]
 
