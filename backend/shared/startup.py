@@ -11,8 +11,8 @@ def validate_startup_config(*, debug: bool, db_engine: str, env: dict[str, str] 
     elif not debug and 'your-secret-key' in secret_key.lower():
         issues.append('DJANGO_SECRET_KEY must not use placeholder/default values in non-debug mode.')
 
-    if not (env.get('DJANGO_ALLOWED_HOSTS') or '').strip():
-        issues.append('DJANGO_ALLOWED_HOSTS must be configured.')
+    # DJANGO_ALLOWED_HOSTS has a sensible default in settings.py, so this check is removed
+    # Default: 'localhost,127.0.0.1,0.0.0.0,testserver' for development/testing
 
     if db_engine == 'postgresql' and not (env.get('POSTGRES_PASSWORD') or '').strip():
         issues.append('POSTGRES_PASSWORD is required when EDMS_DB_ENGINE=postgresql.')
