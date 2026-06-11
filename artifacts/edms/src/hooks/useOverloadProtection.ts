@@ -79,15 +79,15 @@ export function useDebouncedCallback<T extends (...args: unknown[]) => void>(
   callback: T,
   delayMs: number = 300,
   deps: React.DependencyList = [],
- ): T {
+): T {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
- 
+
   useEffect(() => {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, []);
- 
+
   return useCallback(
     (...args: unknown[]) => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);

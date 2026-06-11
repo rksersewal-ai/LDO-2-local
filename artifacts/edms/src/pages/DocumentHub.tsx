@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
+import { useDebounce } from "../hooks/useOverloadProtection";
 import {
   DocumentPreviewButton,
   getDocumentContextAttributes,
@@ -168,6 +169,7 @@ export default function DocumentHub() {
     })),
   );
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
   const [statusFilter, setStatusFilter] = useState("All");
   const [ocrFilter, setOcrFilter] = useState("All");
   const [typeFilter, setTypeFilter] = useState("All");
@@ -242,12 +244,12 @@ export default function DocumentHub() {
     let docs = documents.filter((d) => {
       if (!showObsolete && d.status === "Obsolete") return false;
       const matchSearch =
-        !search ||
-        d.name.toLowerCase().includes(search.toLowerCase()) ||
-        d.id.toLowerCase().includes(search.toLowerCase()) ||
-        d.linkedPL?.toLowerCase().includes(search.toLowerCase()) ||
-        d.author?.toLowerCase().includes(search.toLowerCase()) ||
-        d.tags?.some((t: string) => t.toLowerCase().includes(search.toLowerCase()));
+        !debouncedSearch ||
+        d.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        d.id.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        d.linkedPL?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        d.author?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        d.tags?.some((t: string) => t.toLowerCase().includes(debouncedSearch.toLowerCase()));
       const matchStatus = statusFilter === "All" || d.status === statusFilter;
       const matchOcr = ocrFilter === "All" || d.ocrStatus === ocrFilter;
       const matchType = typeFilter === "All" || d.type === typeFilter;
@@ -288,7 +290,7 @@ export default function DocumentHub() {
     return docs;
   }, [
     documents,
-    search,
+    debouncedSearch,
     statusFilter,
     ocrFilter,
     typeFilter,
@@ -377,7 +379,8 @@ export default function DocumentHub() {
 
   const selectionCount = selectedIds.size;
   const clearSelection = () => setSelectedIds(new Set());
-  const exportDataset = search || activeFilters > 0 || !showObsolete ? filtered : documents;
+  const exportDataset =
+    debouncedSearch || activeFilters > 0 || !showObsolete ? filtered : documents;
 
   // Bulk upload
   const bulkInputRef = useRef<HTMLInputElement>(null);

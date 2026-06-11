@@ -307,7 +307,8 @@ export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                       <span
                         className="ml-auto shrink-0 h-4 min-w-4 px-1 rounded-full text-[10px] font-bold tabular-nums flex items-center justify-center"
                         style={{
-                          background: "color-mix(in oklab, var(--sidebar-primary) 20%, transparent)",
+                          background:
+                            "color-mix(in oklab, var(--sidebar-primary) 20%, transparent)",
                           color: "var(--sidebar-primary)",
                         }}
                       >
