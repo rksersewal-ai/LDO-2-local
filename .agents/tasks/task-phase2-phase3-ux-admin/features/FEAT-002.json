@@ -1,0 +1,40 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Phase 2 continued - Document lifecycle status indicators, OCR/search indexing pending indication, and Phase 3 - Admin Experience: system health summary, OCR queue depth, storage usage, worker status, and failed job retry controls. Enhances existing SystemHealth page and AdminWorkspace with operational monitoring components.",
+  "status": "completed",
+  "steps": [
+    "Create artifacts/edms/src/services/AdminMetricsService.ts - a localStorage-backed service that provides mock admin metrics. Interface: AdminMetrics { ocrQueueDepth, ocrProcessingRate (jobs/hour), storageUsedGB, storageTotalGB, workerCount, workersHealthy, workersOverloaded, failedJobCount, lastWorkerHeartbeat (ISO timestamp), systemUptime (hours) }. Methods: getMetrics(), getFailedJobs() returning array of { id, documentId, filename, failedAt, errorReason, retryCount }, retryJob(jobId), retryAllFailed(). Uses the same localStorage persistence pattern.",
+    "Create artifacts/edms/src/components/ui/SystemHealthSummary.tsx - a compact card grid showing key system health metrics: services healthy count (using the INTEGRATIONS data from SystemHealth.tsx pattern), OCR queue depth with color-coding (green <5, amber 5-20, red >20), storage usage as progress bar with percentage, active workers count. Uses GlassCard, Badge, Progress from existing components.",
+    "Create artifacts/edms/src/components/ui/OcrQueueMonitor.tsx - a focused component showing OCR pipeline health: queue depth number, processing rate (jobs/hour), estimated time to clear queue, list of currently processing jobs (top 5), and a visual indicator (green/amber/red) for pipeline health. Uses GlassCard styling.",
+    "Create artifacts/edms/src/components/ui/StorageUsageIndicator.tsx - shows storage utilization as a progress bar with used/total labels. Color-codes: green <70%, amber 70-85%, red >85%. Shows breakdown by category if available (documents, OCR outputs, backups).",
+    "Create artifacts/edms/src/components/ui/WorkerStatusPanel.tsx - shows worker heartbeat status. Each worker shown as a row with name, status (healthy/overloaded/dead), last heartbeat time, and current task. Color-coded dots for status. Shows an alert banner if any worker has not reported in >5 minutes.",
+    "Create artifacts/edms/src/components/ui/FailedJobsPanel.tsx - shows count of failed jobs with a table listing recent failures (job ID, document, error reason, failed time, retry count). Has 'Retry' button per job and 'Retry All' button. Uses AdminMetricsService.retryJob() and retryAllFailed(). Uses Badge (danger variant) for failed status and Button for retry actions.",
+    "Integrate SystemHealthSummary into AdminWorkspace.tsx - add the system health summary card grid at the top of the admin workspace page, above the existing quick links section.",
+    "Integrate OcrQueueMonitor, WorkerStatusPanel, and FailedJobsPanel into SystemHealth.tsx - add these as new sections below the existing telemetry charts. The OcrQueueMonitor goes in a new row. WorkerStatusPanel and FailedJobsPanel go side-by-side in another row.",
+    "Add StorageUsageIndicator to SystemHealth.tsx - integrate into the existing 'Service Diagnostics' summary panel or as a standalone card.",
+    "Enhance DocumentHub.tsx document table - replace the plain OCR status text/badge in the table with the new OcrStatusBadge component (from FEAT-001) for richer visual feedback. Add a subtle indicator (small dot or icon) next to documents that are still pending search indexing.",
+    "Add document lifecycle status enhancement - in DocumentHub.tsx and DocumentDetail.tsx, add visual indicators for the lifecycle field (Active/Draft/Archived) using colored dots or small badges next to the existing status badge. Use the pattern: Active = green dot, Draft = amber dot, Archived = gray dot.",
+    "Commit all changes with conventional commit messages: feat(ux): add admin metrics service and monitoring components, feat(ux): integrate admin panels into SystemHealth and AdminWorkspace"
+  ],
+  "acceptance_criteria": [
+    "AdminMetricsService provides mock metrics data and supports retryJob/retryAllFailed operations",
+    "SystemHealthSummary shows service health, OCR queue depth, storage usage, and worker count",
+    "OcrQueueMonitor displays queue depth with color-coded health indicator",
+    "StorageUsageIndicator shows progress bar with color-coding based on usage percentage",
+    "WorkerStatusPanel shows individual worker status with heartbeat times",
+    "FailedJobsPanel lists failed jobs with retry functionality",
+    "AdminWorkspace page displays the SystemHealthSummary at the top",
+    "SystemHealth page includes the new monitoring panels",
+    "DocumentHub uses enhanced OCR status display",
+    "Build passes: cd artifacts/edms && npx vite build succeeds",
+    "Typecheck passes: npx tsc --noEmit has no errors"
+  ],
+  "verification": [
+    "Run npx tsc --noEmit from repo root and confirm 0 errors",
+    "Run cd artifacts/edms && npx vite build and confirm successful build",
+    "Run npx vitest run and confirm all existing tests pass"
+  ],
+  "blocked_reason": null,
+  "findings": "All steps implemented successfully. Typecheck (tsc --noEmit) passes with 0 errors. Vite build succeeds. All 5 vitest tests pass. The ocrVariant function is retained in DocumentHub for potential internal use but the primary OCR display now uses OcrStatusBadge from FEAT-001."
+}
