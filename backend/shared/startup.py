@@ -17,6 +17,13 @@ def validate_startup_config(*, debug: bool, db_engine: str, env: dict[str, str] 
     if db_engine == 'postgresql' and not (env.get('POSTGRES_PASSWORD') or '').strip():
         issues.append('POSTGRES_PASSWORD is required when EDMS_DB_ENGINE=postgresql.')
 
+    if not debug:
+        cors_origins = env.get('CORS_ALLOWED_ORIGINS', '')
+        if not cors_origins:
+            issues.append('CORS_ALLOWED_ORIGINS is required in non-debug mode.')
+        elif 'localhost' in cors_origins or '127.0.0.1' in cors_origins:
+            issues.append('CORS_ALLOWED_ORIGINS must not contain local domains in non-debug mode.')
+
     return issues
 
 
