@@ -13,6 +13,7 @@ env:
   POSTGRES_DB: edms_test
   POSTGRES_USER: edms_test
   DJANGO_SECRET_KEY: ci-insecure-key-do-not-use-in-prod
+  DJANGO_ALLOWED_HOSTS: localhost
 
 jobs:
   # ─── Backend Lint & Test ────────────────────────────────────────────────────
@@ -105,7 +106,7 @@ jobs:
       - name: Install pnpm
         run: |
           corepack enable
-          corepack prepare pnpm@latest --activate
+          corepack prepare pnpm@10.30.3 --activate
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
