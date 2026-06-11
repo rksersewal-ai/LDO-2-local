@@ -1,5 +1,6 @@
 const STORAGE_KEY = "ldo2_admin_metrics";
 const FAILED_JOBS_KEY = "ldo2_failed_jobs";
+const WORKERS_KEY = "ldo2_workers";
 
 export interface AdminMetrics {
   ocrQueueDepth: number;
@@ -138,6 +139,46 @@ function persistMetrics(metrics: AdminMetrics) {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(metrics));
 }
 
+function loadWorkers(): WorkerInfo[] {
+  try {
+    const raw = window.localStorage.getItem(WORKERS_KEY);
+    if (!raw) {
+      persistWorkers(DEFAULT_WORKERS);
+      return DEFAULT_WORKERS;
+    }
+    return JSON.parse(raw) as WorkerInfo[];
+  } catch {
+    persistWorkers(DEFAULT_WORKERS);
+    return DEFAULT_WORKERS;
+  }
+}
+
+function persistWorkers(workers: WorkerInfo[]) {
+  window.localStorage.setItem(WORKERS_KEY, JSON.stringify(workers));
+}
+
+/**
+ * Refresh heartbeat timestamps to simulate fresh worker heartbeats.
+ * Healthy workers get a timestamp a few seconds ago; overloaded workers
+ * get a timestamp ~2 minutes ago; dead workers are left unchanged.
+ */
+function refreshHeartbeats(workers: WorkerInfo[]): WorkerInfo[] {
+  return workers.map((worker) => {
+    if (worker.status === "healthy") {
+      // Simulate a recent heartbeat (5-15 seconds ago)
+      const jitter = Math.floor(Math.random() * 10) + 5;
+      return { ...worker, lastHeartbeat: new Date(Date.now() - jitter * 1000).toISOString() };
+    }
+    if (worker.status === "overloaded") {
+      // Simulate a stale heartbeat (~2 minutes ago)
+      const jitter = Math.floor(Math.random() * 20) + 110;
+      return { ...worker, lastHeartbeat: new Date(Date.now() - jitter * 1000).toISOString() };
+    }
+    // Dead workers: no heartbeat refresh
+    return worker;
+  });
+}
+
 export const AdminMetricsService = {
   getMetrics(): AdminMetrics {
     return loadMetrics();
@@ -148,7 +189,10 @@ export const AdminMetricsService = {
   },
 
   getWorkers(): WorkerInfo[] {
-    return DEFAULT_WORKERS;
+    const workers = loadWorkers();
+    const refreshed = refreshHeartbeats(workers);
+    persistWorkers(refreshed);
+    return refreshed;
   },
 
   retryJob(jobId: string): FailedJob[] {

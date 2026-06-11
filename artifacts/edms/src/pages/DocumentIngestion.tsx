@@ -233,9 +233,13 @@ export default function DocumentIngestion() {
         }
       }, 300);
 
-      const result = await apiClient.ingestDocument(formData);
+      let result: unknown;
+      try {
+        result = await apiClient.ingestDocument(formData);
+      } finally {
+        clearInterval(progressInterval);
+      }
 
-      clearInterval(progressInterval);
       UploadProgressService.completeUpload(uploadId);
       const createdDocument = (result as Record<string, unknown>)?.document as
         | { id?: string }
