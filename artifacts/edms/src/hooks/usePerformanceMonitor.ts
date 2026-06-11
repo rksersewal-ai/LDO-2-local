@@ -110,6 +110,8 @@ export function usePerformanceMonitor(componentName: string): PerformanceMetrics
     durationsRef.current.push(duration);
     if (durationsRef.current.length > MAX_RENDER_HISTORY) {
       durationsRef.current = durationsRef.current.slice(-MAX_RENDER_HISTORY);
+      // Clear accumulated performance entries to prevent timeline flooding
+      clearPerformanceEntries(componentName);
     }
 
     // Calculate average

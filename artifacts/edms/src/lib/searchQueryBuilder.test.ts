@@ -25,7 +25,7 @@ describe("sanitizeSearchTerm", () => {
   });
 
   it("removes dangerous characters (quotes, semicolons, backslashes)", () => {
-    expect(sanitizeSearchTerm("valve'; DROP TABLE--")).toBe("valve DROP TABLE--");
+    expect(sanitizeSearchTerm("valve'; DROP TABLE--")).toBe("valve DROP TABLE");
   });
 
   it("preserves hyphens and common punctuation", () => {

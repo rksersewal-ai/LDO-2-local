@@ -103,11 +103,16 @@ export interface SearchQueryDescriptor {
 
 /**
  * Sanitizes a search term by removing dangerous characters.
+ * Strips SQL injection characters and PostgreSQL tsquery operators.
  * Preserves alphanumeric, spaces, hyphens, and common punctuation.
  */
 export function sanitizeSearchTerm(term: string): string {
   return term
     .replace(/[\\'"`;]/g, "")
+    .replace(/[&|!()]/g, "")
+    .replace(/--/g, "")
+    .replace(/\/\*/g, "")
+    .replace(/\*\//g, "")
     .replace(/\s+/g, " ")
     .trim();
 }

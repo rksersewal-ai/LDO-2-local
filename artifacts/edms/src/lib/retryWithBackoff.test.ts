@@ -67,15 +67,15 @@ describe("retryWithBackoff", () => {
     it("applies jitter (randomization) to prevent thundering herd", () => {
       vi.spyOn(Math, "random").mockReturnValue(0);
       const delay = calculateBackoffDelay(2, 1000, 2, 30000);
-      // With random=0, jitter = 0
-      expect(delay).toBe(0);
+      // With random=0, jitter = 0 but floor enforces minimum of 100ms
+      expect(delay).toBe(100);
       vi.spyOn(Math, "random").mockRestore();
     });
 
     it("always returns a non-negative integer", () => {
       for (let i = 0; i < 10; i++) {
         const delay = calculateBackoffDelay(i, 500, 2, 10000);
-        expect(delay).toBeGreaterThanOrEqual(0);
+        expect(delay).toBeGreaterThanOrEqual(100);
         expect(Number.isInteger(delay)).toBe(true);
       }
     });

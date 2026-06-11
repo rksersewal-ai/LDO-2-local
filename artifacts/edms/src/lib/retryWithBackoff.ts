@@ -75,8 +75,10 @@ export function calculateBackoffDelay(
   // Cap at max delay
   const cappedDelay = Math.min(exponentialDelay, maxDelay);
   // Apply full jitter: random value between 0 and cappedDelay
+  // Floor at minimum 100ms to prevent zero-delay retries
   const jitter = Math.random() * cappedDelay;
-  return Math.floor(jitter);
+  const MIN_DELAY_FLOOR = 100;
+  return Math.max(MIN_DELAY_FLOOR, Math.floor(jitter));
 }
 
 /**
