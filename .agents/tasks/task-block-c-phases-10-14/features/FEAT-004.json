@@ -1,0 +1,37 @@
+{
+  "id": "FEAT-004",
+  "type": "chore",
+  "description": "Phase 13 - Testing Commands (Makefile): Create a Makefile at the repo root with standard development targets",
+  "status": "pending",
+  "steps": [
+    "Create /projects/sandbox/LDO-2-local/Makefile with these targets:",
+    "  make test - run all tests: npx vitest run && cd artifacts/edms && npx vitest run",
+    "  make typecheck - TypeScript check: npx tsc --noEmit",
+    "  make lint - Biome lint: npx biome lint .",
+    "  make build - production build: cd artifacts/edms && npx vite build",
+    "  make test-e2e - placeholder that echoes instructions for setting up E2E tests with Playwright",
+    "  make benchmark-search - run search benchmark script (reference scripts/ directory or echo placeholder)",
+    "  make benchmark-ocr - placeholder that echoes OCR benchmark instructions",
+    "  make doctor - run preflight checks: make typecheck && make lint && make test && make build",
+    "  make backup-test - placeholder that echoes backup verification instructions",
+    "  make ci - full CI pipeline locally: make lint && make typecheck && make test && make build",
+    "Include .PHONY declarations for all targets",
+    "Include a help target (make help) that lists all available targets with descriptions",
+    "Commit with: chore: add Makefile with development and CI targets"
+  ],
+  "acceptance_criteria": [
+    "Makefile exists at repo root with all specified targets",
+    "make typecheck runs successfully (0 errors)",
+    "make build runs successfully",
+    "make test runs all tests successfully",
+    "make ci runs the full pipeline (lint may warn but not fail the make target)",
+    "All placeholder targets echo descriptive instructions"
+  ],
+  "verification": [
+    "cd /projects/sandbox/LDO-2-local && make typecheck",
+    "cd /projects/sandbox/LDO-2-local && make build",
+    "cd /projects/sandbox/LDO-2-local && make test"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

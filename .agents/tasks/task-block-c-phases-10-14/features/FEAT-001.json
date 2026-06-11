@@ -1,0 +1,35 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Phase 10 - Security Hardening: Create 5 new security utility modules with comprehensive tests in artifacts/edms/src/lib/security/",
+  "status": "in_progress",
+  "steps": [
+    "Create directory artifacts/edms/src/lib/security/ for all security modules",
+    "Create artifacts/edms/src/lib/security/AuditLogService.ts - Immutable append-only audit log with hash chain (SHA-256 via Web Crypto API or manual implementation). Track document operations: view, download, create, update, delete, approve, reject. Each entry has: id, timestamp, userId, operation, documentId, previousHash, currentHash. Gate behind AUDIT_HASH_CHAIN feature flag. Store in localStorage as serialized JSON. Provide methods: logOperation(), getAuditTrail(), verifyChainIntegrity(), getEntriesByDocument(), getEntriesByUser()",
+    "Create artifacts/edms/src/lib/security/AuditLogService.test.ts - Test all operations, hash chain integrity verification, tamper detection, filtering by document/user, feature flag gating",
+    "Create artifacts/edms/src/lib/security/rateLimiting.ts - Client-side rate limit tracking. Track request counts per endpoint per configurable time window. Methods: checkLimit(endpoint), recordRequest(endpoint), getRemainingRequests(endpoint), isLimited(endpoint). Uses sliding window algorithm. Configurable maxRequests and windowMs per endpoint.",
+    "Create artifacts/edms/src/lib/security/rateLimiting.test.ts - Test rate limit enforcement, window expiration, per-endpoint isolation, configuration",
+    "Create artifacts/edms/src/lib/security/uploadValidation.ts - Enhanced upload security beyond existing fileValidation.ts. Validate file headers (magic bytes) match declared extension. Reject dangerous MIME types (application/x-executable, text/html with script tags, application/x-msdownload, etc.). Check for embedded scripts in SVG/HTML. Provide validateUploadSecurity(file) returning detailed ValidationResult.",
+    "Create artifacts/edms/src/lib/security/uploadValidation.test.ts - Test magic byte mismatch detection, dangerous MIME rejection, embedded script detection, clean file acceptance",
+    "Create artifacts/edms/src/lib/security/sessionSecurity.ts - Session timeout tracking with configurable idle duration. Idle detection via timestamp tracking. Secure token rotation interface (scheduleRotation, getTokenAge, isExpired). Methods: startSession(), recordActivity(), isSessionExpired(), getIdleDuration(), shouldRotateToken(). Configurable timeoutMs and rotationIntervalMs.",
+    "Create artifacts/edms/src/lib/security/sessionSecurity.test.ts - Test session expiration, activity recording resets timer, token rotation scheduling, idle detection",
+    "Create artifacts/edms/src/lib/security/permissionGuard.ts - Frontend permission checking utility. Define Permission type (view, edit, delete, approve, admin). Define Role type (viewer, editor, approver, admin). Validate user role + object-level access before rendering actions. Methods: hasPermission(user, permission, resource), canPerformAction(user, action, document), getAvailableActions(user, document). Role hierarchy: admin > approver > editor > viewer.",
+    "Create artifacts/edms/src/lib/security/permissionGuard.test.ts - Test role hierarchy, object-level permissions, action availability per role, edge cases (null user, unknown role)",
+    "Create artifacts/edms/src/lib/security/index.ts - Barrel export for all security modules"
+  ],
+  "acceptance_criteria": [
+    "All 5 security modules compile without TypeScript errors (npx tsc --noEmit)",
+    "All security tests pass when running: cd artifacts/edms && npx vitest run src/lib/security/",
+    "AuditLogService properly chains hashes and detects tampering",
+    "Rate limiting correctly tracks and enforces limits per endpoint",
+    "Upload validation catches magic byte mismatches and dangerous content",
+    "Session security tracks idle time and expiration correctly",
+    "Permission guard enforces role hierarchy and object-level access"
+  ],
+  "verification": [
+    "cd /projects/sandbox/LDO-2-local && npx tsc --noEmit",
+    "cd /projects/sandbox/LDO-2-local/artifacts/edms && npx vitest run src/lib/security/"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}
