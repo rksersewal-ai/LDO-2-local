@@ -48,7 +48,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   "CAT-A": "bg-rose-500/10 text-rose-300 border-rose-500/30",
   "CAT-B": "bg-amber-500/10 text-amber-300 border-amber-500/30",
   "CAT-C": "bg-blue-500/10 text-blue-300 border-blue-500/30",
-  "CAT-D": "bg-slate-700/50 text-muted-foreground border-slate-600/40",
+  "CAT-D": "bg-muted text-muted-foreground border-border",
 };
 
 type SortKey =
@@ -77,7 +77,7 @@ function SortIcon({
   sortKey: SortKey | null;
   sortDir: "asc" | "desc";
 }) {
-  if (sortKey !== col) return <ChevronsUpDown className="w-3 h-3 text-slate-600 ml-0.5 shrink-0" />;
+  if (sortKey !== col) return <ChevronsUpDown className="w-3 h-3 text-muted-foreground ml-0.5 shrink-0" />;
   return sortDir === "asc" ? (
     <ChevronUp className="w-3 h-3 text-primary ml-0.5 shrink-0" />
   ) : (
@@ -123,7 +123,7 @@ function LinkDocumentsModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-popover/80 backdrop-blur-sm">
       <GlassCard className="w-full max-w-2xl p-6 shadow-2xl flex flex-col max-h-[90vh]">
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -135,7 +135,7 @@ function LinkDocumentsModal({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground/90 hover:bg-slate-700/50 transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground/90 hover:bg-muted transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -188,14 +188,14 @@ function LinkDocumentsModal({
                 key={doc.id}
                 data-document-id={doc.id}
                 data-document-title={doc.name}
-                className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${isLinked ? "bg-teal-900/20 border-teal-500/30" : "bg-secondary/30 border-border/40 hover:border-slate-600/60"}`}
+                className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${isLinked ? "bg-teal-900/20 border-teal-500/30" : "bg-secondary/30 border-border/40 hover:border-border/60"}`}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => e.key === "Enter" && (() => toggle(doc.id))}
                 onClick={() => toggle(doc.id)}
               >
                 <div
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${isLinked ? "bg-teal-500/20" : "bg-slate-700/40"}`}
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${isLinked ? "bg-teal-500/20" : "bg-secondary/40"}`}
                 >
                   <FileText
                     className={`w-4 h-4 ${isLinked ? "text-primary" : "text-muted-foreground"}`}
@@ -232,7 +232,7 @@ function LinkDocumentsModal({
                       e.stopPropagation();
                       navigate(resolveDocumentPreviewPath(doc.id));
                     }}
-                    className="w-6 h-6 rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-slate-700/50 transition-colors"
+                    className="w-6 h-6 rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-muted transition-colors"
                     title="Open preview"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
@@ -614,12 +614,12 @@ export default function PLKnowledgeHub() {
                           {pl.name}
                         </p>
                         {pl.description && (
-                          <p className="text-[10px] text-slate-600 truncate">{pl.description}</p>
+                          <p className="text-[10px] text-muted-foreground truncate">{pl.description}</p>
                         )}
                       </td>
                       <td className="py-2.5 px-2 bg-secondary/30 group-hover:bg-secondary/50 border-y border-border/30 group-hover:border-teal-500/20 transition-all">
                         <span
-                          className={`px-1.5 py-0.5 rounded border text-[10px] font-semibold ${CATEGORY_COLORS[pl.category] ?? "bg-slate-700/50 text-muted-foreground border-slate-600"}`}
+                          className={`px-1.5 py-0.5 rounded border text-[10px] font-semibold ${CATEGORY_COLORS[pl.category] ?? "bg-muted text-muted-foreground border-border"}`}
                         >
                           {pl.category}
                         </span>
@@ -633,7 +633,7 @@ export default function PLKnowledgeHub() {
                       </td>
                       <td className="py-2.5 px-2 bg-secondary/30 group-hover:bg-secondary/50 border-y border-border/30 group-hover:border-teal-500/20 transition-all">
                         <span className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Building2 className="w-3 h-3 text-slate-600 shrink-0" />
+                          <Building2 className="w-3 h-3 text-muted-foreground shrink-0" />
                           {pl.controllingAgency || "—"}
                         </span>
                       </td>
@@ -644,21 +644,21 @@ export default function PLKnowledgeHub() {
                       </td>
                       <td className="py-2.5 px-2 bg-secondary/30 group-hover:bg-secondary/50 border-y border-border/30 group-hover:border-teal-500/20 transition-all text-center">
                         <span
-                          className={`text-xs font-semibold ${pl.linkedDocumentIds.length > 0 ? "text-primary" : "text-slate-600"}`}
+                          className={`text-xs font-semibold ${pl.linkedDocumentIds.length > 0 ? "text-primary" : "text-muted-foreground"}`}
                         >
                           {pl.linkedDocumentIds.length}
                         </span>
                       </td>
                       <td className="py-2.5 px-2 bg-secondary/30 group-hover:bg-secondary/50 border-y border-border/30 group-hover:border-teal-500/20 transition-all text-center">
                         <span
-                          className={`text-xs font-semibold ${(pl.linkedWorkIds?.length ?? 0) > 0 ? "text-blue-400" : "text-slate-600"}`}
+                          className={`text-xs font-semibold ${(pl.linkedWorkIds?.length ?? 0) > 0 ? "text-blue-400" : "text-muted-foreground"}`}
                         >
                           {pl.linkedWorkIds?.length ?? 0}
                         </span>
                       </td>
                       <td className="py-2.5 px-2 bg-secondary/30 group-hover:bg-secondary/50 border-y border-border/30 group-hover:border-teal-500/20 transition-all text-center">
                         <span
-                          className={`text-xs font-semibold ${(pl.engineeringChanges?.length ?? 0) > 0 ? "text-amber-400" : "text-slate-600"}`}
+                          className={`text-xs font-semibold ${(pl.engineeringChanges?.length ?? 0) > 0 ? "text-amber-400" : "text-muted-foreground"}`}
                         >
                           {pl.engineeringChanges?.length ?? 0}
                         </span>
@@ -675,12 +675,12 @@ export default function PLKnowledgeHub() {
                             className={`w-6 h-6 flex items-center justify-center rounded-lg border transition-all ${
                               pl.linkedDocumentIds.length > 0
                                 ? "bg-teal-500/10 border-teal-500/30 text-primary hover:bg-teal-500/20"
-                                : "bg-secondary/50 border-border/40 text-slate-600 hover:text-foreground/90 hover:border-slate-600"
+                                : "bg-secondary/50 border-border/40 text-muted-foreground hover:text-foreground/90 hover:border-border"
                             }`}
                           >
                             <LinkIcon className="w-3 h-3" />
                           </button>
-                          <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-primary transition-colors" />
+                          <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
                         </div>
                       </td>
                     </tr>

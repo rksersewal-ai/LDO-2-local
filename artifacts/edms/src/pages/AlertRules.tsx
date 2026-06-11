@@ -178,7 +178,7 @@ export default function AlertRules() {
             label: "Disabled",
             value: rules.filter((rule) => !rule.enabled).length,
             icon: AlertTriangle,
-            color: "text-muted-foreground bg-slate-500/10",
+            color: "text-muted-foreground bg-muted",
           },
         ].map((stat) => (
           <GlassCard

@@ -69,19 +69,19 @@ import { PLPreviewService } from "../services/PLPreviewService";
 import { PLService } from "../services/PLService";
 
 function NodeIcon({ type, className = "w-5 h-5" }: { type: string; className?: string }) {
-  if (type === "assembly") return <Box className={`${className} text-blue-400`} />;
-  if (type === "sub-assembly") return <Layers className={`${className} text-indigo-400`} />;
+  if (type === "assembly") return <Box className={`${className} text-[color:var(--status-info)]`} />;
+  if (type === "sub-assembly") return <Layers className={`${className} text-[color:var(--status-info)]`} />;
   return <Cpu className={`${className} text-muted-foreground`} />;
 }
 
 function tagColor(tag: string) {
   const t = tag.toLowerCase();
-  if (t.includes("safety")) return "bg-rose-900/50 text-rose-300 border-rose-500/30";
-  if (t.includes("high voltage")) return "bg-amber-900/50 text-amber-300 border-amber-500/30";
+  if (t.includes("safety")) return "bg-[color:var(--status-danger)]/10 text-[color:var(--status-danger)] border-[color:var(--status-danger)]/30";
+  if (t.includes("high voltage")) return "bg-[color:var(--status-warning)]/10 text-[color:var(--status-warning)] border-[color:var(--status-warning)]/30";
   if (t.includes("electrical") || t.includes("electronics"))
-    return "bg-blue-900/50 text-blue-300 border-blue-500/30";
+    return "bg-[color:var(--status-info)]/10 text-[color:var(--status-info)] border-[color:var(--status-info)]/30";
   if (t.includes("rotating") || t.includes("precision"))
-    return "bg-purple-900/50 text-purple-300 border-purple-500/30";
+    return "bg-[color:var(--status-processing)]/10 text-[color:var(--status-processing)] border-[color:var(--status-processing)]/30";
   return "bg-secondary text-muted-foreground border-border";
 }
 
@@ -113,24 +113,24 @@ function statusBadgeVariant(
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  "CAT-A": "bg-rose-500/10 text-rose-300 border-rose-500/30",
-  "CAT-B": "bg-amber-500/10 text-amber-300 border-amber-500/30",
-  "CAT-C": "bg-blue-500/10 text-blue-300 border-blue-500/30",
-  "CAT-D": "bg-slate-700/50 text-muted-foreground border-slate-600/40",
+  "CAT-A": "bg-[color:var(--status-danger)]/10 text-[color:var(--status-danger)] border-[color:var(--status-danger)]/30",
+  "CAT-B": "bg-[color:var(--status-warning)]/10 text-[color:var(--status-warning)] border-[color:var(--status-warning)]/30",
+  "CAT-C": "bg-[color:var(--status-info)]/10 text-[color:var(--status-info)] border-[color:var(--status-info)]/30",
+  "CAT-D": "bg-muted text-muted-foreground border-border",
 };
 
 const EC_STATUS_VARIANT: Record<string, string> = {
-  OPEN: "bg-blue-500/10 text-blue-300 border-blue-500/30",
-  IN_REVIEW: "bg-amber-500/10 text-amber-300 border-amber-500/30",
-  IMPLEMENTED: "bg-teal-500/10 text-primary/90 border-teal-500/30",
-  RELEASED: "bg-emerald-500/10 text-emerald-300 border-emerald-500/30",
+  OPEN: "bg-[color:var(--status-info)]/10 text-[color:var(--status-info)] border-[color:var(--status-info)]/30",
+  IN_REVIEW: "bg-[color:var(--status-warning)]/10 text-[color:var(--status-warning)] border-[color:var(--status-warning)]/30",
+  IMPLEMENTED: "bg-primary/10 text-primary/90 border-primary/30",
+  RELEASED: "bg-[color:var(--status-success)]/10 text-[color:var(--status-success)] border-[color:var(--status-success)]/30",
 };
 
 const EC_STATUS_DOT: Record<string, string> = {
-  OPEN: "bg-blue-400",
-  IN_REVIEW: "bg-amber-400",
-  IMPLEMENTED: "bg-teal-400",
-  RELEASED: "bg-emerald-400",
+  OPEN: "bg-[color:var(--status-info)]",
+  IN_REVIEW: "bg-[color:var(--status-warning)]",
+  IMPLEMENTED: "bg-primary",
+  RELEASED: "bg-[color:var(--status-success)]",
 };
 
 function _Field({
@@ -146,7 +146,7 @@ function _Field({
     <div>
       <span className="block text-xs font-medium text-muted-foreground mb-1.5">{label}</span>
       {children}
-      {error && <p className="text-[10px] text-rose-400 mt-1">{error}</p>}
+      {error && <p className="text-[10px] text-[color:var(--status-danger)] mt-1">{error}</p>}
     </div>
   );
 }
@@ -246,7 +246,7 @@ function DocumentLinkingSection({
     <div className="grid grid-cols-2 gap-4">
       {/* Left Column: Search & Available Documents */}
       <GlassCard className="p-3.5 flex flex-col hover:border-primary/20 transition-all duration-200">
-        <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+        <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
           <FileSearch className="w-4 h-4 text-primary" />
           Search & Link Documents
         </h3>
@@ -308,7 +308,7 @@ function DocumentLinkingSection({
 
       {/* Right Column: Linked Documents */}
       <GlassCard className="p-3.5 flex flex-col hover:border-primary/20 transition-all duration-200">
-        <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+        <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
           <FileText className="w-4 h-4 text-primary" />
           Linked Documents
           <span className="ml-auto text-xs text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-full">
@@ -403,7 +403,7 @@ function DocumentLinkingSection({
             <div className="text-center py-8 text-muted-foreground">
               <FileText className="w-8 h-8 mx-auto mb-2 opacity-30" />
               <p className="text-xs">No documents linked yet</p>
-              <p className="text-[10px] text-slate-600 mt-1">
+              <p className="text-[10px] text-muted-foreground mt-1">
                 Search and link documents from the left panel
               </p>
             </div>
@@ -433,7 +433,7 @@ function FormField({
         {label}
       </span>
       {children}
-      {error && <p className="text-[10px] text-rose-400 mt-1">{error}</p>}
+      {error && <p className="text-[10px] text-[color:var(--status-danger)] mt-1">{error}</p>}
     </div>
   );
 }
@@ -458,7 +458,7 @@ function FormTextInput({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className={`w-full ${mono ? "font-mono text-xs" : ""} ${hasError ? "border-rose-500/50" : ""}`}
+      className={`w-full ${mono ? "font-mono text-xs" : ""} ${hasError ? "border-destructive/50" : ""}`}
       disabled={disabled}
     />
   );
@@ -581,7 +581,7 @@ export function PLFormModal({
 
   const F = FormField;
 
-  const ta = `w-full bg-slate-950/60 border border-border text-foreground text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/30 transition-all placeholder:text-slate-600 resize-none`;
+  const ta = `w-full bg-background border border-border text-foreground text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-all placeholder:text-muted-foreground resize-none`;
 
   // Keyboard shortcuts: Escape to close, Ctrl+S to save
   useEffect(() => {
@@ -630,7 +630,7 @@ export function PLFormModal({
       {/* Backdrop */}
       <div
         className={`fixed z-[100] flex items-center justify-center transition-all duration-300 ${
-          isMaximized ? "inset-0 bg-slate-900" : "inset-0 bg-slate-900/60 backdrop-blur-sm p-4"
+          isMaximized ? "inset-0 bg-background" : "inset-0 bg-background/60 backdrop-blur-sm p-4"
         } animate-in fade-in`}
       >
         <div
@@ -643,16 +643,16 @@ export function PLFormModal({
           }`}
         >
           {/* ── Title Bar (dark, desktop-app style) ─────────────────────── */}
-          <div className="px-4 py-3 bg-slate-900 text-white flex justify-between items-center shrink-0 select-none">
+          <div className="px-4 py-3 bg-secondary border-b border-border text-foreground flex justify-between items-center shrink-0 select-none">
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={handleClose}
-                className="p-1.5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors"
+                className="p-1.5 hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground transition-colors"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              <div className="p-1.5 bg-teal-600 rounded-lg">
+              <div className="p-1.5 bg-primary rounded-lg">
                 {isEdit ? <Edit3 className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
               </div>
               <div>
@@ -660,7 +660,7 @@ export function PLFormModal({
                   {isEdit ? "Edit PL Record" : "New Engineering PL Record"}
                 </h3>
                 {!isMinimized && (
-                  <p className="text-slate-400 text-[10px]">
+                  <p className="text-muted-foreground text-[10px]">
                     {isEdit
                       ? `PL-${pl.plNumber} — ${pl.name}`
                       : "Register a new 8-digit PL number in the system"}
@@ -670,24 +670,24 @@ export function PLFormModal({
             </div>
             <div className="flex items-center gap-1">
               {hasUnsavedChanges && (
-                <span className="text-[10px] text-amber-400 flex items-center gap-1 mr-2">
+                <span className="text-[10px] text-[color:var(--status-warning)] flex items-center gap-1 mr-2">
                   <AlertTriangle className="w-3 h-3" /> Unsaved
                 </span>
               )}
               {errorCount > 0 && (
-                <span className="text-[10px] text-rose-400 flex items-center gap-1 mr-2">
+                <span className="text-[10px] text-[color:var(--status-danger)] flex items-center gap-1 mr-2">
                   <AlertCircle className="w-3 h-3" /> {errorCount} error
                   {errorCount > 1 ? "s" : ""}
                 </span>
               )}
-              <span className="text-[9px] text-slate-500 mr-2 hidden sm:inline">Ctrl+S · Esc</span>
+              <span className="text-[9px] text-muted-foreground mr-2 hidden sm:inline">Ctrl+S · Esc</span>
               <button
                 type="button"
                 onClick={() => {
                   setIsMinimized(!isMinimized);
                   if (isMaximized) setIsMaximized(false);
                 }}
-                className="p-1.5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors"
+                className="p-1.5 hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground transition-colors"
               >
                 {isMinimized ? <Maximize className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
               </button>
@@ -697,14 +697,14 @@ export function PLFormModal({
                   setIsMaximized(!isMaximized);
                   setIsMinimized(false);
                 }}
-                className="p-1.5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors"
+                className="p-1.5 hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground transition-colors"
               >
                 {isMaximized ? <Minimize2 className="w-4 h-4" /> : <Square className="w-4 h-4" />}
               </button>
               <button
                 type="button"
                 onClick={handleClose}
-                className="p-1.5 hover:bg-rose-500 rounded-lg text-slate-400 hover:text-white transition-colors ml-1"
+                className="p-1.5 hover:bg-destructive rounded-lg text-muted-foreground hover:text-destructive-foreground transition-colors ml-1"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -717,13 +717,13 @@ export function PLFormModal({
               <div className="flex-1 overflow-y-auto p-6">
                 {/* Validation error banner */}
                 {errorCount > 0 && (
-                  <div className="mb-5 p-3.5 bg-rose-500/10 border border-rose-500/25 rounded-xl flex items-start gap-3 animate-in slide-in-from-top-2">
-                    <div className="p-1.5 bg-rose-500/20 text-rose-400 rounded-full shrink-0">
+                  <div className="mb-5 p-3.5 bg-[color:var(--status-danger)]/10 border border-[color:var(--status-danger)]/25 rounded-xl flex items-start gap-3 animate-in slide-in-from-top-2">
+                    <div className="p-1.5 bg-[color:var(--status-danger)]/20 text-[color:var(--status-danger)] rounded-full shrink-0">
                       <AlertTriangle className="w-4 h-4" />
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold text-rose-300">Validation Errors</h4>
-                      <p className="text-[10px] text-rose-300/80 mt-0.5">
+                      <h4 className="text-xs font-bold text-[color:var(--status-danger)]">Validation Errors</h4>
+                      <p className="text-[10px] text-[color:var(--status-danger)]/80 mt-0.5">
                         {Object.values(errors).join(" · ")}
                       </p>
                     </div>
@@ -731,7 +731,7 @@ export function PLFormModal({
                 )}
 
                 {/* Clean Horizontal Tabs Bar */}
-                <div className="sticky top-0 bg-slate-950/45 backdrop-blur-md z-10 -mx-6 px-6 py-2.5 mb-6 border-b border-border/40 flex items-center justify-between gap-4 overflow-x-auto thin-scrollbar select-none">
+                <div className="sticky top-0 bg-card/90 backdrop-blur-md z-10 -mx-6 px-6 py-2.5 mb-6 border-b border-border/40 flex items-center justify-between gap-4 overflow-x-auto thin-scrollbar select-none">
                   <div className="flex gap-1.5">
                     {[
                       { id: "general", label: "General & Classification", icon: Hash },
@@ -789,7 +789,7 @@ export function PLFormModal({
                         <div className="space-y-4 bg-secondary/10 p-5 rounded-2xl border border-border/20">
                           {isEdit ? (
                             <F label="PL Number (read-only)">
-                              <div className="bg-slate-900/60 border border-border/30 rounded-xl px-4 py-2.5 text-sm font-mono text-muted-foreground">
+                              <div className="bg-secondary/60 border border-border/30 rounded-xl px-4 py-2.5 text-sm font-mono text-muted-foreground">
                                 {pl.plNumber}
                               </div>
                             </F>
@@ -1029,7 +1029,7 @@ export function PLFormModal({
 
                       {!form.vendorType && (
                         <div className="col-span-2 p-10 rounded-2xl bg-secondary/10 border border-border/20 text-center space-y-3">
-                          <Package className="w-8 h-8 mx-auto text-slate-600 opacity-60" />
+                          <Package className="w-8 h-8 mx-auto text-muted-foreground opacity-60" />
                           <div>
                             <p className="text-sm font-bold text-foreground">
                               No Vendor Type Configured
@@ -1130,7 +1130,7 @@ export function PLFormModal({
                         </div>
                       ) : (
                         <div className="col-span-2 p-10 rounded-2xl bg-secondary/10 border border-border/20 text-center space-y-3">
-                          <Shield className="w-8 h-8 mx-auto text-slate-600 opacity-60" />
+                          <Shield className="w-8 h-8 mx-auto text-muted-foreground opacity-60" />
                           <div>
                             <p className="text-sm font-bold text-foreground">
                               Standard Non-Safety Component
@@ -1274,7 +1274,7 @@ export function PLFormModal({
                           </F>
 
                           {isEdit && (
-                            <div className="bg-slate-900/60 rounded-xl p-4 space-y-2.5 text-xs border border-border/20">
+                            <div className="bg-secondary/60 rounded-xl p-4 space-y-2.5 text-xs border border-border/20">
                               <div className="flex justify-between">
                                 <span className="text-muted-foreground font-medium">
                                   Record Created
@@ -1338,7 +1338,7 @@ export function PLFormModal({
               </div>
 
               {/* ── Bottom action bar ────────────────────────────────────── */}
-              <div className="flex items-center gap-3 px-6 py-3.5 bg-slate-900/80 backdrop-blur border-t border-border shrink-0">
+              <div className="flex items-center gap-3 px-6 py-3.5 bg-secondary/80 backdrop-blur border-t border-border shrink-0">
                 <Button
                   variant="secondary"
                   size="sm"
@@ -1499,7 +1499,7 @@ function AddECForm({ onAdd, onCancel }: AddECFormProps) {
           onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
           rows={2}
           placeholder="Describe the engineering change..."
-          className="w-full bg-slate-950/60 border border-border text-foreground text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/30 transition-all placeholder:text-slate-600 resize-none"
+          className="w-full bg-background border border-border text-foreground text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/30 transition-all placeholder:text-muted-foreground resize-none"
         />
       </div>
       <div className="flex gap-2 justify-end">
@@ -1665,7 +1665,7 @@ function PLNumberDetailView({
                 </span>
               )}
               <span
-                className={`px-2 py-0.5 rounded border text-xs font-semibold ${CATEGORY_COLORS[pl.category] ?? "bg-slate-700/50 text-muted-foreground"}`}
+                className={`px-2 py-0.5 rounded border text-xs font-semibold ${CATEGORY_COLORS[pl.category] ?? "bg-muted text-muted-foreground"}`}
               >
                 {pl.category}
               </span>
@@ -1675,7 +1675,7 @@ function PLNumberDetailView({
               {pl.plNumber}
               {pl.controllingAgency && (
                 <>
-                  <span className="text-slate-600">·</span>
+                  <span className="text-muted-foreground">·</span>
                   <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
                   {pl.controllingAgency}
                 </>
@@ -1885,7 +1885,7 @@ function PLNumberDetailView({
                 <div className="space-y-1.5">
                   {(pl.usedIn ?? []).map((p) => (
                     <div key={p} className="flex items-center gap-2 text-sm">
-                      <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
+                      <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
                       <span
                         className="font-mono text-primary text-xs cursor-pointer hover:underline"
                         onClick={() => navigate(`/pl/${p}`)}
@@ -1912,7 +1912,7 @@ function PLNumberDetailView({
                     .map((ec) => (
                       <div key={ec.id} className="flex gap-2.5">
                         <div
-                          className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${EC_STATUS_DOT[ec.status] ?? "bg-slate-500"}`}
+                          className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${EC_STATUS_DOT[ec.status] ?? "bg-muted-foreground"}`}
                         />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5 flex-wrap">
@@ -1928,7 +1928,7 @@ function PLNumberDetailView({
                           <p className="text-[11px] text-muted-foreground truncate">
                             {ec.description}
                           </p>
-                          <p className="text-[10px] text-slate-600 mt-0.5">
+                          <p className="text-[10px] text-muted-foreground mt-0.5">
                             {ec.date} · {ec.author}
                           </p>
                         </div>
@@ -1990,11 +1990,11 @@ function PLNumberDetailView({
                 <div key={ec.id} className="flex gap-4">
                   <div className="flex flex-col items-center pt-1">
                     <div
-                      className={`w-2.5 h-2.5 rounded-full shrink-0 mt-1 ${EC_STATUS_DOT[ec.status] ?? "bg-slate-500"}`}
+                      className={`w-2.5 h-2.5 rounded-full shrink-0 mt-1 ${EC_STATUS_DOT[ec.status] ?? "bg-muted-foreground"}`}
                     />
                     {i < engineeringChanges.length - 1 && (
                       <div
-                        className="w-px flex-1 bg-slate-700/50 mt-1 mb-0"
+                        className="w-px flex-1 bg-muted mt-1 mb-0"
                         style={{ minHeight: "28px" }}
                       />
                     )}
@@ -2011,7 +2011,7 @@ function PLNumberDetailView({
                           {ec.status.replace("_", " ")}
                         </span>
                       </div>
-                      <span className="text-[10px] text-slate-600 shrink-0">{ec.date}</span>
+                      <span className="text-[10px] text-muted-foreground shrink-0">{ec.date}</span>
                     </div>
                     <p className="text-sm text-foreground leading-snug">{ec.description}</p>
                     {ec.author && (
@@ -2027,9 +2027,9 @@ function PLNumberDetailView({
           ) : (
             !showAddEC && (
               <div className="text-center py-10">
-                <GitBranch className="w-10 h-10 mx-auto mb-3 text-slate-600 opacity-50" />
+                <GitBranch className="w-10 h-10 mx-auto mb-3 text-muted-foreground opacity-50" />
                 <p className="text-muted-foreground text-sm">No engineering changes recorded.</p>
-                <p className="text-slate-600 text-xs mt-1">
+                <p className="text-muted-foreground text-xs mt-1">
                   Add the first engineering change using the button above.
                 </p>
               </div>
@@ -2155,7 +2155,7 @@ function PLNumberDetailView({
                   const statusVariant = isClosed
                     ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/30"
                     : isOpen
-                      ? "bg-slate-700/50 text-muted-foreground border-slate-600/40"
+                      ? "bg-muted text-muted-foreground border-border"
                       : "bg-amber-500/10 text-amber-300 border-amber-500/30";
                   const statusLabel = isClosed ? "Closed" : isOpen ? "Open" : "In Progress";
                   return (
@@ -2171,7 +2171,7 @@ function PLNumberDetailView({
                       >
                         {statusLabel}
                       </span>
-                      <ArrowRight className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+                      <ArrowRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                     </div>
                   );
                 })}
@@ -2197,7 +2197,7 @@ function PLNumberDetailView({
                   const isOpen = id.includes("-OPEN") || id.includes("ACTIVE");
                   const caseStatus = isClosed ? "Resolved" : isOpen ? "Active" : "Open";
                   const caseVariant = isClosed
-                    ? "bg-slate-700/50 text-muted-foreground border-slate-600/40"
+                    ? "bg-muted text-muted-foreground border-border"
                     : "bg-amber-500/10 text-amber-300 border-amber-500/30";
                   return (
                     <div
@@ -2212,7 +2212,7 @@ function PLNumberDetailView({
                       >
                         {caseStatus}
                       </span>
-                      <ArrowRight className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+                      <ArrowRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                     </div>
                   );
                 })}
@@ -2535,7 +2535,7 @@ export default function PLDetail({ plId: plIdProp }: { plId?: string } = {}) {
                       iconOnly
                       className="h-8 min-h-0 px-2 text-foreground/90 hover:text-teal-200"
                     />
-                    <ExternalLink className="w-4 h-4 text-slate-600 hover:text-primary transition-colors" />
+                    <ExternalLink className="w-4 h-4 text-muted-foreground hover:text-primary transition-colors" />
                   </div>
                 </div>
               ))}
@@ -2634,7 +2634,7 @@ export default function PLDetail({ plId: plIdProp }: { plId?: string } = {}) {
                         {c.type.slice(0, 1)}
                       </div>
                       {i < plRecord.changeHistory.length - 1 && (
-                        <div className="w-px flex-1 bg-slate-700/50 mt-2" />
+                        <div className="w-px flex-1 bg-muted mt-2" />
                       )}
                     </div>
                     <div className="flex-1 pb-4">

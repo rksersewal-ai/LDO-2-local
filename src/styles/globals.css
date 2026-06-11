@@ -56,6 +56,13 @@
   --color-teal-primary: 172 76% 40%;
   --color-teal-glow: 172 76% 40%;
   --color-glass: 220 38% 12%;
+
+  /* Status Colors - Theme-aware semantic colors */
+  --status-success: 142 71% 45%;
+  --status-warning: 38 92% 55%;
+  --status-danger: 0 84% 60%;
+  --status-info: 210 80% 50%;
+  --status-processing: 172 76% 45%;
 }
 
 .light-theme {
@@ -104,6 +111,13 @@
   --color-teal-primary: 172 76% 36%;
   --color-teal-glow: 172 76% 36%;
   --color-glass: 0 0% 100%;
+
+  /* Status Colors - Light theme overrides */
+  --status-success: 142 71% 35%;
+  --status-warning: 38 92% 40%;
+  --status-danger: 0 84% 45%;
+  --status-info: 210 80% 45%;
+  --status-processing: 172 76% 36%;
 }
 
 @theme inline {
@@ -144,6 +158,11 @@
   --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
   --color-sidebar-border: hsl(var(--sidebar-border));
   --color-sidebar-ring: hsl(var(--sidebar-ring));
+  --color-status-success: hsl(var(--status-success));
+  --color-status-warning: hsl(var(--status-warning));
+  --color-status-danger: hsl(var(--status-danger));
+  --color-status-info: hsl(var(--status-info));
+  --color-status-processing: hsl(var(--status-processing));
 }
 
 @layer base {

@@ -501,7 +501,7 @@ export default function Cases() {
                     {selectedComments.map((comment) => (
                       <div
                         key={comment.id}
-                        className="rounded-xl border border-white/6 bg-slate-950/35 px-4 py-3"
+                        className="rounded-xl border border-border/40 bg-card/35 px-4 py-3"
                       >
                         <div className="flex items-center justify-between gap-3">
                           <p className="text-sm font-medium text-foreground">{comment.author}</p>
@@ -613,7 +613,7 @@ export default function Cases() {
         </div>
 
         <Dialog open={statusDialogOpen} onOpenChange={setStatusDialogOpen}>
-          <DialogContent className="border border-border/60 bg-slate-950 text-foreground sm:max-w-[460px]">
+          <DialogContent className="border border-border bg-popover text-popover-foreground sm:max-w-[460px]">
             <DialogHeader>
               <DialogTitle>Update Case Status</DialogTitle>
               <DialogDescription className="text-muted-foreground">
@@ -656,7 +656,7 @@ export default function Cases() {
         </Dialog>
 
         <Dialog open={commentDialogOpen} onOpenChange={setCommentDialogOpen}>
-          <DialogContent className="border border-border/60 bg-slate-950 text-foreground sm:max-w-[520px]">
+          <DialogContent className="border border-border bg-popover text-popover-foreground sm:max-w-[520px]">
             <DialogHeader>
               <DialogTitle>Add Case Comment</DialogTitle>
               <DialogDescription className="text-muted-foreground">
@@ -678,7 +678,7 @@ export default function Cases() {
         </Dialog>
 
         <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
-          <DialogContent className="border border-border/60 bg-slate-950 text-foreground sm:max-w-[700px]">
+          <DialogContent className="border border-border bg-popover text-popover-foreground sm:max-w-[700px]">
             <DialogHeader>
               <DialogTitle>Link Document</DialogTitle>
               <DialogDescription className="text-muted-foreground">
@@ -722,7 +722,7 @@ export default function Cases() {
                     </button>
                   ))
                 ) : (
-                  <p className="rounded-xl border border-white/6 bg-slate-950/35 px-4 py-5 text-sm text-muted-foreground">
+                  <p className="rounded-xl border border-border/40 bg-card/35 px-4 py-5 text-sm text-muted-foreground">
                     No matching documents available to link.
                   </p>
                 )}
@@ -732,7 +732,7 @@ export default function Cases() {
         </Dialog>
 
         <Dialog open={closeDialogOpen} onOpenChange={setCloseDialogOpen}>
-          <DialogContent className="border border-rose-500/25 bg-slate-950 text-foreground sm:max-w-[460px]">
+          <DialogContent className="border border-rose-500/25 bg-popover text-foreground sm:max-w-[460px]">
             <DialogHeader>
               <DialogTitle>Close Case</DialogTitle>
               <DialogDescription className="text-muted-foreground">
@@ -862,7 +862,7 @@ export default function Cases() {
           }
         }}
       >
-        <DialogContent className="border border-border/60 bg-slate-950 text-foreground sm:max-w-[620px]">
+        <DialogContent className="border border-border/60 bg-popover text-foreground sm:max-w-[620px]">
           <DialogHeader>
             <DialogTitle>Create New Case</DialogTitle>
             <DialogDescription className="text-muted-foreground">

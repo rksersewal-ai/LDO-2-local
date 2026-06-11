@@ -342,7 +342,7 @@ export default function UserManagement() {
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="border border-border/60 bg-slate-950 text-foreground sm:max-w-[760px]">
+        <DialogContent className="border border-border/60 bg-popover text-foreground sm:max-w-[760px]">
           <DialogHeader>
             <DialogTitle>{editingUser ? "Update User" : "Create User"}</DialogTitle>
             <DialogDescription className="text-muted-foreground">
@@ -522,7 +522,7 @@ export default function UserManagement() {
         open={Boolean(pendingDelete)}
         onOpenChange={(open) => !open && setPendingDelete(null)}
       >
-        <DialogContent className="border border-rose-500/25 bg-slate-950 text-foreground sm:max-w-[460px]">
+        <DialogContent className="border border-rose-500/25 bg-popover text-foreground sm:max-w-[460px]">
           <DialogHeader>
             <DialogTitle>Remove User</DialogTitle>
             <DialogDescription className="text-muted-foreground">

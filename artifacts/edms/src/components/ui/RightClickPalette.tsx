@@ -373,7 +373,7 @@ export function RightClickPalette() {
           <div className="text-sm font-medium text-foreground">{action.label}</div>
           <div className="truncate text-[11px] text-muted-foreground">{action.description}</div>
         </div>
-        <ArrowRight className="h-3.5 w-3.5 text-slate-600" />
+        <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
       </button>
     );
   };
@@ -400,7 +400,7 @@ export function RightClickPalette() {
 
       {open && (
         <div
-          className="fixed z-[100000] w-80 rounded-2xl border border-cyan-400/18 bg-slate-950/94 shadow-[0_22px_70px_rgba(2,10,20,0.6)] backdrop-blur-xl"
+          className="fixed z-[100000] w-80 rounded-2xl border border-cyan-400/18 bg-popover/94 shadow-[0_22px_70px_rgba(2,10,20,0.6)] backdrop-blur-xl"
           role="menu"
           onKeyDown={(e) => e.key === "Escape" && setOpen(false)}
           style={{ left: position.x, top: position.y }}

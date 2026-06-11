@@ -77,20 +77,20 @@ function highlightSnippet(text: string, query: string) {
 
 function statusColor(status: string): string {
   const s = status?.toUpperCase();
-  if (["ACTIVE", "APPROVED", "VERIFIED", "CLOSED"].includes(s)) return "text-emerald-400";
+  if (["ACTIVE", "APPROVED", "VERIFIED", "CLOSED"].includes(s)) return "text-[color:var(--status-success)]";
   if (["DRAFT", "OPEN", "UNDER_REVIEW", "IN_PROGRESS", "SUBMITTED"].includes(s))
-    return "text-amber-400";
-  if (["OBSOLETE", "FAILED", "OVERDUE"].includes(s)) return "text-rose-400";
+    return "text-[color:var(--status-warning)]";
+  if (["OBSOLETE", "FAILED", "OVERDUE"].includes(s)) return "text-[color:var(--status-danger)]";
   return "text-muted-foreground";
 }
 
 function statusDot(status: string): string {
   const s = status?.toUpperCase();
-  if (["ACTIVE", "APPROVED", "VERIFIED", "CLOSED"].includes(s)) return "bg-emerald-500";
+  if (["ACTIVE", "APPROVED", "VERIFIED", "CLOSED"].includes(s)) return "bg-[color:var(--status-success)]";
   if (["DRAFT", "OPEN", "UNDER_REVIEW", "IN_PROGRESS", "SUBMITTED"].includes(s))
-    return "bg-amber-500";
-  if (["OBSOLETE", "FAILED", "OVERDUE"].includes(s)) return "bg-rose-500";
-  return "bg-slate-500";
+    return "bg-[color:var(--status-warning)]";
+  if (["OBSOLETE", "FAILED", "OVERDUE"].includes(s)) return "bg-[color:var(--status-danger)]";
+  return "bg-muted-foreground";
 }
 
 function humanizeKey(value: string) {
@@ -213,16 +213,16 @@ function ResultCard({ result, query, onClick }: ResultCardProps) {
             )}
           </div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-            <span className="text-slate-600">{typeLabels[result.type]}</span>
+            <span className="text-muted-foreground">{typeLabels[result.type]}</span>
             {result.subtitle && (
               <>
-                <span className="text-slate-700">·</span>
+                <span className="text-muted-foreground">·</span>
                 <span className="font-mono text-primary/70">{result.subtitle}</span>
               </>
             )}
             {result.matchField && (
               <>
-                <span className="text-slate-700">·</span>
+                <span className="text-muted-foreground">·</span>
                 <span className="flex items-center gap-0.5">
                   {result.matchField === "OCR Text" && (
                     <ScanText className="w-3 h-3 text-violet-400" />
@@ -292,7 +292,7 @@ function ResultCard({ result, query, onClick }: ResultCardProps) {
               className="h-8 min-h-0 px-2 text-foreground/90 hover:text-teal-200"
             />
           )}
-          <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-primary transition-colors" />
+          <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
         </div>
       </div>
     </div>
@@ -316,7 +316,7 @@ function ResultGroup({ title, icon, results, query, onNavigate }: ResultGroupPro
         <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
           {title}
         </span>
-        <span className="text-xs text-slate-600 font-mono ml-1">{results.length}</span>
+        <span className="text-xs text-muted-foreground font-mono ml-1">{results.length}</span>
       </div>
       <div className="space-y-2">
         {results.map((r) => (
@@ -761,7 +761,7 @@ export default function SearchExplorer() {
                 placeholder="Search documents, PLs, OCR text, work records, cases..."
                 className="w-full pl-10 pr-20 h-10 text-sm rounded-md"
               />
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-0.5 text-slate-600 text-[10px] border border-border rounded px-1.5 py-0.5 pointer-events-none">
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-0.5 text-muted-foreground text-[10px] border border-border rounded px-1.5 py-0.5 pointer-events-none">
                 <Command className="w-2.5 h-2.5" />K
               </div>
 
@@ -770,13 +770,13 @@ export default function SearchExplorer() {
                 <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-card/95 backdrop-blur-xl border border-border/50 rounded-md shadow-2xl shadow-black/60 overflow-hidden">
                   {savedSearches.length > 0 && (
                     <div className="p-2">
-                      <p className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-slate-600">
+                      <p className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                         Saved
                       </p>
                       {savedSearches.slice(0, 5).map((s, i) => (
                         <div
                           key={i}
-                          className="flex items-center gap-2 rounded-lg hover:bg-slate-700/50 group transition-colors"
+                          className="flex items-center gap-2 rounded-lg hover:bg-muted group transition-colors"
                         >
                           <button
                             type="button"
@@ -793,7 +793,7 @@ export default function SearchExplorer() {
                           <button
                             type="button"
                             onMouseDown={() => deleteSaved(i)}
-                            className="mr-2 w-5 h-5 flex items-center justify-center text-slate-700 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-all"
+                            className="mr-2 w-5 h-5 flex items-center justify-center text-muted-foreground hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-all"
                           >
                             <Trash2 className="w-3 h-3" />
                           </button>
@@ -805,7 +805,7 @@ export default function SearchExplorer() {
                     <div
                       className={`p-2 ${savedSearches.length > 0 ? "border-t border-border" : ""}`}
                     >
-                      <p className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-slate-600">
+                      <p className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                         Recent
                       </p>
                       {recentSearches.slice(0, 5).map((s, i) => (
@@ -816,9 +816,9 @@ export default function SearchExplorer() {
                             setQuery(s);
                             setInputFocused(false);
                           }}
-                          className="w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-slate-700/50 text-left transition-colors"
+                          className="w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-muted text-left transition-colors"
                         >
-                          <Clock className="w-3.5 h-3.5 text-slate-600 flex-shrink-0" />
+                          <Clock className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
                           <span className="text-sm text-muted-foreground">{s}</span>
                         </button>
                       ))}
@@ -843,18 +843,18 @@ export default function SearchExplorer() {
                       type="button"
                       key={i}
                       onClick={() => setQuery(s)}
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-700/40 text-left transition-colors group"
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary/40 text-left transition-colors group"
                     >
-                      <Search className="w-3.5 h-3.5 text-slate-600 group-hover:text-primary transition-colors flex-shrink-0" />
+                      <Search className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
                       <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
                         {s}
                       </span>
-                      <ArrowRight className="w-3 h-3 text-slate-700 group-hover:text-primary ml-auto transition-colors" />
+                      <ArrowRight className="w-3 h-3 text-muted-foreground group-hover:text-primary ml-auto transition-colors" />
                     </button>
                   ))}
                 </div>
               ) : (
-                <p className="text-slate-600 text-sm">No recent searches yet.</p>
+                <p className="text-muted-foreground text-sm">No recent searches yet.</p>
               )}
             </GlassCard>
 
@@ -869,7 +869,7 @@ export default function SearchExplorer() {
                   {savedSearches.map((s, i) => (
                     <div
                       key={i}
-                      className="flex items-center gap-2 group px-3 py-2 rounded-lg hover:bg-slate-700/40 transition-colors"
+                      className="flex items-center gap-2 group px-3 py-2 rounded-lg hover:bg-secondary/40 transition-colors"
                     >
                       <button
                         type="button"
@@ -887,7 +887,7 @@ export default function SearchExplorer() {
                       <button
                         type="button"
                         onClick={() => deleteSaved(i)}
-                        className="w-5 h-5 flex items-center justify-center rounded text-slate-700 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-all"
+                        className="w-5 h-5 flex items-center justify-center rounded text-muted-foreground hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-all"
                       >
                         <Trash2 className="w-3 h-3" />
                       </button>
@@ -896,8 +896,8 @@ export default function SearchExplorer() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <p className="text-slate-600 text-sm">No saved searches yet.</p>
-                  <p className="text-xs text-slate-700">
+                  <p className="text-muted-foreground text-sm">No saved searches yet.</p>
+                  <p className="text-xs text-muted-foreground">
                     Run a search and click <span className="text-primary/70">Save Search</span> to
                     bookmark it here.
                   </p>
@@ -1227,7 +1227,7 @@ export default function SearchExplorer() {
                       setResults(null);
                       setSearchParams({}, { replace: true });
                     }}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground/90 text-xs px-2.5 h-7 flex items-center justify-center rounded-md hover:bg-slate-700/50 transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground/90 text-xs px-2.5 h-7 flex items-center justify-center rounded-md hover:bg-muted transition-colors"
                   >
                     Clear
                   </button>
@@ -1247,7 +1247,7 @@ export default function SearchExplorer() {
                   if (suggestions.length === 0 && historySuggestions.length === 0) return null;
                   return (
                     <div className="absolute left-0 right-0 mt-2 z-50 bg-card/95 backdrop-blur-xl border border-white/8 rounded-xl shadow-2xl p-2 max-w-lg mx-auto">
-                      <p className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-slate-600">
+                      <p className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                         Suggestions
                       </p>
                       {suggestions.map((s, i) => (
@@ -1257,7 +1257,7 @@ export default function SearchExplorer() {
                             setQuery(s);
                             setInputFocused(false);
                           }}
-                          className="w-full text-left text-sm text-foreground/90 p-1.5 hover:bg-slate-700/50 rounded flex items-center gap-2"
+                          className="w-full text-left text-sm text-foreground/90 p-1.5 hover:bg-muted rounded flex items-center gap-2"
                         >
                           <Search className="w-3.5 h-3.5 text-primary" /> {s}
                         </button>

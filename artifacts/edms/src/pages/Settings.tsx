@@ -231,7 +231,7 @@ export default function Settings() {
                       )}
                       {setting.type === "select" && (
                         <select
-                          className="h-9 bg-slate-950/50 border border-border/50 text-foreground text-sm rounded-xl px-3 focus:outline-none focus:border-teal-500/40 w-full"
+                          className="h-9 bg-card/50 border border-border/50 text-foreground text-sm rounded-xl px-3 focus:outline-none focus:border-teal-500/40 w-full"
                           value={String(settingValue)}
                           onChange={(event) => setValue(settingKey, event.target.value)}
                         >

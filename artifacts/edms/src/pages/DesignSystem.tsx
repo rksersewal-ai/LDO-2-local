@@ -20,7 +20,7 @@ export default function DesignSystem() {
         <GlassCard className="p-4 space-y-4 border-border/50 bg-card/40 backdrop-blur-md">
           <div className="flex items-center gap-2 border-b border-border/40 pb-2">
             <Sparkles className="w-4 h-4 text-primary" />
-            <h2 className="text-sm font-semibold text-white">Button Components</h2>
+            <h2 className="text-sm font-semibold text-foreground">Button Components</h2>
           </div>
           <div className="flex flex-wrap gap-2 pt-2">
             <Button variant="primary">Primary Button</Button>
@@ -42,7 +42,7 @@ export default function DesignSystem() {
         <GlassCard className="p-4 space-y-4 border-border/50 bg-card/40 backdrop-blur-md">
           <div className="flex items-center gap-2 border-b border-border/40 pb-2">
             <Layers className="w-4 h-4 text-primary" />
-            <h2 className="text-sm font-semibold text-white">Badge Indicators</h2>
+            <h2 className="text-sm font-semibold text-foreground">Badge Indicators</h2>
           </div>
           <div className="flex flex-wrap gap-3 pt-2">
             <Badge variant="default">Default Badge</Badge>
@@ -58,7 +58,7 @@ export default function DesignSystem() {
         <GlassCard className="p-4 space-y-4 border-border/50 bg-card/40 backdrop-blur-md">
           <div className="flex items-center gap-2 border-b border-border/40 pb-2">
             <Activity className="w-4 h-4 text-primary" />
-            <h2 className="text-sm font-semibold text-white">Form Inputs & Controls</h2>
+            <h2 className="text-sm font-semibold text-foreground">Form Inputs & Controls</h2>
           </div>
           <div className="space-y-3 pt-2">
             <div>
@@ -93,7 +93,7 @@ export default function DesignSystem() {
         <GlassCard className="p-4 space-y-4 border-border/50 bg-card/40 backdrop-blur-md">
           <div className="flex items-center gap-2 border-b border-border/40 pb-2">
             <ShieldAlert className="w-4 h-4 text-primary" />
-            <h2 className="text-sm font-semibold text-white">Alert Messages</h2>
+            <h2 className="text-sm font-semibold text-foreground">Alert Messages</h2>
           </div>
           <div className="space-y-2 pt-2">
             <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-teal-500/8 border border-teal-500/20 text-xs text-primary/90">

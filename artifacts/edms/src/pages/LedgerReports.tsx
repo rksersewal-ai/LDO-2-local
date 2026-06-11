@@ -184,7 +184,7 @@ export default function LedgerReports() {
             {categoryData.length > 0 ? (
               <Suspense
                 fallback={
-                  <div className="w-full h-[240px] animate-pulse bg-slate-800/50 rounded-xl" />
+                  <div className="w-full h-[240px] animate-pulse bg-muted/50 rounded-xl" />
                 }
               >
                 <LedgerWorkVolumeChart data={categoryData} />
@@ -206,7 +206,7 @@ export default function LedgerReports() {
             {statusData.length > 0 ? (
               <Suspense
                 fallback={
-                  <div className="w-full h-[240px] animate-pulse bg-slate-800/50 rounded-xl" />
+                  <div className="w-full h-[240px] animate-pulse bg-muted/50 rounded-xl" />
                 }
               >
                 <LedgerStatusChart data={statusData} />
@@ -228,7 +228,7 @@ export default function LedgerReports() {
           {avgDaysData.length > 0 ? (
             <Suspense
               fallback={
-                <div className="w-full h-[240px] animate-pulse bg-slate-800/50 rounded-xl" />
+                <div className="w-full h-[240px] animate-pulse bg-muted/50 rounded-xl" />
               }
             >
               <LedgerAvgDaysChart data={avgDaysData} />

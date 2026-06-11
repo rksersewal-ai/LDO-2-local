@@ -18,26 +18,26 @@ interface ToastProps extends ToastMessage {
 function getToastIcon(type: ToastType) {
   switch (type) {
     case "success":
-      return <CheckCircle className="w-5 h-5 text-primary" />;
+      return <CheckCircle className="w-5 h-5 text-[color:var(--status-success)]" />;
     case "error":
-      return <AlertCircle className="w-5 h-5 text-rose-400" />;
+      return <AlertCircle className="w-5 h-5 text-[color:var(--status-danger)]" />;
     case "warning":
-      return <AlertTriangle className="w-5 h-5 text-amber-400" />;
+      return <AlertTriangle className="w-5 h-5 text-[color:var(--status-warning)]" />;
     case "info":
-      return <Info className="w-5 h-5 text-blue-400" />;
+      return <Info className="w-5 h-5 text-[color:var(--status-info)]" />;
   }
 }
 
 function getToastStyles(type: ToastType) {
   switch (type) {
     case "success":
-      return "bg-teal-900/40 border-teal-500/30 text-teal-100";
+      return "bg-[color:var(--status-success)]/10 border-[color:var(--status-success)]/30 text-foreground";
     case "error":
-      return "bg-rose-900/40 border-rose-500/30 text-rose-100";
+      return "bg-[color:var(--status-danger)]/10 border-[color:var(--status-danger)]/30 text-foreground";
     case "warning":
-      return "bg-amber-900/40 border-amber-500/30 text-amber-100";
+      return "bg-[color:var(--status-warning)]/10 border-[color:var(--status-warning)]/30 text-foreground";
     case "info":
-      return "bg-blue-900/40 border-blue-500/30 text-blue-100";
+      return "bg-[color:var(--status-info)]/10 border-[color:var(--status-info)]/30 text-foreground";
   }
 }
 

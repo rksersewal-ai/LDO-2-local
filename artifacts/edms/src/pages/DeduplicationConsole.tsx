@@ -294,7 +294,7 @@ function ScopeChip({
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="flex items-center gap-2 rounded-full border border-border/60 bg-slate-950/55 px-3.5 py-2 text-left text-xs text-foreground transition-all hover:border-teal-400/30 hover:bg-card/70"
+          className="flex items-center gap-2 rounded-full border border-border/60 bg-card/55 px-3.5 py-2 text-left text-xs text-foreground transition-all hover:border-primary/30 hover:bg-card/70"
         >
           <span className="text-primary/90">{icon}</span>
           <span className="min-w-0">
@@ -307,7 +307,7 @@ function ScopeChip({
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        className="w-80 rounded-2xl border border-teal-500/20 bg-slate-950/95 p-4 text-foreground shadow-2xl shadow-slate-950/60"
+        className="w-80 rounded-2xl border border-primary/20 bg-popover/95 p-4 text-popover-foreground shadow-2xl"
       >
         {children}
       </PopoverContent>
@@ -343,7 +343,7 @@ function SelectionList({
             className={`flex w-full items-center justify-between rounded-xl border px-3 py-2.5 text-sm transition-all ${
               value === option
                 ? "border-teal-400/35 bg-teal-500/12 text-teal-200"
-                : "border-border/60 bg-card text-foreground/90 hover:border-slate-500/70 hover:bg-card/80"
+                : "border-border/60 bg-card text-foreground/90 hover:border-border hover:bg-card/80"
             }`}
           >
             <span>{option}</span>
@@ -383,7 +383,7 @@ function MultiSelectChipPicker({
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="flex h-9 min-w-[210px] items-center gap-2 rounded-xl border border-border/60 bg-slate-950/55 px-3 text-left text-sm text-foreground transition-all hover:border-teal-400/30 hover:bg-card/70"
+          className="flex h-9 min-w-[210px] items-center gap-2 rounded-xl border border-border/60 bg-card/55 px-3 text-left text-sm text-foreground transition-all hover:border-primary/30 hover:bg-card/70"
         >
           <span className="text-primary/90">{icon}</span>
           <span className="min-w-0 flex-1 truncate">
@@ -396,7 +396,7 @@ function MultiSelectChipPicker({
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        className="w-80 rounded-2xl border border-teal-500/20 bg-slate-950/95 p-4 text-foreground shadow-2xl shadow-slate-950/60"
+        className="w-80 rounded-2xl border border-primary/20 bg-popover/95 p-4 text-popover-foreground shadow-2xl"
       >
         <div className="mb-3">
           <p className="text-sm font-semibold text-foreground">{label}</p>
@@ -413,7 +413,7 @@ function MultiSelectChipPicker({
                 className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 text-sm transition-all ${
                   selected
                     ? "border-teal-400/35 bg-teal-500/12 text-teal-100"
-                    : "border-border/60 bg-card text-foreground/90 hover:border-slate-500/70 hover:bg-card/80"
+                    : "border-border/60 bg-card text-foreground/90 hover:border-border hover:bg-card/80"
                 }`}
               >
                 <input
@@ -455,7 +455,7 @@ function OwnerPicker({ value, onChange }: { value: string; onChange: (value: str
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="flex h-9 min-w-[200px] items-center gap-2 rounded-xl border border-border/60 bg-slate-950/55 px-3 text-left text-sm text-foreground transition-all hover:border-teal-400/30 hover:bg-card/70"
+          className="flex h-9 min-w-[200px] items-center gap-2 rounded-xl border border-border/60 bg-card/55 px-3 text-left text-sm text-foreground transition-all hover:border-primary/30 hover:bg-card/70"
         >
           <ShieldCheck className="h-4 w-4 text-primary/90" />
           <span className="min-w-0 flex-1 truncate">
@@ -468,7 +468,7 @@ function OwnerPicker({ value, onChange }: { value: string; onChange: (value: str
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        className="w-80 rounded-2xl border border-teal-500/20 bg-slate-950/95 p-4 text-foreground shadow-2xl shadow-slate-950/60"
+        className="w-80 rounded-2xl border border-primary/20 bg-popover/95 p-4 text-popover-foreground shadow-2xl"
       >
         <div className="space-y-3">
           <div>
@@ -495,7 +495,7 @@ function OwnerPicker({ value, onChange }: { value: string; onChange: (value: str
                   className={`flex w-full items-center justify-between rounded-xl border px-3 py-2.5 text-sm transition-all ${
                     selected
                       ? "border-teal-400/35 bg-teal-500/12 text-teal-100"
-                      : "border-border/60 bg-card text-foreground/90 hover:border-slate-500/70 hover:bg-card/80"
+                      : "border-border/60 bg-card text-foreground/90 hover:border-border hover:bg-card/80"
                   }`}
                 >
                   <span>{option}</span>
@@ -534,7 +534,7 @@ function DateRangePickerChip({
       <PopoverTrigger asChild>
         <button
           type="button"
-          className={`flex items-center gap-2 rounded-xl border border-border/60 bg-slate-950/55 px-3 text-left transition-all hover:border-teal-400/30 hover:bg-card/70 ${
+          className={`flex items-center gap-2 rounded-xl border border-border/60 bg-card/55 px-3 text-left transition-all hover:border-primary/30 hover:bg-card/70 ${
             compact
               ? "h-9 min-w-[220px] text-sm text-foreground"
               : "rounded-full px-3.5 py-2 text-xs text-foreground"
@@ -551,7 +551,7 @@ function DateRangePickerChip({
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        className="w-[360px] rounded-2xl border border-teal-500/20 bg-slate-950/95 p-4 text-foreground shadow-2xl shadow-slate-950/60"
+        className="w-[360px] rounded-2xl border border-primary/20 bg-popover/95 p-4 text-popover-foreground shadow-2xl"
       >
         <div className="mb-4">
           <p className="text-sm font-semibold text-foreground">{label}</p>
@@ -601,7 +601,7 @@ function SettingRow({
   control: ReactNode;
 }) {
   return (
-    <div className="flex items-start justify-between gap-4 rounded-2xl border border-border/70 bg-slate-950/45 px-4 py-3">
+    <div className="flex items-start justify-between gap-4 rounded-2xl border border-border/70 bg-card/45 px-4 py-3">
       <div>
         <p className="text-sm font-semibold text-foreground">{title}</p>
         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{description}</p>
@@ -872,13 +872,13 @@ export default function DeduplicationConsole() {
                   <Badge variant="success">Most-linked candidate</Badge>
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
-                  <div className="rounded-xl border border-border bg-slate-950/45 p-3">
+                  <div className="rounded-xl border border-border bg-card/45 p-3">
                     <p className="text-muted-foreground">Potential storage saving</p>
                     <p className="mt-1 text-lg font-semibold text-foreground">
                       {formatBytes(selectedGroup.potentialSavingsBytes)}
                     </p>
                   </div>
-                  <div className="rounded-xl border border-border bg-slate-950/45 p-3">
+                  <div className="rounded-xl border border-border bg-card/45 p-3">
                     <p className="text-muted-foreground">Mode used</p>
                     <p className="mt-1 text-sm font-semibold text-foreground">
                       {dedupMode === "fingerprint"
@@ -902,7 +902,7 @@ export default function DeduplicationConsole() {
                     <span>{risk}</span>
                   </div>
                 ))}
-                <div className="rounded-xl border border-border bg-slate-950/45 p-3 text-xs text-foreground/90">
+                <div className="rounded-xl border border-border bg-card/45 p-3 text-xs text-foreground/90">
                   <span className="font-semibold text-foreground">Impact summary:</span>{" "}
                   {impactSummary}
                 </div>
@@ -910,7 +910,7 @@ export default function DeduplicationConsole() {
 
               {((selectedGroup.approvedAssertions?.length ?? 0) > 0 ||
                 (selectedGroup.conflictingEntities?.length ?? 0) > 0) && (
-                <div className="space-y-3 rounded-2xl border border-border/70 bg-slate-950/45 p-4">
+                <div className="space-y-3 rounded-2xl border border-border/70 bg-card/45 p-4">
                   <div>
                     <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
                       Metadata evidence
@@ -992,7 +992,7 @@ export default function DeduplicationConsole() {
                         className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-all ${
                           selected
                             ? "border-teal-400/40 bg-teal-500/14 text-teal-100"
-                            : "border-border/60 bg-card text-muted-foreground hover:border-slate-500/70 hover:text-foreground"
+                            : "border-border/60 bg-card text-muted-foreground hover:border-border hover:text-foreground"
                         }`}
                       >
                         {label}
@@ -1009,7 +1009,7 @@ export default function DeduplicationConsole() {
                   <div
                     key={doc.id}
                     {...getDocumentContextAttributes(doc.id, doc.title)}
-                    className="rounded-2xl border border-border/70 bg-slate-950/45 p-3"
+                    className="rounded-2xl border border-border/70 bg-card/45 p-3"
                   >
                     <div className="flex items-start gap-3">
                       <input
@@ -1047,13 +1047,13 @@ export default function DeduplicationConsole() {
                           </div>
                         </div>
                         <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
-                          <div className="rounded-xl border border-border/60 bg-slate-950/55 px-3 py-2">
+                          <div className="rounded-xl border border-border/60 bg-card/55 px-3 py-2">
                             <p className="uppercase tracking-[0.16em]">Number / revision</p>
                             <p className="mt-1 text-foreground">
                               {doc.documentNumber} · {doc.revision}
                             </p>
                           </div>
-                          <div className="rounded-xl border border-border/60 bg-slate-950/55 px-3 py-2">
+                          <div className="rounded-xl border border-border/60 bg-card/55 px-3 py-2">
                             <p className="uppercase tracking-[0.16em]">Links count</p>
                             <p className="mt-1 text-foreground">
                               {totalReferences(doc)} linked entities
@@ -1119,7 +1119,7 @@ export default function DeduplicationConsole() {
                     key={item.label}
                     type="button"
                     onClick={() => navigate(item.route)}
-                    className="rounded-2xl border border-border/70 bg-slate-950/45 p-3 text-left transition-all hover:border-teal-400/25 hover:bg-card/75"
+                    className="rounded-2xl border border-border/70 bg-card/45 p-3 text-left transition-all hover:border-teal-400/25 hover:bg-card/75"
                   >
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <span className="text-primary/90">{item.icon}</span>
@@ -1132,7 +1132,7 @@ export default function DeduplicationConsole() {
                   </button>
                 ))}
               </div>
-              <div className="rounded-2xl border border-border/70 bg-slate-950/45 p-3 text-xs text-muted-foreground">
+              <div className="rounded-2xl border border-border/70 bg-card/45 p-3 text-xs text-muted-foreground">
                 Review these linked entities before hiding or merging duplicates. Destructive
                 actions must preserve link targets and approval history.
               </div>
@@ -1151,17 +1151,17 @@ export default function DeduplicationConsole() {
                     [selectedGroup.id]: event.target.value,
                   }))
                 }
-                className="min-h-[120px] w-full rounded-2xl border border-border/60 bg-slate-950/65 px-3 py-3 text-sm text-foreground outline-none transition-all focus:border-teal-400/40 focus:ring-1 focus:ring-teal-400/30"
+                className="min-h-[120px] w-full rounded-2xl border border-border/60 bg-popover/65 px-3 py-3 text-sm text-foreground outline-none transition-all focus:border-teal-400/40 focus:ring-1 focus:ring-teal-400/30"
                 placeholder="Capture operator notes, exception handling, or audit rationale."
               />
-              <div className="space-y-2 rounded-2xl border border-border/70 bg-slate-950/45 p-3">
+              <div className="space-y-2 rounded-2xl border border-border/70 bg-card/45 p-3">
                 <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
                   Decision log
                 </p>
                 {selectedGroup.decisionLog.map((entry) => (
                   <div
                     key={`${entry.at}-${entry.actor}-${entry.action}`}
-                    className="rounded-xl border border-border/60 bg-slate-950/55 px-3 py-2.5"
+                    className="rounded-xl border border-border/60 bg-card/55 px-3 py-2.5"
                   >
                     <div className="flex items-center justify-between gap-3 text-[11px]">
                       <span className="font-semibold text-foreground">{entry.action}</span>
@@ -1592,7 +1592,7 @@ export default function DeduplicationConsole() {
             </div>
           </div>
 
-          <div className="rounded-3xl border border-teal-500/20 bg-slate-950/35 p-4">
+          <div className="rounded-3xl border border-teal-500/20 bg-card/35 p-4">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
@@ -1614,13 +1614,13 @@ export default function DeduplicationConsole() {
                 className={`rounded-2xl border p-4 text-left transition-all ${
                   dedupMode === "metadata"
                     ? "border-teal-400/35 bg-teal-500/12 shadow-[0_18px_40px_rgba(20,184,166,0.12)]"
-                    : "border-border/60 bg-card hover:border-slate-500/70 hover:bg-card/80"
+                    : "border-border/60 bg-card hover:border-border hover:bg-card/80"
                 }`}
               >
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-sm font-semibold text-foreground">Metadata only</p>
                   <div
-                    className={`h-3 w-3 rounded-full border ${dedupMode === "metadata" ? "border-teal-300 bg-teal-300" : "border-slate-600"}`}
+                    className={`h-3 w-3 rounded-full border ${dedupMode === "metadata" ? "border-teal-300 bg-teal-300" : "border-border"}`}
                   />
                 </div>
                 <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
@@ -1635,7 +1635,7 @@ export default function DeduplicationConsole() {
                 className={`rounded-2xl border p-4 text-left transition-all ${
                   dedupMode === "fingerprint"
                     ? "border-teal-400/35 bg-teal-500/12 shadow-[0_18px_40px_rgba(20,184,166,0.12)]"
-                    : "border-border/60 bg-card hover:border-slate-500/70 hover:bg-card/80"
+                    : "border-border/60 bg-card hover:border-border hover:bg-card/80"
                 }`}
               >
                 <div className="flex items-center justify-between gap-3">
@@ -1643,7 +1643,7 @@ export default function DeduplicationConsole() {
                     Metadata + content fingerprint
                   </p>
                   <div
-                    className={`h-3 w-3 rounded-full border ${dedupMode === "fingerprint" ? "border-teal-300 bg-teal-300" : "border-slate-600"}`}
+                    className={`h-3 w-3 rounded-full border ${dedupMode === "fingerprint" ? "border-teal-300 bg-teal-300" : "border-border"}`}
                   />
                 </div>
                 <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
@@ -1830,9 +1830,9 @@ export default function DeduplicationConsole() {
 
         <div className="overflow-auto custom-scrollbar">
           <table className="min-w-[1420px] w-full border-separate border-spacing-0 text-sm">
-            <thead className="sticky top-0 z-20 bg-slate-950/95 backdrop-blur-xl">
+            <thead className="sticky top-0 z-20 bg-popover/95 backdrop-blur-xl">
               <tr className="border-b border-border/70 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                <th className="sticky left-0 z-30 border-b border-border/70 bg-slate-950/95 px-4 py-3">
+                <th className="sticky left-0 z-30 border-b border-border/70 bg-popover/95 px-4 py-3">
                   <label className="flex items-center gap-2">
                     <input
                       type="checkbox"
@@ -1862,7 +1862,7 @@ export default function DeduplicationConsole() {
                 const groupStatus = getStatusMeta(group.derivedStatus, dedupMode);
                 return (
                   <Fragment key={group.id}>
-                    <tr className="bg-slate-950/75">
+                    <tr className="bg-popover/75">
                       <td colSpan={11} className="border-y border-border/70 px-4 py-3">
                         <div className="flex flex-wrap items-center justify-between gap-3">
                           <div className="flex items-center gap-3">
@@ -1874,7 +1874,7 @@ export default function DeduplicationConsole() {
                               className={`inline-flex h-7 w-7 items-center justify-center rounded-lg border transition-all ${
                                 bulkSelectedGroupIds.includes(group.id)
                                   ? "border-teal-400/35 bg-teal-500/12 text-teal-100"
-                                  : "border-border/60 bg-card text-muted-foreground hover:border-slate-500/70"
+                                  : "border-border/60 bg-card text-muted-foreground hover:border-border"
                               }`}
                             >
                               {bulkSelectedGroupIds.includes(group.id) ? (
@@ -1936,9 +1936,9 @@ export default function DeduplicationConsole() {
                           data-document-id={doc.id}
                           data-document-title={doc.title}
                           onClick={() => setSelectedGroupId(group.id)}
-                          className={`cursor-pointer border-b border-slate-900/70 transition-colors ${selected ? "bg-teal-500/7" : "hover:bg-card/45"}`}
+                          className={`cursor-pointer border-b border-border/70 transition-colors ${selected ? "bg-teal-500/7" : "hover:bg-card/45"}`}
                         >
-                          <td className="sticky left-0 z-10 border-b border-slate-900/70 bg-slate-950/90 px-4 py-3 align-top">
+                          <td className="sticky left-0 z-10 border-b border-border/70 bg-popover/90 px-4 py-3 align-top">
                             <div className="flex items-start gap-3">
                               <input
                                 type="checkbox"
@@ -1964,56 +1964,56 @@ export default function DeduplicationConsole() {
                               </div>
                             </div>
                           </td>
-                          <td className="border-b border-slate-900/70 px-4 py-3 align-top">
+                          <td className="border-b border-border/70 px-4 py-3 align-top">
                             <p className="font-medium text-foreground">{doc.title}</p>
                             <p className="mt-1 text-xs text-muted-foreground">
                               {doc.isArchived ? "Archived copy" : "Active repository record"} ·{" "}
                               {group.collection}
                             </p>
                           </td>
-                          <td className="border-b border-slate-900/70 px-4 py-3 align-top">
+                          <td className="border-b border-border/70 px-4 py-3 align-top">
                             <div className="space-y-1 text-xs">
                               <p className="font-mono text-foreground">{doc.documentNumber}</p>
                               <p className="text-muted-foreground">{doc.drawingNumber ?? "—"}</p>
                               <p className="text-teal-200">PL-{doc.partNumber ?? "—"}</p>
                             </div>
                           </td>
-                          <td className="border-b border-slate-900/70 px-4 py-3 align-top">
+                          <td className="border-b border-border/70 px-4 py-3 align-top">
                             <span className="font-mono text-xs text-foreground">
                               {doc.revision}
                             </span>
                           </td>
-                          <td className="border-b border-slate-900/70 px-4 py-3 align-top">
+                          <td className="border-b border-border/70 px-4 py-3 align-top">
                             <div className="space-y-1 text-xs">
                               <p className="text-foreground">{doc.className}</p>
                               <p className="text-muted-foreground">{doc.type}</p>
                             </div>
                           </td>
-                          <td className="border-b border-slate-900/70 px-4 py-3 align-top">
+                          <td className="border-b border-border/70 px-4 py-3 align-top">
                             <span className="font-mono text-xs text-foreground">
                               {formatBytes(doc.fileSizeBytes)}
                             </span>
                           </td>
-                          <td className="border-b border-slate-900/70 px-4 py-3 align-top">
-                            <code className="rounded-lg border border-border/70 bg-slate-950/50 px-2 py-1 text-[11px] text-foreground/90">
+                          <td className="border-b border-border/70 px-4 py-3 align-top">
+                            <code className="rounded-lg border border-border/70 bg-card/50 px-2 py-1 text-[11px] text-foreground/90">
                               {doc.metadataKey}
                             </code>
                           </td>
-                          <td className="border-b border-slate-900/70 px-4 py-3 align-top">
+                          <td className="border-b border-border/70 px-4 py-3 align-top">
                             <span
                               className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold ${fingerprint.className}`}
                             >
                               {fingerprint.label}
                             </span>
                           </td>
-                          <td className="border-b border-slate-900/70 px-4 py-3 align-top">
+                          <td className="border-b border-border/70 px-4 py-3 align-top">
                             <div className="space-y-1 text-xs">
                               <p className="text-foreground">{formatDate(doc.uploadDate)}</p>
                               <p className="text-muted-foreground">{doc.uploader}</p>
                               <p className="text-muted-foreground">{doc.sourceSystem}</p>
                             </div>
                           </td>
-                          <td className="border-b border-slate-900/70 px-4 py-3 align-top">
+                          <td className="border-b border-border/70 px-4 py-3 align-top">
                             <div className="space-y-1 text-xs">
                               <p className="font-semibold text-foreground">
                                 {totalReferences(doc)} linked
@@ -2027,7 +2027,7 @@ export default function DeduplicationConsole() {
                               </p>
                             </div>
                           </td>
-                          <td className="border-b border-slate-900/70 px-4 py-3 align-top">
+                          <td className="border-b border-border/70 px-4 py-3 align-top">
                             <Badge variant={groupStatus.variant}>{groupStatus.label}</Badge>
                           </td>
                         </tr>
@@ -2040,7 +2040,7 @@ export default function DeduplicationConsole() {
               {displayedGroups.length === 0 && (
                 <tr>
                   <td colSpan={11} className="px-6 py-20 text-center">
-                    <BadgeAlert className="mx-auto h-10 w-10 text-slate-600" />
+                    <BadgeAlert className="mx-auto h-10 w-10 text-muted-foreground" />
                     <p className="mt-4 text-sm font-semibold text-foreground">
                       No candidate groups match the current scope and filters.
                     </p>
@@ -2063,7 +2063,7 @@ export default function DeduplicationConsole() {
       </GlassCard>
 
       <Dialog open={scheduleOpen} onOpenChange={setScheduleOpen}>
-        <DialogContent className="max-w-2xl rounded-3xl border border-teal-500/20 bg-slate-950/96 p-0 text-foreground shadow-2xl shadow-slate-950/80">
+        <DialogContent className="max-w-2xl rounded-3xl border border-teal-500/20 bg-popover/96 p-0 text-foreground shadow-2xl shadow-slate-950/80">
           <div className="border-b border-border/70 px-6 py-5">
             <DialogHeader className="space-y-2 text-left">
               <DialogTitle className="text-xl text-foreground">Schedule dedup job</DialogTitle>
@@ -2164,7 +2164,7 @@ export default function DeduplicationConsole() {
       </Dialog>
 
       <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-        <DialogContent className="max-w-3xl rounded-3xl border border-teal-500/20 bg-slate-950/96 p-0 text-foreground shadow-2xl shadow-slate-950/80">
+        <DialogContent className="max-w-3xl rounded-3xl border border-teal-500/20 bg-popover/96 p-0 text-foreground shadow-2xl shadow-slate-950/80">
           <div className="border-b border-border/70 px-6 py-5">
             <DialogHeader className="space-y-2 text-left">
               <DialogTitle className="text-xl text-foreground">Dedup settings</DialogTitle>
@@ -2278,7 +2278,7 @@ export default function DeduplicationConsole() {
           if (!open) setPendingAction(null);
         }}
       >
-        <AlertDialogContent className="rounded-3xl border border-teal-500/20 bg-slate-950/96 text-foreground shadow-2xl shadow-slate-950/80">
+        <AlertDialogContent className="rounded-3xl border border-teal-500/20 bg-popover/96 text-foreground shadow-2xl shadow-slate-950/80">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-foreground">
               {pendingDialogCopy?.title}

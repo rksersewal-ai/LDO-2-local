@@ -57,7 +57,7 @@ const ACTION_CONFIG = {
       "This item will be soft-deleted (archived). You can restore it later. No data is permanently lost.",
     actionLabel: "Archive",
     cancelLabel: "Cancel",
-    color: "text-rose-400",
+    color: "text-[color:var(--status-danger)]",
   },
   archive: {
     icon: Archive,
@@ -65,7 +65,7 @@ const ACTION_CONFIG = {
     description: "This item will be archived and hidden from normal views.",
     actionLabel: "Archive",
     cancelLabel: "Cancel",
-    color: "text-amber-400",
+    color: "text-[color:var(--status-warning)]",
   },
   disable: {
     icon: Ban,
@@ -81,7 +81,7 @@ const ACTION_CONFIG = {
     description: "Please confirm this action.",
     actionLabel: "Confirm",
     cancelLabel: "Cancel",
-    color: "text-amber-400",
+    color: "text-[color:var(--status-warning)]",
   },
 };
 
@@ -125,10 +125,10 @@ export function SafeActionButton({
   };
 
   const variantStyles = {
-    danger: "hover:bg-rose-500/10 hover:border-rose-500/30 text-rose-400 hover:text-rose-300",
-    warning: "hover:bg-amber-500/10 hover:border-amber-500/30 text-amber-400 hover:text-amber-300",
+    danger: "hover:bg-[color:var(--status-danger)]/10 hover:border-[color:var(--status-danger)]/30 text-[color:var(--status-danger)] hover:text-[color:var(--status-danger)]/80",
+    warning: "hover:bg-[color:var(--status-warning)]/10 hover:border-[color:var(--status-warning)]/30 text-[color:var(--status-warning)] hover:text-[color:var(--status-warning)]/80",
     default:
-      "hover:bg-slate-500/10 hover:border-slate-500/30 text-muted-foreground hover:text-foreground/90",
+      "hover:bg-muted/50 hover:border-border text-muted-foreground hover:text-foreground",
   };
 
   return (
@@ -156,7 +156,7 @@ export function SafeActionButton({
           <AlertDialogDescription className="space-y-3">
             <p>{message || config.description}</p>
             {itemName && <p className="text-sm font-mono text-foreground/90">{itemName}</p>}
-            <p className="text-xs text-slate-600 italic">
+            <p className="text-xs text-muted-foreground italic">
               💡 No data is permanently deleted. Items can be restored from archive.
             </p>
           </AlertDialogDescription>
@@ -168,7 +168,7 @@ export function SafeActionButton({
             <AlertDialogAction
               onClick={handleConfirm}
               disabled={isProcessing}
-              className="bg-rose-500/20 text-rose-400 border-rose-500/30 hover:bg-rose-500/30"
+              className="bg-[color:var(--status-danger)]/20 text-[color:var(--status-danger)] border-[color:var(--status-danger)]/30 hover:bg-[color:var(--status-danger)]/30"
             >
               {isProcessing ? "Processing..." : config.actionLabel}
             </AlertDialogAction>
@@ -238,9 +238,9 @@ export function CommandButton({
   };
 
   const variantClasses = {
-    default: "bg-teal-500/20 text-primary border-teal-500/30 hover:bg-teal-500/30",
-    danger: "bg-rose-500/20 text-rose-400 border-rose-500/30 hover:bg-rose-500/30",
-    warning: "bg-amber-500/20 text-amber-400 border-amber-500/30 hover:bg-amber-500/30",
+    default: "bg-primary/20 text-primary border-primary/30 hover:bg-primary/30",
+    danger: "bg-[color:var(--status-danger)]/20 text-[color:var(--status-danger)] border-[color:var(--status-danger)]/30 hover:bg-[color:var(--status-danger)]/30",
+    warning: "bg-[color:var(--status-warning)]/20 text-[color:var(--status-warning)] border-[color:var(--status-warning)]/30 hover:bg-[color:var(--status-warning)]/30",
   };
 
   const sizeClasses = {

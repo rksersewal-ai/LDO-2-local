@@ -367,7 +367,7 @@ export default function DocumentTemplates() {
                     description: event.target.value,
                   }))
                 }
-                className="min-h-24 w-full rounded-lg border border-border/50 bg-slate-950/60 px-3 py-2.5 text-sm text-foreground placeholder:text-slate-600 focus:border-teal-500/50 focus:outline-none focus:ring-1 focus:ring-teal-500/30"
+                className="min-h-24 w-full rounded-lg border border-border/50 bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-teal-500/50 focus:outline-none focus:ring-1 focus:ring-teal-500/30"
               />
             </div>
 

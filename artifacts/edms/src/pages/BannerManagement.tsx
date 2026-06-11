@@ -223,7 +223,7 @@ export default function BannerManagement() {
                   onClick={() => toggleActive(banner.id)}
                   className={`px-3 py-1 rounded-lg text-xs font-medium border transition-colors ${
                     banner.active
-                      ? "bg-secondary border-slate-600 text-muted-foreground hover:text-foreground"
+                      ? "bg-secondary border-border text-muted-foreground hover:text-foreground"
                       : "bg-teal-500/10 border-teal-500/30 text-primary hover:bg-teal-500/20"
                   }`}
                 >
@@ -285,7 +285,7 @@ export default function BannerManagement() {
               <div>
                 <span className="text-xs text-muted-foreground mb-1 block">Message</span>{" "}
                 <textarea
-                  className="w-full bg-slate-950/50 border border-border/50 text-foreground text-sm rounded-xl px-4 py-2 focus:outline-none focus:border-teal-400/50 resize-none placeholder:text-muted-foreground"
+                  className="w-full bg-card/50 border border-border/50 text-foreground text-sm rounded-xl px-4 py-2 focus:outline-none focus:border-teal-400/50 resize-none placeholder:text-muted-foreground"
                   rows={3}
                   placeholder="Announcement message visible to all users..."
                   value={newMessage}

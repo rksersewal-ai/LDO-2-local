@@ -150,7 +150,7 @@ function DeltaTable({
 }) {
   if (!rows.length) {
     return (
-      <div className="rounded-xl border border-border/80 bg-slate-950/30 p-4">
+      <div className="rounded-xl border border-border/80 bg-card/30 p-4">
         <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-foreground">
           {icon}
           {title}
@@ -161,12 +161,12 @@ function DeltaTable({
   }
 
   return (
-    <div className="rounded-xl border border-border/80 bg-slate-950/30">
+    <div className="rounded-xl border border-border/80 bg-card/30">
       <div className="flex items-center gap-2 border-b border-border/80 px-4 py-3 text-sm font-semibold text-foreground">
         {icon}
         {title}
       </div>
-      <div className="divide-y divide-slate-800/70">
+      <div className="divide-y divide-border/70">
         {rows.map((row) => (
           <div
             key={row.key}
@@ -316,11 +316,11 @@ export function DocumentChangeReviewCard({
               <p className="mt-1 text-xs text-amber-200">{alert.message}</p>
               <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
                 <span>Latest rev {alert.revision || "N/A"}</span>
-                <span className="text-slate-600">/</span>
+                <span className="text-muted-foreground/50">/</span>
                 <span>Previous rev {alert.previousRevision || "N/A"}</span>
                 {alert.designSupervisor && (
                   <>
-                    <span className="text-slate-600">/</span>
+                    <span className="text-muted-foreground/50">/</span>
                     <span>Supervisor {alert.designSupervisor}</span>
                   </>
                 )}
@@ -368,7 +368,7 @@ export function DocumentChangeReviewCard({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
                     align="end"
-                    className="w-52 border border-border/60 bg-slate-950 text-foreground"
+                    className="w-52 border border-border bg-popover text-popover-foreground"
                   >
                     <DropdownMenuItem
                       className="focus:bg-secondary"
@@ -406,7 +406,7 @@ export function DocumentChangeReviewCard({
             alert.resolutionNotes ||
             alert.bypassReason ||
             alert.resolvedAt) && (
-            <div className="rounded-xl border border-amber-500/15 bg-slate-950/35 px-3 py-3 text-sm">
+            <div className="rounded-xl border border-[color:var(--status-warning)]/15 bg-card/35 px-3 py-3 text-sm">
               {alert.changeSummary && <p className="text-foreground/90">{alert.changeSummary}</p>}
               {alert.resolutionNotes && (
                 <p className="mt-2 text-xs text-muted-foreground">
@@ -428,7 +428,7 @@ export function DocumentChangeReviewCard({
         <CollapsibleContent>
           <div className="border-t border-amber-500/15 px-4 pb-4 pt-4">
             {loading ? (
-              <div className="flex items-center gap-2 rounded-xl border border-border/80 bg-slate-950/30 px-4 py-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 rounded-xl border border-border/80 bg-card/30 px-4 py-4 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Loading comparison evidence...
               </div>
@@ -439,7 +439,7 @@ export function DocumentChangeReviewCard({
             ) : (
               <div className="space-y-4">
                 <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                  <div className="rounded-xl border border-border/80 bg-slate-950/35 px-4 py-3">
+                  <div className="rounded-xl border border-border/80 bg-card/35 px-4 py-3">
                     <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                       Latest document
                     </p>
@@ -451,7 +451,7 @@ export function DocumentChangeReviewCard({
                       </p>
                     )}
                   </div>
-                  <div className="rounded-xl border border-border/80 bg-slate-950/35 px-4 py-3">
+                  <div className="rounded-xl border border-border/80 bg-card/35 px-4 py-3">
                     <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                       Previous document
                     </p>
@@ -467,7 +467,7 @@ export function DocumentChangeReviewCard({
                       </p>
                     )}
                   </div>
-                  <div className="rounded-xl border border-border/80 bg-slate-950/35 px-4 py-3">
+                  <div className="rounded-xl border border-border/80 bg-card/35 px-4 py-3">
                     <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                       Approved assertion delta
                     </p>
@@ -476,7 +476,7 @@ export function DocumentChangeReviewCard({
                       Changed or newly governed metadata fields.
                     </p>
                   </div>
-                  <div className="rounded-xl border border-border/80 bg-slate-950/35 px-4 py-3">
+                  <div className="rounded-xl border border-border/80 bg-card/35 px-4 py-3">
                     <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                       Extracted entity delta
                     </p>

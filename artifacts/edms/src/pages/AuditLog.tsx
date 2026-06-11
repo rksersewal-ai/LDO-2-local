@@ -262,7 +262,7 @@ export default function AuditLog() {
           <select
             value={moduleFilter}
             onChange={(e) => setModuleFilter(e.target.value)}
-            className="bg-slate-950/50 border border-border/50 text-foreground text-xs rounded-md px-3 h-9 focus:outline-none focus:border-teal-500/40"
+            className="bg-background border border-border/50 text-foreground text-xs rounded-md px-3 h-9 focus:outline-none focus:border-primary/40"
           >
             {modules.map((m) => (
               <option key={m}>{m}</option>
@@ -273,7 +273,7 @@ export default function AuditLog() {
           <select
             value={severityFilter}
             onChange={(e) => setSeverityFilter(e.target.value)}
-            className="bg-slate-950/50 border border-border/50 text-foreground text-xs rounded-md px-3 h-9 focus:outline-none focus:border-teal-500/40"
+            className="bg-background border border-border/50 text-foreground text-xs rounded-md px-3 h-9 focus:outline-none focus:border-primary/40"
           >
             {["All", "Critical", "Warning", "Info"].map((s) => (
               <option key={s}>{s}</option>
@@ -284,7 +284,7 @@ export default function AuditLog() {
           <select
             value={userFilter}
             onChange={(e) => setUserFilter(e.target.value)}
-            className="bg-slate-950/50 border border-border/50 text-foreground text-xs rounded-md px-3 h-9 focus:outline-none focus:border-teal-500/40"
+            className="bg-background border border-border/50 text-foreground text-xs rounded-md px-3 h-9 focus:outline-none focus:border-primary/40"
           >
             {users.map((u) => (
               <option key={u}>{u}</option>
@@ -305,7 +305,7 @@ export default function AuditLog() {
         {/* Date range row */}
         <div className="flex flex-wrap items-center gap-3 mb-4 pb-4 border-b border-border">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Calendar className="w-3.5 h-3.5 text-slate-600" />
+            <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
             <span>Date range:</span>
           </div>
           <DatePicker
@@ -315,7 +315,7 @@ export default function AuditLog() {
             maxDate={dateTo || undefined}
             className="w-[168px]"
           />
-          <span className="text-slate-600 text-xs">to</span>
+          <span className="text-muted-foreground text-xs">to</span>
           <DatePicker
             value={dateTo}
             onChange={setDateTo}
