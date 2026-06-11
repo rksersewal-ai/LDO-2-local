@@ -33,6 +33,7 @@ interface PLNumberSelectProps {
   showViewLink?: boolean;
   disabled?: boolean;
   className?: string;
+  id?: string;
 }
 
 export function PLNumberSelect({
@@ -47,6 +48,7 @@ export function PLNumberSelect({
   showViewLink = true,
   disabled = false,
   className,
+  id,
 }: PLNumberSelectProps) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -71,6 +73,7 @@ export function PLNumberSelect({
             type="button"
             variant="outline"
             role="combobox"
+            id={id}
             aria-expanded={open}
             disabled={disabled}
             className={cn(

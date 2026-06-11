@@ -66,7 +66,7 @@ describe("ErrorBoundary", () => {
 
   it("resets error state when retry is clicked", () => {
     const onReset = vi.fn();
-    const { rerender } = render(
+    render(
       <ErrorBoundary name="Test" onReset={onReset}>
         <ThrowingComponent shouldThrow={true} />
       </ErrorBoundary>,
