@@ -184,7 +184,7 @@ export function buildGINFilterClause(filters: SearchFilterOptions): GINFilterCla
     });
   }
 
-  if (filters.hashStatus && filters.hashStatus !== "") {
+  if (filters.hashStatus) {
     clauses.push({
       type: "gin_filter",
       field: "hash_status",
@@ -193,7 +193,7 @@ export function buildGINFilterClause(filters: SearchFilterOptions): GINFilterCla
     });
   }
 
-  if (filters.plLinked && filters.plLinked !== "") {
+  if (filters.plLinked) {
     clauses.push({
       type: "gin_filter",
       field: "pl_linked",

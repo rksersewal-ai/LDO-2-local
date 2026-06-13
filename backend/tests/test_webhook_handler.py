@@ -55,7 +55,7 @@ class WebhookHandlerTests(TestCase):
         with self.settings(DEBUG=True):
             self.assertFalse(is_safe_url('http://this-domain-does-not-exist.local/'))
 
-    @patch('integrations.webhook_handler.requests.post')
+    @patch('requests.post')
     @patch('integrations.webhook_handler.is_safe_url')
     def test_dispatch_skips_unsafe_endpoints(self, mock_is_safe_url, mock_post):
         mock_is_safe_url.side_effect = lambda url: url == 'https://safe.example.com'
